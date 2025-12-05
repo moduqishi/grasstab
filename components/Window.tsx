@@ -87,31 +87,46 @@ export const ResponsiveWindow: React.FC<ResponsiveWindowProps> = ({
         onFocus();
     };
 
-    const style: React.CSSProperties = isMobile 
-        ? { inset: '12px', zIndex: 9999, borderRadius: '16px' } 
+    const windowStyle: React.CSSProperties = isMobile 
+        ? { 
+            inset: '12px', 
+            zIndex: 9999,
+            backgroundColor: 'rgba(30, 30, 35, 0.85)',
+            backdropFilter: 'blur(60px)',
+            WebkitBackdropFilter: 'blur(60px)',
+            boxShadow: '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+            borderRadius: '16px'
+        } 
         : {
-            left: isMaximized ? 0 : pos.x,
-            top: isMaximized ? 0 : pos.y,
-            width: isMaximized ? '100%' : size.w,
-            height: isMaximized ? '100%' : size.h,
+            left: isMaximized ? 0 : `${pos.x}px`,
+            top: isMaximized ? 0 : `${pos.y}px`,
+            width: isMaximized ? '100%' : `${size.w}px`,
+            height: isMaximized ? '100%' : `${size.h}px`,
             zIndex,
+            backgroundColor: 'rgba(30, 30, 35, 0.85)',
+            backdropFilter: 'blur(60px)',
+            WebkitBackdropFilter: 'blur(60px)',
+            boxShadow: isMaximized 
+                ? '0 0 0 0.5px rgba(255, 255, 255, 0.1)'
+                : '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
             borderRadius: isMaximized ? '0px' : '16px',
         };
 
     return (
         <div 
-            className={`fixed flex flex-col overflow-hidden shadow-2xl ring-1 ring-white/10 ${isOpen ? 'animate-in zoom-in-95' : ''} ${isDragging || isResizing ? 'transition-none' : 'transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)'}`} 
-            style={{ 
-                ...style, 
-                backdropFilter: 'blur(50px)', 
-                WebkitBackdropFilter: 'blur(50px)',
-                backgroundColor: 'rgba(30, 30, 35, 0.65)', 
-                boxShadow: '0 50px 100px -20px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.08)' 
-            }} 
+            className={`fixed flex flex-col overflow-hidden ${isOpen ? 'animate-in zoom-in-95' : ''} ${isDragging || isResizing ? 'transition-none' : 'transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)'}`} 
+            style={windowStyle}
             onMouseDown={onFocus}
         >
             {/* Window Header */}
-            <div className="h-[52px] bg-white/0 border-b border-white/5 flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0" onMouseDown={startDrag}>
+            <div 
+                className="h-[52px] flex items-center justify-between cursor-grab active:cursor-grabbing select-none shrink-0"
+                style={{
+                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)'
+                }}
+                onMouseDown={startDrag}
+            >
                 <div className="flex items-center w-full relative">
                     <div className="absolute left-0 top-1/2 -translate-y-1/2">
                         <TrafficLights onClose={onClose} onMinimize={onClose} onMaximize={onToggleMaximize || (() => {})} isMaximized={!!isMaximized} />

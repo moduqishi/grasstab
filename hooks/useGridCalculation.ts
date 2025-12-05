@@ -12,9 +12,9 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
 
             const topReserved = 380;
             const bottomReserved = showDock ? 200 : 60;
-            const availableHeight = Math.max(100, h - topReserved - bottomReserved);
+            let availableHeight = Math.max(100, h - topReserved - bottomReserved);
             
-            const itemHeight = isMobile ? 100 : 130;
+            let itemHeight = isMobile ? 100 : 130;
             const maxGridWidth = Math.min(w * 0.92, 1200);
             
             let cols = 3;
@@ -22,9 +22,29 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
             if (w >= 768) cols = 6;
             if (w >= 1280) cols = 8;
 
+            // 计算初始行数
             let rows = Math.floor(availableHeight / itemHeight);
-            if (rows < 1) rows = 1;
-            if (rows > 4) rows = 4; 
+            
+            // 确保至少显示 3 行
+            const MIN_ROWS = 3;
+            if (rows < MIN_ROWS) {
+                // 如果计算出的行数少于 3 行，动态调整 itemHeight
+                // 为每行图标之间留出一些间距 (约 10px)
+                const spacing = 10;
+                itemHeight = Math.floor((availableHeight - spacing * (MIN_ROWS - 1)) / MIN_ROWS);
+                
+                // 确保 itemHeight 不会太小（最小 80px）
+                if (itemHeight < 80) {
+                    itemHeight = 80;
+                    // 如果还是放不下，减少可用高度的保留空间
+                    availableHeight = itemHeight * MIN_ROWS + spacing * (MIN_ROWS - 1);
+                }
+                
+                rows = MIN_ROWS;
+            }
+            
+            // 最大行数限制（允许大屏幕显示更多行）
+            if (rows > 5) rows = 5;
 
             const cellWidth = maxGridWidth / cols;
 

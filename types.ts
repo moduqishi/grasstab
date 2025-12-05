@@ -9,6 +9,7 @@ export interface Shortcut {
     isApp?: boolean;
     isAdd?: boolean; // UI helper
     iconType?: string; // For dock mapping
+    customIcon?: string; // Custom icon URL or base64 data
     
     // Widget Properties
     size?: { w: number, h: number };
@@ -29,7 +30,7 @@ export interface DockItem extends Shortcut {
 
 export interface WindowState {
     id: string;
-    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web';
+    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web' | 'edit';
     title: string;
     isOpen: boolean;
     isMaximized?: boolean; // Lifted state
@@ -37,6 +38,7 @@ export interface WindowState {
     w: number;
     h: number;
     url?: string;
+    editData?: Shortcut; // For edit window
 }
 
 export interface DragState {
@@ -65,6 +67,7 @@ export interface SystemSettings {
     showSearchBar: boolean;
     showPagination: boolean;
     showDock: boolean;
+    language: 'zh' | 'en';
 }
 
 export interface GlobalConfig {

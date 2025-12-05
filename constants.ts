@@ -72,8 +72,36 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
 ];
 
 export const DEFAULT_DOCK: DockItem[] = [
-    { id: 'ai', iconType: 'cpu', name: 'AI', isApp: true, type: 'sys', color: 'from-purple-500 to-indigo-500' },
-    { id: 'notes', iconType: 'sticky-note', name: 'Notes', isApp: true, type: 'sys', color: 'from-yellow-400 to-orange-400' },
-    { id: 'calc', iconType: 'calculator', name: 'Calc', isApp: true, type: 'sys', color: 'from-gray-500 to-gray-600' },
-    { id: 'settings', iconType: 'settings', name: 'Settings', isApp: true, type: 'sys', color: 'from-slate-500 to-slate-600' }
+    { 
+        id: 'ai', 
+        iconType: 'cpu', 
+        name: 'AI', 
+        isApp: true, 
+        type: 'sys', 
+        color: 'from-purple-600 via-purple-500 to-pink-500' 
+    },
+    { 
+        id: 'notes', 
+        iconType: 'sticky-note', 
+        name: 'Notes', 
+        isApp: true, 
+        type: 'sys', 
+        color: 'from-yellow-300 via-yellow-400 to-yellow-500' 
+    },
+    { 
+        id: 'calc', 
+        iconType: 'calculator', 
+        name: 'Calc', 
+        isApp: true, 
+        type: 'sys', 
+        color: 'from-orange-400 via-orange-500 to-red-500' 
+    },
+    { 
+        id: 'settings', 
+        iconType: 'settings', 
+        name: 'Settings', 
+        isApp: true, 
+        type: 'sys', 
+        color: 'from-gray-400 via-gray-500 to-gray-600' 
+    }
 ];

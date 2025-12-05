@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
 import { DEFAULT_WALLPAPER } from '../../constants';
 import { SystemSettings } from '../../types';
-import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson } from 'lucide-react';
+import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages } from 'lucide-react';
+import { t } from '../../i18n';
 
 interface SettingsAppProps {
     setWp: (url: string) => void;
@@ -31,18 +32,24 @@ const ToggleSwitch = ({ checked, onChange }: { checked: boolean, onChange: (v: b
 );
 
 const SectionHeader = ({ title }: { title: string }) => (
-    <div className="px-4 pb-2 pt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+    <div className="px-4 pb-2 pt-6 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
         {title}
     </div>
 );
 
 const SettingsItem = ({ icon: Icon, label, children, isLast }: { icon: any, label: string, children: React.ReactNode, isLast?: boolean }) => (
-    <div className={`flex items-center justify-between p-4 bg-white dark:bg-[#2c2c2e] ${!isLast ? 'border-b border-gray-100 dark:border-white/5' : ''}`}>
+    <div 
+        className="flex items-center justify-between p-4"
+        style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+            borderBottom: isLast ? 'none' : '0.5px solid rgba(255, 255, 255, 0.08)'
+        }}
+    >
         <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.7)' }}>
                 <Icon size={18} />
             </div>
-            <span className="text-sm font-medium text-gray-900 dark:text-white">{label}</span>
+            <span className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{label}</span>
         </div>
         <div>
             {children}
@@ -52,8 +59,9 @@ const SettingsItem = ({ icon: Icon, label, children, isLast }: { icon: any, labe
 
 export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpdate, onExport, onImport, onReset }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const lang = settings.language || 'zh';
 
-    const updateSetting = (key: keyof SystemSettings, value: boolean) => {
+    const updateSetting = (key: keyof SystemSettings, value: boolean | string) => {
         onUpdate({ ...settings, [key]: value });
     };
 
@@ -67,7 +75,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
     };
 
     return (
-        <div className="h-full flex flex-col bg-[#f5f5f7] dark:bg-[#1e1e1e] overflow-hidden">
+        <div className="h-full flex flex-col overflow-hidden" style={{ backgroundColor: 'rgba(30, 30, 30, 0.3)' }}>
             <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -79,30 +87,55 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
             />
 
             <div className="flex-1 overflow-y-auto">
-                
                 {/* INTERFACE SECTION */}
-                <SectionHeader title="Interface & Layout" />
-                <div className="mx-4 rounded-xl overflow-hidden shadow-sm">
-                    <SettingsItem icon={Monitor} label="Show Dock Bar">
+                <SectionHeader title={t(lang, 'interfaceLayout')} />
+                <div className="mx-4 rounded-xl overflow-hidden shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+                    <SettingsItem icon={Monitor} label={t(lang, 'showDockBar')}>
                         <ToggleSwitch checked={settings.showDock} onChange={(v) => updateSetting('showDock', v)} />
                     </SettingsItem>
-                    <SettingsItem icon={Edit3} label="Show Dock Edit Button">
+                    <SettingsItem icon={Edit3} label={t(lang, 'showDockEditButton')}>
                         <ToggleSwitch checked={settings.showDockEdit} onChange={(v) => updateSetting('showDockEdit', v)} />
                     </SettingsItem>
-                    <SettingsItem icon={Search} label="Desktop Search Bar">
+                    <SettingsItem icon={Search} label={t(lang, 'desktopSearchBar')}>
                         <ToggleSwitch checked={settings.showSearchBar} onChange={(v) => updateSetting('showSearchBar', v)} />
                     </SettingsItem>
-                    <SettingsItem icon={MoreHorizontal} label="Pagination Dots" isLast>
+                    <SettingsItem icon={MoreHorizontal} label={t(lang, 'paginationDots')} isLast>
                         <ToggleSwitch checked={settings.showPagination} onChange={(v) => updateSetting('showPagination', v)} />
                     </SettingsItem>
                 </div>
 
+                {/* LANGUAGE SECTION */}
+                <SectionHeader title={t(lang, 'language')} />
+                <div className="mx-4 rounded-xl overflow-hidden shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+                    <SettingsItem icon={Languages} label={t(lang, 'language')}>
+                        <select
+                            value={settings.language || 'zh'}
+                            onChange={(e) => updateSetting('language', e.target.value)}
+                            className="px-3 py-1.5 rounded-lg outline-none cursor-pointer appearance-none"
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'rgba(255,255,255,0.5)\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 8px center',
+                                paddingRight: '28px'
+                            }}
+                            aria-label={t(lang, 'language')}
+                            title={t(lang, 'language')}
+                        >
+                            <option value="zh" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>{t(lang, 'chinese')}</option>
+                            <option value="en" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>{t(lang, 'english')}</option>
+                        </select>
+                    </SettingsItem>
+                </div>
+
                 {/* WALLPAPER SECTION */}
-                <SectionHeader title="Personalization" />
+                <SectionHeader title={t(lang, 'personalization')} />
                 <div className="mx-4 p-4 bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                         <Wallpaper size={16} className="text-gray-500"/>
-                        <span className="text-sm font-semibold text-gray-500">Wallpapers</span>
+                        <span className="text-sm font-semibold text-gray-500">{t(lang, 'wallpapers')}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         {WALLPAPERS.map((w,i)=>(
@@ -114,7 +147,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                 </div>
 
                 {/* DATA SECTION */}
-                <SectionHeader title="Data & Config" />
+                <SectionHeader title={t(lang, 'dataManagement')} />
                 <div className="mx-4 rounded-xl overflow-hidden shadow-sm mb-8">
                     <div 
                         onClick={onExport}
@@ -123,7 +156,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                             <Download size={18} />
                         </div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Export Configuration (YAML)</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'exportConfig')}</span>
                     </div>
 
                     <div 
@@ -133,7 +166,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
                             <Upload size={18} />
                         </div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">Import Configuration</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'importConfig')}</span>
                     </div>
 
                     <div 
@@ -143,7 +176,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500">
                             <Trash2 size={18} />
                         </div>
-                        <span className="text-sm font-medium">Reset All System Data</span>
+                        <span className="text-sm font-medium">{t(lang, 'resetToDefault')}</span>
                     </div>
                 </div>
 

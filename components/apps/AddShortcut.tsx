@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, AppWindow, LayoutGrid, Clock, Calendar, CloudSun, Code, Monitor } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, AppWindow, LayoutGrid, Clock, Calendar, CloudSun, Code, Monitor, Upload, Image as ImageIcon } from 'lucide-react';
 import { Shortcut, WidgetType } from '../../types';
 
 interface AddShortcutProps {
@@ -29,16 +29,44 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     const [t, setT] = useState(''); 
     const [u, setU] = useState(''); 
     const [isA, setIsA] = useState(false);
+    const [customIcon, setCustomIcon] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Widget State
     const [wType, setWType] = useState<WidgetType>('clock');
     const [wSize, setWSize] = useState(WIDGET_SIZES[0]);
     const [wContent, setWContent] = useState('');
 
+    // Handle icon file upload
+    const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            // Check file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Image size must be less than 2MB');
+                return;
+            }
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target?.result as string;
+                setCustomIcon(base64);
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset input
+        if (e.target) e.target.value = '';
+    };
+
     const handleSubmit = () => {
         if (mode === 'app') {
             if(t && u) {
-                onAdd({ title: t, url: u, isApp: isA, type: 'auto', size: {w:1, h:1} });
+                onAdd({ title: t, url: u, isApp: isA, type: 'auto', size: {w:1, h:1}, customIcon: customIcon || undefined });
                 onClose();
             }
         } else {
@@ -73,6 +101,45 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">URL</label>
                             <input className="w-full bg-[#2c2c2e] p-3 rounded-lg text-white outline-none focus:ring-2 ring-[#0A84FF]" value={u} onChange={e=>setU(e.target.value)} placeholder="https://..." />
                         </div>
+                        
+                        {/* Custom Icon Section */}
+                        <div className="space-y-3">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Custom Icon (Optional)</label>
+                            <div className="flex gap-3">
+                                <div className="flex-1 space-y-2">
+                                    <input 
+                                        className="w-full bg-[#2c2c2e] p-3 rounded-lg text-white outline-none focus:ring-2 ring-[#0A84FF] text-sm" 
+                                        value={customIcon} 
+                                        onChange={e=>setCustomIcon(e.target.value)} 
+                                        placeholder="Icon URL or paste base64..." 
+                                    />
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        onChange={handleIconUpload} 
+                                        accept="image/*" 
+                                        className="hidden"
+                                        aria-label="Upload custom icon"
+                                        title="Upload custom icon image file"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full bg-[#2c2c2e] hover:bg-[#3c3c3e] p-3 rounded-lg text-white flex items-center justify-center gap-2 transition-colors text-sm"
+                                    >
+                                        <Upload size={16} />
+                                        Upload Image
+                                    </button>
+                                </div>
+                                {customIcon && (
+                                    <div className="w-20 h-20 rounded-xl bg-[#2c2c2e] border border-white/10 overflow-hidden flex items-center justify-center">
+                                        <img src={customIcon} alt="Preview" className="w-full h-full object-cover" onError={() => setCustomIcon('')} />
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500">💡 Upload an image or paste a URL. Max 2MB.</p>
+                        </div>
+                        
                         <div onClick={()=>setIsA(!isA)} className="flex items-center gap-3 cursor-pointer py-2 group">
                             <div className={`w-5 h-5 border border-gray-500 rounded flex items-center justify-center transition-colors ${isA?'bg-[#0A84FF] border-transparent':''}`}>
                                 {isA&&<Plus size={14} className="text-white"/>}

@@ -5,13 +5,17 @@ import { Shortcut, DockItem, WindowState, DragState, SearchEngineKey, PackedShor
 import { useGridCalculation } from './hooks/useGridCalculation';
 import { AppIcon } from './components/AppIcon';
 import { ContextMenu } from './components/ContextMenu';
+import { AppContextMenu } from './components/AppContextMenu';
 import { ResponsiveWindow } from './components/Window';
 import { CalculatorApp } from './components/apps/Calculator';
 import { NotesApp } from './components/apps/Notes';
 import { AIApp } from './components/apps/AI';
 import { SettingsApp } from './components/apps/Settings';
 import { AddShortcutApp } from './components/apps/AddShortcut';
+import { EditApp } from './components/apps/EditApp';
+import { WebView } from './components/apps/WebView';
 import { packItems, generateYamlConfig, parseYamlConfig } from './utils';
+import { t } from './i18n';
 
 export default function App() {
     const [wallpaper, setWallpaper] = useState(localStorage.getItem('os-bg') || DEFAULT_WALLPAPER);
@@ -20,11 +24,27 @@ export default function App() {
     const [sysSettings, setSysSettings] = useState<SystemSettings>(() => {
         try {
             const saved = localStorage.getItem('os-settings');
-            return saved ? JSON.parse(saved) : { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true };
+            return saved ? JSON.parse(saved) : { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
         } catch {
-            return { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true };
+            return { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
         }
     });
+
+    const lang = sysSettings.language || 'zh';
+
+    // Get translated window title
+    const getWindowTitle = (w: WindowState): string => {
+        switch(w.type) {
+            case 'calc': return t(lang, 'calculator');
+            case 'notes': return t(lang, 'notes');
+            case 'ai': return t(lang, 'ai');
+            case 'settings': return t(lang, 'settings');
+            case 'add': return t(lang, 'addShortcut');
+            case 'edit': return w.editData?.type === 'widget' ? t(lang, 'editApp') : t(lang, 'editApp');
+            case 'web': return w.title;
+            default: return w.title;
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem('os-settings', JSON.stringify(sysSettings));
@@ -69,6 +89,7 @@ export default function App() {
     // --- System State ---
     const [isEditing, setIsEditing] = useState(false);
     const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null);
+    const [appContextMenu, setAppContextMenu] = useState<{x: number, y: number, app: Shortcut} | null>(null);
     const [time, setTime] = useState(new Date());
     const [engine, setEngine] = useState<SearchEngineKey>('google');
     const [search, setSearch] = useState('');
@@ -80,6 +101,7 @@ export default function App() {
         { id: 'ai', type: 'ai', title: 'Nebula AI', isOpen: false, isMaximized: false, z: 100, w: 500, h: 600 },
         { id: 'settings', type: 'settings', title: 'Settings', isOpen: false, isMaximized: false, z: 100, w: 720, h: 520 },
         { id: 'add', type: 'add', title: 'Add Shortcut', isOpen: false, isMaximized: false, z: 100, w: 400, h: 480 },
+        { id: 'edit', type: 'edit', title: 'Edit App', isOpen: false, isMaximized: false, z: 100, w: 500, h: 600 },
     ]);
     const [maxZ, setMaxZ] = useState(100);
 
@@ -241,6 +263,41 @@ export default function App() {
             }]);
             setMaxZ(prev => prev + 1);
         }
+    };
+
+    const handleEditApp = (app: Shortcut) => {
+        const idx = windows.findIndex(w => w.id === 'edit');
+        if (idx >= 0) {
+            const nw = [...windows];
+            nw[idx] = { 
+                ...nw[idx], 
+                isOpen: true, 
+                z: maxZ + 1,
+                title: app.type === 'widget' ? '编辑小组件' : '编辑应用',
+                editData: app
+            };
+            setWindows(nw);
+            setMaxZ(prev => prev + 1);
+        }
+    };
+
+    const handleSaveApp = (updated: Shortcut) => {
+        setShortcuts(prev => prev.map(s => s.id === updated.id ? updated : s));
+        closeWin('edit');
+    };
+
+    const handleDeleteApp = (app: Shortcut) => {
+        if (window.confirm(`确定要删除 "${app.title || '此应用'}" 吗？`)) {
+            setShortcuts(prev => prev.filter(s => s.id !== app.id));
+        }
+    };
+
+    const handleAppContextMenu = (e: React.MouseEvent, app: Shortcut) => {
+        if (isEditing) return; // Don't show context menu in edit mode
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu(null); // Close desktop context menu
+        setAppContextMenu({ x: e.clientX, y: e.clientY, app });
     };
 
     const closeWin = (id: string) => setWindows(prev => prev.map(w => w.id === id ? { ...w, isOpen: false, isMaximized: false } : w));
@@ -474,11 +531,24 @@ export default function App() {
     // Filter packed items for current page
     const currentItems = layoutItems.filter(i => i.page === page);
 
+    const handleDesktopContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault(); // Always prevent browser's default context menu
+        
+        // Check if the click is NOT on an app icon (app icons will handle their own context menu)
+        const target = e.target as HTMLElement;
+        const isOnAppIcon = target.closest('[data-app-icon]');
+        
+        if (!isOnAppIcon) {
+            setAppContextMenu(null);
+            setContextMenu({ x: e.clientX, y: e.clientY });
+        }
+    };
+
     return (
         <div 
             className="relative w-full h-screen overflow-hidden font-sans select-none flex flex-col bg-black text-white cursor-default"
-            onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY }); }}
-            onClick={() => { setContextMenu(null); if(isEditing) setIsEditing(false); }}
+            onContextMenu={handleDesktopContextMenu}
+            onClick={() => { setContextMenu(null); setAppContextMenu(null); if(isEditing) setIsEditing(false); }}
             onPointerUp={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current); }}
         >
             <style>{`
@@ -505,6 +575,33 @@ export default function App() {
                 .jiggle-mode { animation: jiggle 0.25s infinite linear; }
                 .jiggle-mode:nth-child(2n) { animation-delay: 0.1s; }
                 .jiggle-mode:nth-child(3n) { animation-delay: -0.15s; }
+
+                /* Apple-style Scrollbar */
+                ::-webkit-scrollbar {
+                    width: 8px;
+                    height: 8px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 10px;
+                    border: 2px solid transparent;
+                    background-clip: padding-box;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                    background-clip: padding-box;
+                }
+                ::-webkit-scrollbar-corner {
+                    background: transparent;
+                }
+                /* Firefox */
+                * {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+                }
             `}</style>
 
             <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-105" style={{ backgroundImage: `url(${wallpaper})` }} />
@@ -512,10 +609,31 @@ export default function App() {
 
             {contextMenu && (
                 <ContextMenu 
-                    x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)}
-                    onEdit={() => setIsEditing(!isEditing)} onChangeWallpaper={() => openWin('settings')}
+                    x={contextMenu.x} 
+                    y={contextMenu.y} 
+                    onClose={() => setContextMenu(null)}
+                    onEdit={() => setIsEditing(!isEditing)} 
+                    onChangeWallpaper={() => openWin('settings')}
                     onReset={() => { if(window.confirm('Reset Layout?')) { localStorage.removeItem('os-shortcuts'); window.location.reload(); } }}
+                    onOpenSettings={() => openWin('settings')}
+                    onExportConfig={handleExportConfig}
+                    onImportConfig={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.yaml,.yml,.json';
+                        input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (file) handleImportConfig(file);
+                        };
+                        input.click();
+                    }}
+                    onToggleSearchBar={() => setSysSettings(prev => ({ ...prev, showSearchBar: !prev.showSearchBar }))}
+                    onTogglePagination={() => setSysSettings(prev => ({ ...prev, showPagination: !prev.showPagination }))}
+                    onToggleDock={() => setSysSettings(prev => ({ ...prev, showDock: !prev.showDock }))}
                     isEditing={isEditing}
+                    showSearchBar={sysSettings.showSearchBar}
+                    showPagination={sysSettings.showPagination}
+                    showDock={sysSettings.showDock}
                 />
             )}
 
@@ -623,7 +741,7 @@ export default function App() {
                                             
                                             <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${s.color} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
                                                 {!isWidget && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
-                                                <AppIcon {...s} />
+                                                <AppIcon {...s} onContextMenu={handleAppContextMenu} />
                                             </div>
                                             
                                             {!isWidget && <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{s.title}</span>}
@@ -644,22 +762,35 @@ export default function App() {
                         position: 'fixed',
                         left: dragState.mx, 
                         top: dragState.my,
-                        transform: 'translate(-50%, -50%)',
+                        transform: 'translate(-50%, -50%) scale(1.1)',
                         zIndex: 10000,
                         pointerEvents: 'none',
-                        // Size matches grid calculation using cell dimensions
-                        width: ((dragState.item.size?.w || 1) * cellWidth) + 'px', 
-                        height: ((dragState.item.size?.h || 1) * cellHeight) + 'px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '8px' // Match padding in grid
+                        transition: 'transform 0.15s ease-out'
                     }}
                 >
-                    <div className={`w-full h-full ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'} flex items-center justify-center text-white shadow-2xl bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'} shadow-black/40 scale-105 ring-1 ring-white/30 overflow-hidden`}>
-                         <div className="w-full h-full">
-                            <AppIcon {...dragState.item} />
-                         </div>
+                    {/* iOS-style dragging icon - maintains aspect ratio */}
+                    <div className="flex flex-col items-center gap-2">
+                        <div 
+                            className={`relative overflow-hidden flex items-center justify-center text-white shadow-2xl bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'} ring-2 ring-white/40 ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'}`}
+                            style={{
+                                width: dragState.item.type === 'widget' 
+                                    ? `${(dragState.item.size?.w || 1) * 88}px`
+                                    : '75px',
+                                height: dragState.item.type === 'widget'
+                                    ? `${(dragState.item.size?.h || 1) * 88}px`
+                                    : '75px'
+                            }}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>
+                            <div className="w-full h-full flex items-center justify-center">
+                                <AppIcon {...dragState.item} />
+                            </div>
+                        </div>
+                        {dragState.item.type !== 'widget' && dragState.item.title && (
+                            <span className="text-[13px] text-white font-medium drop-shadow-lg px-2 py-1 bg-black/30 backdrop-blur-sm rounded-lg">
+                                {dragState.item.title}
+                            </span>
+                        )}
                     </div>
                 </div>
             )}
@@ -726,10 +857,11 @@ export default function App() {
                                                 }
                                             } 
                                         }}
+                                        data-app-icon
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none"></div>
                                         <div className="w-full h-full flex items-center justify-center">
-                                                <AppIcon {...item} />
+                                                <AppIcon {...item} onContextMenu={handleAppContextMenu} />
                                         </div>
                                     </div>
                                     <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/80 transition-all duration-300 ${windows.find(w=>w.id===item.id)?.isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></div>
@@ -767,7 +899,8 @@ export default function App() {
                 w.isOpen && (
                     <ResponsiveWindow 
                         key={w.id} 
-                        {...w} 
+                        {...w}
+                        title={getWindowTitle(w)}
                         zIndex={w.z} 
                         onClose={()=>closeWin(w.id)} 
                         onFocus={()=>focusWin(w.id)} 
@@ -795,10 +928,28 @@ export default function App() {
                             const size = d.size || { w: 1, h: 1 };
                             setShortcuts(prev => [...prev, { ...d, id: newId, type: d.type || 'auto', color: d.color || 'from-gray-800 to-gray-700', size } as Shortcut])
                         }} onClose={()=>closeWin('add')} />}
-                        {w.type === 'web' && <iframe src={w.url} className="w-full h-full border-none bg-white" title="App" />}
+                        {w.type === 'edit' && w.editData && <EditApp app={w.editData} onSave={handleSaveApp} language={lang} />}
+                        {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
                     </ResponsiveWindow>
                 )
             ))}
+
+            {/* App Context Menu */}
+            {appContextMenu && (
+                <AppContextMenu 
+                    x={appContextMenu.x}
+                    y={appContextMenu.y}
+                    onClose={() => setAppContextMenu(null)}
+                    onEdit={() => {
+                        handleEditApp(appContextMenu.app);
+                        setAppContextMenu(null);
+                    }}
+                    onDelete={() => {
+                        handleDeleteApp(appContextMenu.app);
+                        setAppContextMenu(null);
+                    }}
+                />
+            )}
         </div>
     );
 }
