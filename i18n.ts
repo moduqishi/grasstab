@@ -2,23 +2,23 @@ export const translations = {
     zh: {
         // Settings
         settings: '设置',
-        interfaceLayout: 'Interface & Layout',
+        interfaceLayout: '界面与布局',
         personalization: '个性化',
         dataManagement: '数据管理',
         language: '语言',
         
         // Interface Options
-        showDockBar: 'Show Dock Bar',
-        showDockEditButton: 'Show Dock Edit Button',
-        desktopSearchBar: 'Desktop Search Bar',
-        paginationDots: 'Pagination Dots',
+        showDockBar: '显示 Dock 栏',
+        showDockEditButton: '显示 Dock 编辑按钮',
+        desktopSearchBar: '桌面搜索栏',
+        paginationDots: '分页指示器',
         
         // Language Options
         chinese: '中文',
         english: 'English',
         
         // Wallpapers
-        wallpapers: 'Wallpapers',
+        wallpapers: '壁纸',
         
         // Data Management
         exportConfig: '导出配置',
@@ -39,7 +39,7 @@ export const translations = {
         customIcon: '自定义图标',
         iconUrl: '图标 URL',
         uploadIcon: '上传',
-        clearIcon: '清除自定义图标',
+        clearIcon: '清除',
         openInWindow: '窗口模式打开',
         widgetType: '小组件类型',
         widgetSize: '小组件尺寸',
@@ -70,11 +70,25 @@ export const translations = {
         
         // Confirm
         confirmDelete: '确定要删除',
-        thisApp: '此应用',
+        thisApp: '吗？',
         
         // Add Shortcut
         appName: '应用名称',
-        appUrl: '应用链接'
+        appUrl: '应用链接',
+        
+        // Search
+        searchPlaceholder: '搜索...',
+        
+        // Common
+        preview: '预览',
+        enableWindowMode: '启用窗口模式',
+        disableWindowMode: '禁用窗口模式',
+        toggleWindowMode: '切换窗口模式',
+        selectWidgetType: '选择小组件类型',
+        setWidth: '设置宽度',
+        setHeight: '设置高度',
+        uploadCustomIcon: '上传自定义图标',
+        importConfigFile: '导入配置文件'
     },
     en: {
         // Settings
@@ -116,7 +130,7 @@ export const translations = {
         customIcon: 'Custom Icon',
         iconUrl: 'Icon URL',
         uploadIcon: 'Upload',
-        clearIcon: 'Clear custom icon',
+        clearIcon: 'Clear',
         openInWindow: 'Open in Window Mode',
         widgetType: 'Widget Type',
         widgetSize: 'Widget Size',
@@ -147,11 +161,25 @@ export const translations = {
         
         // Confirm
         confirmDelete: 'Are you sure to delete',
-        thisApp: 'this app',
+        thisApp: '?',
         
         // Add Shortcut
         appName: 'App Name',
-        appUrl: 'App URL'
+        appUrl: 'App URL',
+        
+        // Search
+        searchPlaceholder: 'Search...',
+        
+        // Common
+        preview: 'Preview',
+        enableWindowMode: 'Enable window mode',
+        disableWindowMode: 'Disable window mode',
+        toggleWindowMode: 'Toggle window mode',
+        selectWidgetType: 'Select widget type',
+        setWidth: 'Set width',
+        setHeight: 'Set height',
+        uploadCustomIcon: 'Upload custom icon',
+        importConfigFile: 'Import configuration file'
     }
 };
 
