@@ -728,57 +728,60 @@ export default function App() {
                         <h1 className="text-7xl md:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
                         <p className="text-lg md:text-xl text-white/80 mt-1 font-light tracking-widest uppercase">{time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    <div className="w-[90%] max-w-xl bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setEngine(prev => {
-                            const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
-                            const nextIdx = (keys.indexOf(prev) + 1) % keys.length;
-                            return keys[nextIdx];
-                        })} className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors text-white font-bold">{SEARCH_ENGINES[engine].icon}</button>
-                        <input
-                            className="flex-1 bg-transparent border-none outline-none text-white px-3 text-lg placeholder-white/40 font-light h-10"
-                            placeholder={`Search ${SEARCH_ENGINES[engine].name}...`}
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
-                            onKeyDown={e => {
-                                if (e.key === 'Enter') {
-                                    if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-                                        handleSearch(suggestions[selectedIndex]);
-                                    } else {
-                                        handleSearch(search);
+                    <div className="relative w-[90%] max-w-xl z-50">
+                        <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => setEngine(prev => {
+                                const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
+                                const nextIdx = (keys.indexOf(prev) + 1) % keys.length;
+                                return keys[nextIdx];
+                            })} className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors text-white font-bold">{SEARCH_ENGINES[engine].icon}</button>
+                            <input
+                                className="flex-1 bg-transparent border-none outline-none text-white px-3 text-lg placeholder-white/40 font-light h-10"
+                                placeholder={`Search ${SEARCH_ENGINES[engine].name}...`}
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+                                            handleSearch(suggestions[selectedIndex]);
+                                        } else {
+                                            handleSearch(search);
+                                        }
+                                    } else if (e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        setSelectedIndex(prev => (prev + 1) % suggestions.length);
+                                    } else if (e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
+                                    } else if (e.key === 'Escape') {
+                                        setShowSuggestions(false);
                                     }
-                                } else if (e.key === 'ArrowDown') {
-                                    e.preventDefault();
-                                    setSelectedIndex(prev => (prev + 1) % suggestions.length);
-                                } else if (e.key === 'ArrowUp') {
-                                    e.preventDefault();
-                                    setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
-                                } else if (e.key === 'Escape') {
-                                    setShowSuggestions(false);
-                                }
-                            }}
-                        />
-                        {search && <button onClick={() => setSearch('')} className="w-8 h-8 flex items-center justify-center text-white/50 hover:text-white rounded-lg hover:bg-white/10" aria-label="Clear search" title="Clear search"><X size={16} /></button>}
-                    </div>
-
-                    {/* Search Suggestions Dropdown */}
-                    <div
-                        className={`w-[90%] max-w-xl bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ease-out origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 opacity-100 max-h-[500px]' : 'max-h-0 opacity-0 mt-0 border-none'}`}
-                    >
-                        {suggestions.map((s, i) => (
-                            <div
-                                key={i}
-                                className={`px-4 py-3 text-white/90 cursor-pointer flex items-center gap-3 transition-colors ${i === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'}`}
-                                onClick={() => {
-                                    setSearch(s);
-                                    handleSearch(s);
                                 }}
-                            >
-                                <Search size={16} className="text-white/40" />
-                                <span className="text-base font-light">{s}</span>
-                            </div>
-                        ))}
+                            />
+                            {search && <button onClick={() => setSearch('')} className="w-8 h-8 flex items-center justify-center text-white/50 hover:text-white rounded-lg hover:bg-white/10" aria-label="Clear search" title="Clear search"><X size={16} /></button>}
+                        </div>
+
+                        {/* Search Suggestions Dropdown */}
+                        <div
+                            className={`absolute top-full left-0 w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-4 opacity-100 max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
+                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+                        >
+                            {suggestions.map((s, i) => (
+                                <div
+                                    key={i}
+                                    className={`px-4 py-3 text-white/90 cursor-pointer flex items-center gap-3 transition-colors ${i === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                                    onClick={() => {
+                                        setSearch(s);
+                                        handleSearch(s);
+                                    }}
+                                >
+                                    <Search size={16} className="text-white/40" />
+                                    <span className="text-base font-light">{s}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
