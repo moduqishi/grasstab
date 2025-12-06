@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { DEFAULT_WALLPAPER } from '../../constants';
+import { DEFAULT_WALLPAPER } from '../../constants.tsx';
 import { SystemSettings } from '../../types';
 import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages } from 'lucide-react';
 import { t } from '../../i18n';
@@ -23,8 +23,8 @@ const WALLPAPERS = [
 ];
 
 const ToggleSwitch = ({ checked, onChange }: { checked: boolean, onChange: (v: boolean) => void }) => (
-    <div 
-        onClick={() => onChange(!checked)} 
+    <div
+        onClick={() => onChange(!checked)}
         className={`w-12 h-7 rounded-full p-1 cursor-pointer transition-colors duration-300 ease-in-out ${checked ? 'bg-[#34C759]' : 'bg-gray-300 dark:bg-gray-600'}`}
     >
         <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -38,7 +38,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 );
 
 const SettingsItem = ({ icon: Icon, label, children, isLast }: { icon: any, label: string, children: React.ReactNode, isLast?: boolean }) => (
-    <div 
+    <div
         className="flex items-center justify-between p-4"
         style={{
             backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -76,11 +76,11 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
 
     return (
         <div className="h-full flex flex-col overflow-hidden" style={{ backgroundColor: 'rgba(30, 30, 30, 0.3)' }}>
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
                 accept=".yaml,.yml,.json"
                 aria-label="Import configuration file"
                 title="Import configuration file"
@@ -134,12 +134,12 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                 <SectionHeader title={t(lang, 'personalization')} />
                 <div className="mx-4 p-4 bg-white dark:bg-[#2c2c2e] rounded-xl shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
-                        <Wallpaper size={16} className="text-gray-500"/>
+                        <Wallpaper size={16} className="text-gray-500" />
                         <span className="text-sm font-semibold text-gray-500">{t(lang, 'wallpapers')}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        {WALLPAPERS.map((w,i)=>(
-                            <div key={i} onClick={()=>setWp(w)} className="aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-[#0A84FF] transition-all shadow-sm group relative">
+                        {WALLPAPERS.map((w, i) => (
+                            <div key={i} onClick={() => setWp(w)} className="aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-[#0A84FF] transition-all shadow-sm group relative">
                                 <img src={w} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={`Wallpaper ${i}`} />
                             </div>
                         ))}
@@ -149,7 +149,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                 {/* DATA SECTION */}
                 <SectionHeader title={t(lang, 'dataManagement')} />
                 <div className="mx-4 rounded-xl overflow-hidden shadow-sm mb-8">
-                    <div 
+                    <div
                         onClick={onExport}
                         className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] cursor-pointer active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-white/5"
                     >
@@ -159,7 +159,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'exportConfig')}</span>
                     </div>
 
-                    <div 
+                    <div
                         onClick={() => fileInputRef.current?.click()}
                         className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] cursor-pointer active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-white/5"
                     >
@@ -169,8 +169,8 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'importConfig')}</span>
                     </div>
 
-                    <div 
-                        onClick={onReset} 
+                    <div
+                        onClick={onReset}
                         className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] cursor-pointer active:bg-gray-100 dark:active:bg-gray-700 transition-colors text-red-500"
                     >
                         <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500">

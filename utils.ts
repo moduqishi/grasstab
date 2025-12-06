@@ -4,9 +4,9 @@ import jsyaml from 'js-yaml';
 // Handle CDN import differences (default export vs named)
 const { load, dump } = (jsyaml as any).default || jsyaml;
 
-export const getDomain = (url?: string) => { 
+export const getDomain = (url?: string) => {
     if (!url) return '';
-    try { return new URL(url).hostname; } catch (e) { return ''; } 
+    try { return new URL(url).hostname; } catch (e) { return ''; }
 };
 
 // --- Date Helpers ---
@@ -35,24 +35,24 @@ export const generateYamlConfig = (config: GlobalConfig): string => {
 export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
     try {
         const doc = load(yamlStr) as any;
-        
+
         // Enhanced validation
         if (!doc) {
             throw new Error('Empty configuration file');
         }
-        
+
         if (!doc.settings || typeof doc.settings !== 'object') {
             throw new Error('Missing or invalid settings');
         }
-        
+
         if (!Array.isArray(doc.shortcuts)) {
             throw new Error('Missing or invalid shortcuts array');
         }
-        
+
         if (!Array.isArray(doc.dockItems)) {
             throw new Error('Missing or invalid dock items array');
         }
-        
+
         // Validate settings structure
         const settings = doc.settings;
         if (typeof settings.showDockEdit !== 'boolean' ||
@@ -60,34 +60,34 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
             typeof settings.showPagination !== 'boolean') {
             throw new Error('Invalid settings structure');
         }
-        
+
         // Add default for showDock if missing (for backward compatibility)
         if (typeof settings.showDock !== 'boolean') {
             settings.showDock = true;
         }
-        
+
         // Validate wallpaper
         if (!doc.wallpaper || typeof doc.wallpaper !== 'string') {
             throw new Error('Missing or invalid wallpaper URL');
         }
-        
+
         // Filter out invalid shortcuts (null, undefined, or missing required fields)
-        const validShortcuts = doc.shortcuts.filter((s: any) => 
-            s && 
-            (s.id !== null && s.id !== undefined) && 
-            s.type && 
+        const validShortcuts = doc.shortcuts.filter((s: any) =>
+            s &&
+            (s.id !== null && s.id !== undefined) &&
+            s.type &&
             s.color
         );
-        
+
         // Filter out invalid dock items
-        const validDockItems = doc.dockItems.filter((d: any) => 
-            d && 
-            (d.id !== null && d.id !== undefined) && 
-            d.iconType && 
-            d.type && 
+        const validDockItems = doc.dockItems.filter((d: any) =>
+            d &&
+            (d.id !== null && d.id !== undefined) &&
+            d.iconType &&
+            d.type &&
             d.color
         );
-        
+
         return {
             version: doc.version || '1.0',
             createdAt: doc.createdAt || new Date().toISOString(),
@@ -96,7 +96,7 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
             shortcuts: validShortcuts,
             dockItems: validDockItems
         } as GlobalConfig;
-        
+
     } catch (e) {
         console.error('Failed to parse YAML', e);
         const errorMsg = e instanceof Error ? e.message : 'Unknown error';
@@ -122,7 +122,7 @@ export const packItems = (items: Shortcut[], cols: number, rows: number): Packed
     const isOccupied = (pageIdx: number, x: number, y: number, w: number, h: number) => {
         ensurePage(pageIdx);
         const grid = pages[pageIdx];
-        
+
         // Bounds check
         if (x + w > cols || y + h > rows) return true;
 
@@ -150,12 +150,12 @@ export const packItems = (items: Shortcut[], cols: number, rows: number): Packed
 
     items.forEach(item => {
         if (!item) return; // Safety check to prevent crash if array has holes
-        
+
         // Clamp dimensions to grid size to prevent infinite loops
         // Use optional chaining (?.) and fallback to prevent 'reading size of undefined' crashes
         const w = Math.min(cols, Math.max(1, item?.size?.w || 1));
         const h = Math.min(rows, Math.max(1, item?.size?.h || 1));
-        
+
         let placed = false;
         let pageIdx = 0;
         const MAX_PAGES = 20; // Safety break to prevent infinite loops in edge cases
@@ -163,7 +163,7 @@ export const packItems = (items: Shortcut[], cols: number, rows: number): Packed
         // Try to place in earliest possible page
         while (!placed && pageIdx < MAX_PAGES) {
             ensurePage(pageIdx);
-            
+
             // Scan current page grid
             searchLoop:
             for (let y = 0; y < rows; y++) {
@@ -176,10 +176,45 @@ export const packItems = (items: Shortcut[], cols: number, rows: number): Packed
                     }
                 }
             }
-            
+
             if (!placed) pageIdx++;
         }
     });
 
     return packedItems;
+};
+
+// --- Network Helpers ---
+export const jsonp = (url: string, callbackParam: string = 'callback'): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_' + Date.now() + '_' + Math.round(Math.random() * 100000);
+        const script = document.createElement('script');
+
+        // Add callback parameter to URL
+        const separator = url.includes('?') ? '&' : '?';
+        script.src = `${url}${separator}${callbackParam}=${callbackName}`;
+        script.async = true;
+
+        // Define global callback
+        (window as any)[callbackName] = (data: any) => {
+            cleanup();
+            resolve(data);
+        };
+
+        // Error handling
+        script.onerror = () => {
+            cleanup();
+            reject(new Error(`JSONP request failed for ${url}`));
+        };
+
+        // Cleanup function
+        const cleanup = () => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+            delete (window as any)[callbackName];
+        };
+
+        document.body.appendChild(script);
+    });
 };
