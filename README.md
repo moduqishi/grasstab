@@ -10,9 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
 
-[English](#) | [简体中文](#)
-
-
+**✨ 专为程序员和学生打造的美观新标签页扩展**
 
 </div>
 
