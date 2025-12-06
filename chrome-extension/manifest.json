@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "GrassTab",
+  "version": "1.0.0",
+  "description": "一个美观的新标签页,支持自定义快捷方式和小部件",
+  "default_locale": "zh",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "https://suggestqueries.google.com/*",
+    "https://api.bing.com/*",
+    "https://suggestion.baidu.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}

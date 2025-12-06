@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "GrassTab",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "A beautiful new tab page with customizable shortcuts and widgets",
+    "description": "Extension description"
+  }
+}

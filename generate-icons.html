@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome 扩展图标生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .icon-item {
+            text-align: center;
+        }
+        .icon-item h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        canvas {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: white;
+        }
+        canvas:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .generate-all {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 15px 40px;
+            font-size: 18px;
+            margin: 30px auto;
+            display: block;
+        }
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border-left: 4px solid #667eea;
+        }
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+            color: #555;
+        }
+        .instructions code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #764ba2;
+        }
+        .preview {
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 OS One Ultimate 图标生成器</h1>
+        <p class="subtitle">为 Chrome 新标签页扩展生成图标</p>
+
+        <div class="icons-grid">
+            <div class="icon-item">
+                <h3>16×16 图标</h3>
+                <div class="preview">
+                    <canvas id="icon16" width="64" height="64"></canvas>
+                </div>
+                <div class="btn-container">
+                    <button onclick="downloadIcon('icon16', 16)">💾 下载</button>
+                </div>
+            </div>
+            
+            <div class="icon-item">
+                <h3>48×48 图标</h3>
+                <div class="preview">
+                    <canvas id="icon48" width="96" height="96"></canvas>
+                </div>
+                <div class="btn-container">
+                    <button onclick="downloadIcon('icon48', 48)">💾 下载</button>
+                </div>
+            </div>
+            
+            <div class="icon-item">
+                <h3>128×128 图标</h3>
+                <div class="preview">
+                    <canvas id="icon128" width="128" height="128"></canvas>
+                </div>
+                <div class="btn-container">
+                    <button onclick="downloadIcon('icon128', 128)">💾 下载</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="generate-all" onclick="generateAll()">✨ 生成所有图标</button>
+
+        <div class="instructions">
+            <h3>📋 安装说明</h3>
+            <ol>
+                <li>点击上方"生成所有图标"按钮</li>
+                <li>下载三个 PNG 图标并保存到 <code>chrome-extension</code> 文件夹</li>
+                <li>打开 Chrome 浏览器,访问 <code>chrome://extensions/</code></li>
+                <li>开启右上角的"开发者模式"</li>
+                <li>点击"加载已解压的扩展程序"</li>
+                <li>选择 <code>chrome-extension</code> 文件夹</li>
+                <li>完成!打开新标签页即可使用 GrassTab</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 绘制草emoji
+        function drawGrass(ctx, size) {
+            // 绘制emoji 🌱
+            ctx.font = `${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌱', size / 2, size / 2);
+        }
+
+        function drawIcon(canvasId, actualSize) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const displaySize = canvas.width;
+            const scale = displaySize / actualSize;
+            
+            ctx.clearRect(0, 0, displaySize, displaySize);
+            ctx.scale(scale, scale);
+            
+            // 清新的绿色渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, actualSize, actualSize);
+            gradient.addColorStop(0, '#56ab2f');  // 鲜绿色
+            gradient.addColorStop(1, '#a8e063');  // 浅绿色
+            
+            // 圆角矩形
+            const radius = actualSize * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(actualSize - radius, 0);
+            ctx.quadraticCurveTo(actualSize, 0, actualSize, radius);
+            ctx.lineTo(actualSize, actualSize - radius);
+            ctx.quadraticCurveTo(actualSize, actualSize, actualSize - radius, actualSize);
+            ctx.lineTo(radius, actualSize);
+            ctx.quadraticCurveTo(0, actualSize, 0, actualSize - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 绘制草的元素
+            drawGrass(ctx, actualSize);
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        function downloadIcon(canvasId, size) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const ctx = tempCanvas.getContext('2d');
+            
+            // 清新的绿色渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#56ab2f');  // 鲜绿色
+            gradient.addColorStop(1, '#a8e063');  // 浅绿色
+            
+            const radius = size * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            const highlight = ctx.createLinearGradient(0, 0, 0, size / 2);
+            highlight.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = highlight;
+            ctx.fill();
+            
+            // 绘制草的元素
+            drawGrass(ctx, size);
+            
+            const link = document.createElement('a');
+            link.download = `icon${size}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function generateAll() {
+            drawIcon('icon16', 16);
+            drawIcon('icon48', 48);
+            drawIcon('icon128', 128);
+            
+            setTimeout(() => {
+                downloadIcon('icon16', 16);
+                setTimeout(() => {
+                    downloadIcon('icon48', 48);
+                    setTimeout(() => {
+                        downloadIcon('icon128', 128);
+                        alert('✅ 所有图标已生成!\n\n请将下载的三个 PNG 文件保存到:\nchrome-extension 文件夹');
+                    }, 300);
+                }, 300);
+            }, 300);
+        }
+
+        // 页面加载时自动生成预览
+        window.onload = () => {
+            drawIcon('icon16', 16);
+            drawIcon('icon48', 48);
+            drawIcon('icon128', 128);
+        };
+    </script>
+</body>
+</html>

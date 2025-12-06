@@ -112,27 +112,28 @@ export default function App() {
                 const q = encodeURIComponent(search);
 
                 if (engine === 'google') {
-                    // Google Suggest API (JSONP)
-                    // Format: window.google.ac.h(["query", [["suggestion", 0], ...]])
-                    const data = await jsonp(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${q}`, 'jsonp');
+                    // Google Suggest API using CORS-enabled endpoint
+                    const response = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`);
+                    const data = await response.json();
                     if (data && data[1]) {
-                        results = data[1].map((item: any) => item[0]);
+                        results = data[1];
                     }
                 } else if (engine === 'bing') {
-                    // Bing Suggest API (JSONP)
-                    // Format: { AS: { Results: [ { Suggests: [ { Txt: "suggestion" }, ... ] } ] } }
-                    // Using qsonhs.aspx endpoint which is more reliable for JSONP
-                    const data = await jsonp(`https://api.bing.com/qsonhs.aspx?type=cb&q=${q}`, 'cb');
+                    // Bing Suggest API
+                    const response = await fetch(`https://api.bing.com/qsonhs.aspx?q=${q}`);
+                    const data = await response.json();
                     if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
                         results = data.AS.Results[0].Suggests.map((s: any) => s.Txt);
                     }
                 } else if (engine === 'baidu') {
-                    // Baidu Suggest API (JSONP)
-                    // Format: window.baidu.sug({q:"query",s:["suggestion",...]})
-                    // Note: Baidu uses 'cb' as callback param usually, but we can try standard
-                    const data = await jsonp(`https://suggestion.baidu.com/su?wd=${q}`, 'cb');
-                    if (data && data.s) {
-                        results = data.s;
+                    // Baidu Suggest - use JSONP workaround
+                    try {
+                        const data = await jsonp(`https://suggestion.baidu.com/su?wd=${q}`, 'cb');
+                        if (data && data.s) {
+                            results = data.s;
+                        }
+                    } catch (err) {
+                        console.log('Baidu suggestions unavailable in extension mode');
                     }
                 }
 
@@ -140,6 +141,7 @@ export default function App() {
                 setShowSuggestions(true);
             } catch (e) {
                 console.error('Suggestion fetch failed', e);
+                setSuggestions([]);
             }
         }, 300); // Debounce
 
