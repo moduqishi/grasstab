@@ -47,13 +47,13 @@
 <div align="center">
 
 ### 主界面
-![Main Interface](doc\src\home.png)
+![Main Interface](doc/src/home.png)
 
 ### 应用视图
-![App Windows](doc\src\tab1.png)
+![App Windows](doc/src/tab1.png)
 
 ### 设置面板
-![Settings Panel](doc\src\settings.png)
+![Settings Panel](doc/src/settings.png)
 
 </div>
 
