@@ -5,7 +5,7 @@ echo ========================================
 echo.
 
 echo [1/2] 构建项目...
-call npm run build
+call npm run build:extension
 if %errorlevel% neq 0 (
     echo.
     echo ❌ 构建失败!

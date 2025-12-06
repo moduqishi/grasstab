@@ -5,8 +5,11 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     
+    // 扩展模式使用相对路径，其他情况使用 GitHub Pages 路径
+    const isExtension = mode === 'extension';
+    
     return {
-      base: '/grasstab/',
+      base: isExtension ? './' : '/grasstab/',
       build: {
         outDir: 'dist',
         assetsDir: 'assets',

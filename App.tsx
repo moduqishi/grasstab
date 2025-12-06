@@ -156,7 +156,43 @@ export default function App() {
 
     const handleSearch = (query: string) => {
         if (!query.trim()) return;
-        window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(query));
+        
+        let trimmedQuery = query.trim();
+        
+        // 智能修正：将中文标点替换为英文标点
+        trimmedQuery = trimmedQuery
+            .replace(/：/g, ':')      // 中文冒号 → 英文冒号
+            .replace(/／/g, '/')      // 中文斜杠 → 英文斜杠
+            .replace(/。/g, '.')      // 中文句号 → 英文点
+            .replace(/，/g, '.');     // 中文逗号 → 英文点（用户可能误用）
+        
+        // 检查是否是 URL（包含协议或域名格式）
+        // 支持: http://xxx, https://xxx, xxx.com, xxx.cn, localhost:3000 等
+        const urlPattern = /^(https?[:：]\/\/|[a-zA-Z0-9-]+[。．.][a-zA-Z]{2,}|localhost[：:]\d+)/;
+        const isUrl = urlPattern.test(trimmedQuery);
+        
+        if (isUrl) {
+            // 如果是 URL，直接访问
+            let url = trimmedQuery;
+            
+            // 修正协议部分
+            if (url.match(/^https?[:：]/)) {
+                url = url.replace(/^http[:：]/, 'http:').replace(/^https[:：]/, 'https:');
+                // 确保有双斜杠
+                if (!url.includes('://')) {
+                    url = url.replace(/^(https?:)/, '$1//');
+                }
+            } else {
+                // 没有协议，添加 https://
+                url = `https://${url}`;
+            }
+            
+            window.location.assign(url);
+        } else {
+            // 否则使用搜索引擎搜索
+            window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(trimmedQuery));
+        }
+        
         setShowSuggestions(false);
     };
 

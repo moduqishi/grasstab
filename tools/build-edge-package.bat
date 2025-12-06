@@ -7,7 +7,7 @@ echo.
 
 REM 步骤 1: 构建项目
 echo [1/4] 构建项目...
-call npm run build
+call npm run build:extension
 if %errorlevel% neq 0 (
     echo.
     echo ❌ 构建失败!
