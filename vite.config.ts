@@ -4,12 +4,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
-    const isProd = mode === 'production';
     
     return {
-      base: isProd ? '/grasstab-next/' : './',
+      base: '/grasstab-next/',
       build: {
         outDir: 'dist',
+        assetsDir: 'assets',
         rollupOptions: {
           output: {
             manualChunks: undefined,
@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
         },
         modulePreload: false,
         target: 'esnext',
+        minify: 'esbuild',
       },
       server: {
         port: 3000,
