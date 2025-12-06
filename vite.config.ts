@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     
     return {
-      base: '/grasstab-next/',
+      base: '/grasstab/',
       build: {
         outDir: 'dist',
         assetsDir: 'assets',

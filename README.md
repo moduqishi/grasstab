@@ -12,7 +12,7 @@
 
 **✨ 专为程序员和学生打造的美观新标签页扩展**
 
-### [🌐 在线预览 Demo](https://moduqishi.github.io/grasstab-next/)
+### [🌐 在线预览 Demo](https://moduqishi.github.io/grasstab/)
 
 </div>
 
@@ -234,7 +234,7 @@ shortcuts:
 ## 📮 联系方式
 
 - GitHub: [@moduqishi](https://github.com/moduqishi)
-- Issues: [GitHub Issues](https://github.com/moduqishi/grasstab-next/issues)
+- Issues: [GitHub Issues](https://github.com/moduqishi/grasstab/issues)
 
 ---
 

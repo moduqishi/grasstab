@@ -15,7 +15,7 @@ git push origin main
 
 ### 2. 在 GitHub 仓库中启用 Pages
 
-1. 访问仓库: `https://github.com/moduqishi/grasstab-next`
+1. 访问仓库: `https://github.com/moduqishi/grasstab`
 2. 点击 **Settings** (设置)
 3. 在左侧菜单找到 **Pages**
 4. 在 **Source** (来源) 部分:
@@ -32,7 +32,7 @@ git push origin main
 
 部署完成后,您的网站将在以下地址可用:
 ```
-https://moduqishi.github.io/grasstab-next/
+https://moduqishi.github.io/grasstab/
 ```
 
 ## ✅ 已配置内容
@@ -71,7 +71,7 @@ https://moduqishi.github.io/grasstab-next/
 
 ### 404 错误?
 - 确认 `vite.config.ts` 中的 `base` 路径正确
-- 应该是 `/grasstab-next/` (仓库名)
+- 应该是 `/grasstab/` (仓库名)
 - 重新触发部署
 
 ### 资源加载失败?
