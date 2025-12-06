@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SF Pro Display Font Fallback */
+@font-face { 
+  font-family: 'SF Pro Display'; 
+  src: local('SF Pro Display'), local('San Francisco'); 
+}
+
+/* 禁止缩放 - 使用 CSS 而非 meta 标签避免可访问性警告 */
+html {
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
+}
+
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  overflow: hidden;
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 防止双击缩放 */
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+/* 防止所有元素的双指缩放 */
+* {
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+/* Apple-style scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
