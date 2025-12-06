@@ -112,28 +112,34 @@ export default function App() {
                 const q = encodeURIComponent(search);
 
                 if (engine === 'google') {
-                    // Google Suggest API using CORS-enabled endpoint
-                    const response = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`);
-                    const data = await response.json();
-                    if (data && data[1]) {
-                        results = data[1];
+                    // Google Suggest API using JSONP
+                    try {
+                        const data = await jsonp(`https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`, 'jsonp');
+                        if (Array.isArray(data) && data[1]) {
+                            results = data[1];
+                        }
+                    } catch (err) {
+                        console.log('Google suggestions fetch failed', err);
                     }
                 } else if (engine === 'bing') {
-                    // Bing Suggest API
-                    const response = await fetch(`https://api.bing.com/qsonhs.aspx?q=${q}`);
-                    const data = await response.json();
-                    if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
-                        results = data.AS.Results[0].Suggests.map((s: any) => s.Txt);
+                    // Bing Suggest API using JSONP
+                    try {
+                        const data = await jsonp(`https://api.bing.com/qsonhs.aspx?q=${q}`, 'cb');
+                        if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
+                            results = data.AS.Results[0].Suggests.map((s: any) => s.Txt);
+                        }
+                    } catch (err) {
+                        console.log('Bing suggestions fetch failed', err);
                     }
                 } else if (engine === 'baidu') {
-                    // Baidu Suggest - use JSONP workaround
+                    // Baidu Suggest using JSONP
                     try {
                         const data = await jsonp(`https://suggestion.baidu.com/su?wd=${q}`, 'cb');
                         if (data && data.s) {
                             results = data.s;
                         }
                     } catch (err) {
-                        console.log('Baidu suggestions unavailable in extension mode');
+                        console.log('Baidu suggestions fetch failed', err);
                     }
                 }
 
