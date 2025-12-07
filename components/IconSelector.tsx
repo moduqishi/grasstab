@@ -27,13 +27,15 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, on
 
         // 初始化所有图标源
         const iconSources = getIconSources(url);
+        if (!iconSources) return;
+        
         const initialSources: IconSourceStatus[] = [
-            { url: iconSources.iconHorse, name: 'Icon Horse', status: 'loading' },
+            { url: iconSources.iconhorse, name: 'Icon Horse', status: 'loading' },
             { url: iconSources.clearbit, name: 'Clearbit', status: 'loading' },
             { url: iconSources.unavatar, name: 'Unavatar', status: 'loading' },
             { url: iconSources.google, name: 'Google', status: 'loading' },
-            { url: iconSources.duckduckgo, name: 'DuckDuckGo', status: 'loading' },
-            { url: iconSources.faviconKit, name: 'FaviconKit', status: 'loading' },
+            { url: iconSources.ddg, name: 'DuckDuckGo', status: 'loading' },
+            { url: iconSources.faviconkit, name: 'FaviconKit', status: 'loading' },
             { url: iconSources.direct, name: 'Direct', status: 'loading' },
         ];
 
@@ -53,13 +55,13 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, on
 
     const testImageUrl = (url: string, callback: (success: boolean) => void) => {
         const img = new Image();
-        img.onload = () => callback(true);
-        img.onerror = () => callback(false);
         // 设置超时,5秒后视为失败
         const timeout = setTimeout(() => {
-            img.src = ''; // 取消加载
+            img.onload = null;
+            img.onerror = null;
             callback(false);
         }, 5000);
+        
         img.onload = () => {
             clearTimeout(timeout);
             callback(true);

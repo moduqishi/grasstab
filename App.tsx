@@ -506,6 +506,8 @@ export default function App() {
 
     const handleSaveApp = (updated: Shortcut) => {
         setShortcuts(prev => prev.map(s => s.id === updated.id ? updated : s));
+        // Also update dockItems if the app is in dock
+        setDockItems(prev => prev.map(d => d.id === updated.id ? updated : d));
         closeWin('edit');
     };
 
@@ -967,13 +969,13 @@ export default function App() {
                         ? 'top-[30vh] scale-125'
                         : 'top-0 pt-[8vh] scale-100'
                         }`}
-                    style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto', zIndex: 99999 }}
+                    style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto', zIndex: 50 }}
                 >
                     <div className="text-center mb-6 sm:mb-8 drop-shadow-md select-none">
                         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
                         <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mt-1 font-light tracking-widest uppercase">{time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    <div className="relative w-[95%] sm:w-[90%] max-w-xl" style={{ zIndex: 99999 }}>
+                    <div className="relative w-[95%] sm:w-[90%] max-w-xl">
                         <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
                             <button onClick={() => setEngine(prev => {
                                 const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
@@ -1011,7 +1013,7 @@ export default function App() {
                         {/* Search Suggestions Dropdown */}
                         <div
                             className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
-                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', zIndex: 99999, willChange: 'transform, opacity, max-height' }}
+                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', willChange: 'transform, opacity, max-height' }}
                         >
                             {suggestions.map((s, i) => (
                                 <div
@@ -1077,9 +1079,9 @@ export default function App() {
                                 className="flex justify-center items-center p-2"
                             >
                                 {isAdd ? (
-                                    <button onClick={(e) => { e.stopPropagation(); openWin('add') }} className="flex flex-col items-center gap-3 group w-[88px] cursor-pointer">
+                                    <button onClick={(e) => { e.stopPropagation(); openWin('add') }} className="flex flex-col items-center gap-2 group w-[88px] h-full cursor-pointer">
                                         <div className="w-[68px] h-[68px] rounded-[18px] bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-white/40 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/40 transition-all duration-300"><Plus size={28} strokeWidth={1.5} /></div>
-                                        <span className="text-xs text-white/50 font-medium group-hover:text-white transition-colors">Add</span>
+                                        <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">Add</span>
                                     </button>
                                 ) : (
                                     (() => {
@@ -1270,6 +1272,12 @@ export default function App() {
                                                 } else {
                                                     window.location.href = item.url || '#';
                                                 }
+                                            }
+                                        }}
+                                        onContextMenu={(e) => {
+                                            if (!isEditing) {
+                                                e.preventDefault();
+                                                setAppContextMenu({ x: e.clientX, y: e.clientY, app: item as Shortcut });
                                             }
                                         }}
                                         data-app-icon

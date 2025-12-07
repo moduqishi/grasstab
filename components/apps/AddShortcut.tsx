@@ -82,62 +82,64 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     const canSubmit = mode === 'app' ? (t.trim() && u.trim()) : true;
 
     return (
-        <div 
-            className="flex flex-col h-full bg-white text-gray-900"
+        <div
+            className="flex flex-col h-full text-white"
+            style={{ backgroundColor: 'rgba(30, 30, 30, 0.3)' }}
             onWheel={(e) => e.stopPropagation()} // 阻止滚轮事件冒泡到主界面
+            onClick={(e) => e.stopPropagation()} // 阻止点击事件冒泡
         >
-            {/* Apple-style Segmented Control */}
-            <div className="p-4 bg-[#f5f5f7]">
-                <div className="relative flex bg-[#e8e8ed] rounded-lg p-0.5">
+            {/* Segmented Control - Dark Mode */}
+            <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)' }}>
+                <div className="relative flex rounded-xl p-1" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
                     <button 
                         onClick={() => setMode('app')} 
-                        className={`relative flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 rounded-md ${
-                            mode === 'app' 
-                                ? 'text-gray-900' 
-                                : 'text-gray-600'
-                        }`}
+                        className="relative flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 rounded-lg z-10"
+                        style={{ color: mode === 'app' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.5)' }}
                     >
-                        <div className="flex items-center justify-center gap-1.5 relative z-10">
+                        <div className="flex items-center justify-center gap-1.5">
                             <AppWindow size={16} />
                             <span>应用</span>
                         </div>
                     </button>
                     <button 
                         onClick={() => setMode('widget')} 
-                        className={`relative flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 rounded-md ${
-                            mode === 'widget' 
-                                ? 'text-gray-900' 
-                                : 'text-gray-600'
-                        }`}
+                        className="relative flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 rounded-lg z-10"
+                        style={{ color: mode === 'widget' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.5)' }}
                     >
-                        <div className="flex items-center justify-center gap-1.5 relative z-10">
+                        <div className="flex items-center justify-center gap-1.5">
                             <LayoutGrid size={16} />
                             <span>小组件</span>
                         </div>
                     </button>
                     {/* Sliding background */}
                     <div 
-                        className="absolute top-0.5 h-[calc(100%-4px)] bg-white rounded-md shadow-sm transition-all duration-200 ease-out"
+                        className="absolute top-1 h-[calc(100%-8px)] rounded-lg shadow-sm transition-all duration-200 ease-out"
                         style={{
-                            left: mode === 'app' ? '2px' : 'calc(50% - 2px)',
-                            width: 'calc(50% - 2px)'
+                            left: mode === 'app' ? '4px' : 'calc(50% - 4px)',
+                            width: 'calc(50% - 4px)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)'
                         }}
                     />
                 </div>
             </div>
 
-            {/* Scrollable Content with gradient fade */}
-            <div className="flex-1 overflow-y-auto apple-scrollbar relative bg-[#f5f5f7]" onWheel={(e) => e.stopPropagation()}>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto apple-scrollbar relative" style={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }} onWheel={(e) => e.stopPropagation()}>
                 <div className="p-6 space-y-5">{mode === 'app' ? (
                     // ===== APP MODE =====
                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Name Input */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-900 px-1">
+                            <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                 应用名称
                             </label>
                             <input 
-                                className="w-full bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" 
+                                className="w-full px-4 py-2.5 rounded-lg outline-none transition-all" 
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'rgba(255, 255, 255, 0.9)'
+                                }}
                                 value={t} 
                                 onChange={e => setT(e.target.value)} 
                                 placeholder="例如：我的博客" 
@@ -147,11 +149,16 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                         
                         {/* URL Input */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-900 px-1">
+                            <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                 链接地址
                             </label>
                             <input 
-                                className="w-full bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" 
+                                className="w-full px-4 py-2.5 rounded-lg outline-none transition-all"
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'rgba(255, 255, 255, 0.9)'
+                                }}
                                 value={u} 
                                 onChange={e => setU(e.target.value)} 
                                 placeholder="https://example.com" 
@@ -173,32 +180,34 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                         {/* Window Mode Toggle */}
                         <div 
                             onClick={() => setIsA(!isA)} 
-                            className="flex items-center justify-between p-4 rounded-xl bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-all"
+                            className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all"
+                            style={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa' }}>
                                     <Monitor size={18} />
                                 </div>
                                 <div>
-                                    <div className="text-sm font-medium text-gray-900">窗口模式</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">在独立窗口中打开</div>
+                                    <div className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>窗口模式</div>
+                                    <div className="text-xs mt-0.5" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>在独立窗口中打开</div>
                                 </div>
                             </div>
-                            <div className={`relative w-12 h-7 rounded-full transition-all duration-200 ${
-                                isA ? 'bg-[#34C759]' : 'bg-gray-300'
-                            }`}>
-                                <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-200 ${
+                            <div className={`relative w-12 h-7 rounded-full transition-all duration-200`} style={{ backgroundColor: isA ? '#34C759' : 'rgba(255, 255, 255, 0.2)' }}>
+                                <div className={`absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-all duration-200 ${
                                     isA ? 'left-[23px]' : 'left-0.5'
-                                }`}></div>
+                                }`} style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}></div>
                             </div>
                         </div>
                     </div>
                 ) : (
                     // ===== WIDGET MODE =====
                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Widget Type Selector - Compact Grid */}
+                        {/* Widget Type Selector */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-900 px-1">
+                            <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                 类型
                             </label>
                             <div className="grid grid-cols-5 gap-2">
@@ -206,11 +215,12 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                                     <button 
                                         key={wt.type}
                                         onClick={() => setWType(wt.type)}
-                                        className={`relative p-3 rounded-lg border transition-all ${
-                                            wType === wt.type 
-                                                ? 'bg-blue-500 border-blue-500 text-white shadow-md' 
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 active:bg-gray-50'
-                                        }`}
+                                        className="relative p-3 rounded-lg border transition-all"
+                                        style={{
+                                            backgroundColor: wType === wt.type ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)',
+                                            borderColor: wType === wt.type ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)',
+                                            color: wType === wt.type ? 'white' : 'rgba(255, 255, 255, 0.7)'
+                                        }}
                                     >
                                         <div className="flex flex-col items-center gap-1.5">
                                             <wt.icon size={20} strokeWidth={wType === wt.type ? 2.5 : 2} />
@@ -221,16 +231,16 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                             </div>
                         </div>
 
-                        {/* Size Inputs - Apple Style */}
+                        {/* Size Inputs */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-900 px-1">
+                            <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                 尺寸
                             </label>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between px-1">
-                                        <span className="text-xs text-gray-600">宽度</span>
-                                        <span className="text-xs font-semibold text-gray-900">{wWidth}</span>
+                                        <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>宽度</span>
+                                        <span className="text-xs font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{wWidth}</span>
                                     </div>
                                     <input 
                                         type="number" 
@@ -238,15 +248,19 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                                         max="6" 
                                         value={wWidth}
                                         onChange={(e) => setWWidth(Math.max(1, Math.min(6, parseInt(e.target.value) || 1)))}
-                                        className="w-full bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-gray-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-center font-medium"
+                                        className="w-full px-4 py-2.5 rounded-lg outline-none transition-all text-center font-medium"
+                                        style={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            color: 'rgba(255, 255, 255, 0.9)'
+                                        }}
                                         placeholder="1-6"
-                                        title="Widget width (1-6 grid cells)"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between px-1">
-                                        <span className="text-xs text-gray-600">高度</span>
-                                        <span className="text-xs font-semibold text-gray-900">{wHeight}</span>
+                                        <span className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>高度</span>
+                                        <span className="text-xs font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{wHeight}</span>
                                     </div>
                                     <input 
                                         type="number" 
@@ -254,30 +268,44 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                                         max="6" 
                                         value={wHeight}
                                         onChange={(e) => setWHeight(Math.max(1, Math.min(6, parseInt(e.target.value) || 1)))}
-                                        className="w-full bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-gray-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-center font-medium"
+                                        className="w-full px-4 py-2.5 rounded-lg outline-none transition-all text-center font-medium"
+                                        style={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            color: 'rgba(255, 255, 255, 0.9)'
+                                        }}
                                         placeholder="1-6"
-                                        title="Widget height (1-6 grid cells)"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Content Input for Custom/IFrame */}
+                        {/* Content Input */}
                         {(wType === 'custom' || wType === 'iframe') && (
                             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-semibold text-gray-900 px-1">
+                                <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                     {wType === 'iframe' ? '网页链接' : 'HTML 代码'}
                                 </label>
                                 {wType === 'iframe' ? (
                                     <input 
-                                        className="w-full bg-white border border-gray-300 px-4 py-2.5 rounded-lg text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" 
+                                        className="w-full px-4 py-2.5 rounded-lg outline-none transition-all"
+                                        style={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            color: 'rgba(255, 255, 255, 0.9)'
+                                        }}
                                         value={wContent} 
                                         onChange={e => setWContent(e.target.value)} 
                                         placeholder="https://example.com" 
                                     />
                                 ) : (
                                     <textarea 
-                                        className="w-full h-32 bg-white border border-gray-300 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-mono text-sm resize-none" 
+                                        className="w-full h-32 px-4 py-3 rounded-lg outline-none transition-all font-mono text-sm resize-none"
+                                        style={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            color: 'rgba(255, 255, 255, 0.9)'
+                                        }}
                                         value={wContent} 
                                         onChange={e => setWContent(e.target.value)} 
                                         placeholder="<div class='widget'>Hello World</div>" 
@@ -289,25 +317,32 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                 )}</div>
             </div>
 
-            {/* Action Footer - Apple Style */}
-            <div className="p-4 bg-[#f5f5f7] border-t border-gray-200">
+            {/* Action Footer - Dark Mode */}
+            <div className="p-4 border-t" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
                 <div className="flex gap-3">
                     <button 
                         onClick={onClose}
-                        className="flex-1 py-2.5 rounded-lg bg-white border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 active:bg-gray-100 transition-all"
+                        className="flex-1 py-2.5 rounded-lg font-medium transition-all"
+                        style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }}
                     >
                         取消
                     </button>
                     <button 
                         onClick={handleSubmit} 
                         disabled={!canSubmit}
-                        className={`flex-1 py-2.5 rounded-lg font-semibold transition-all ${
-                            canSubmit
-                                ? 'bg-[#007AFF] hover:bg-[#0051D5] active:bg-[#004FC4] text-white shadow-sm'
-                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
+                        className="flex-1 py-2.5 rounded-lg font-semibold transition-all"
+                        style={{
+                            backgroundColor: canSubmit ? '#007AFF' : 'rgba(255, 255, 255, 0.1)',
+                            color: canSubmit ? 'white' : 'rgba(255, 255, 255, 0.4)',
+                            cursor: canSubmit ? 'pointer' : 'not-allowed',
+                            boxShadow: canSubmit ? '0 1px 3px rgba(0, 122, 255, 0.3)' : 'none'
+                        }}
                     >
-                        {mode === 'app' ? '添加' : '添加'}
+                        添加
                     </button>
                 </div>
             </div>
@@ -320,13 +355,13 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                     background: transparent;
                 }
                 .apple-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0, 0, 0, 0.2);
+                    background: rgba(255, 255, 255, 0.2);
                     border-radius: 10px;
                     border: 2px solid transparent;
                     background-clip: padding-box;
                 }
                 .apple-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(0, 0, 0, 0.3);
+                    background: rgba(255, 255, 255, 0.3);
                     background-clip: padding-box;
                 }
                 @keyframes slide-in-from-bottom-4 {
