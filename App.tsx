@@ -17,8 +17,13 @@ import { WebView } from './components/apps/WebView';
 import { CodeEditor } from './components/CodeEditor';
 import { packItems, generateYamlConfig, parseYamlConfig } from './utils';
 import { t } from './i18n';
+import { DialogProvider, useDialog } from './components/Dialog';
 
-export default function App() {
+// 统一应用布局管理：前100个位置预留给Dock栏，后面的是桌面应用
+const DOCK_RESERVED_SLOTS = 100;
+
+function DesktopApp() {
+    const dialog = useDialog();
     // --- View State (Hero vs Desktop) ---
     const [viewState, setViewState] = useState<'hero' | 'desktop'>('hero');
     const [wallpaper, setWallpaper] = useState(localStorage.getItem('os-bg') || DEFAULT_WALLPAPER);
@@ -55,21 +60,40 @@ export default function App() {
     }, [sysSettings]);
 
     // --- Data State ---
-    const [shortcuts, setShortcuts] = useState<Shortcut[]>(() => {
+    
+    const [appLayout, setAppLayout] = useState<(Shortcut | null)[]>(() => {
         try {
-            const s = JSON.parse(localStorage.getItem('os-shortcuts') || 'null');
-            // Filter out nulls/invalid items
-            return Array.isArray(s) ? s.filter(i => !!i) : DEFAULT_SHORTCUTS;
-        } catch { return DEFAULT_SHORTCUTS; }
+            const saved = localStorage.getItem('os-app-layout');
+            if (saved) {
+                const layout = JSON.parse(saved);
+                // 保持完整的数组结构，包括null值（Dock预留位置）
+                if (Array.isArray(layout) && layout.length > 0) {
+                    return layout;
+                }
+            }
+            // 首次初始化：Dock应用 + 填充空位 + 桌面应用
+            const dockApps = DEFAULT_DOCK;
+            const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
+            const desktopApps = DEFAULT_SHORTCUTS;
+            return [...dockApps, ...emptySlots, ...desktopApps];
+        } catch {
+            const dockApps = DEFAULT_DOCK;
+            const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
+            const desktopApps = DEFAULT_SHORTCUTS;
+            return [...dockApps, ...emptySlots, ...desktopApps];
+        }
     });
 
-    const [dockItems, setDockItems] = useState<DockItem[]>(() => {
-        try {
-            const d = JSON.parse(localStorage.getItem('os-dock') || 'null');
-            // Filter out legacy 'edit' button and nulls
-            return Array.isArray(d) ? d.filter((item: any) => item && item.id !== 'edit') : DEFAULT_DOCK;
-        } catch { return DEFAULT_DOCK; }
-    });
+    // 从布局中提取Dock项和桌面项
+    const dockApps = useMemo(() => 
+        appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null && item !== undefined),
+        [appLayout]
+    );
+    
+    const desktopApps = useMemo(() => 
+        appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null && item !== undefined),
+        [appLayout]
+    );
 
     // --- Layout State ---
     const { cols, rows, itemsPerPage, isMobile, cellWidth, cellHeight, gridWidth } = useGridCalculation(sysSettings.showDock);
@@ -79,9 +103,16 @@ export default function App() {
     // PACKING ALGORITHM: Calculate layout for all items including widgets
     // We add the 'Add Button' as a virtual item at the end of the shortcut list for layout purposes
     const layoutItems = useMemo(() => {
-        const itemsToPack = [...shortcuts, { id: 'add-btn', isAdd: true, type: 'sys' as const, color: '', size: { w: 1, h: 1 } }];
-        return packItems(itemsToPack, cols, rows);
-    }, [shortcuts, cols, rows]);
+        // 安全检查：确保desktopApps是有效数组
+        if (!Array.isArray(desktopApps) || !cols || !rows) return [];
+        try {
+            const itemsToPack = [...desktopApps, { id: 'add-btn', isAdd: true, type: 'sys' as const, color: '', size: { w: 1, h: 1 } }];
+            return packItems(itemsToPack, cols, rows);
+        } catch (error) {
+            console.error('Error packing items:', error);
+            return [];
+        }
+    }, [desktopApps, cols, rows]);
 
     // Calculate total pages based on packed layout
     const totalPages = Math.max(1, layoutItems.length > 0 ? Math.max(...layoutItems.map(i => i.page)) + 1 : 1);
@@ -234,20 +265,23 @@ export default function App() {
     // --- Persistance ---
     useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
     useEffect(() => localStorage.setItem('os-bg', wallpaper), [wallpaper]);
-    useEffect(() => localStorage.setItem('os-shortcuts', JSON.stringify(shortcuts)), [shortcuts]);
-    useEffect(() => localStorage.setItem('os-dock', JSON.stringify(dockItems)), [dockItems]);
+    useEffect(() => localStorage.setItem('os-app-layout', JSON.stringify(appLayout)), [appLayout]);
 
     // --- Config Export/Import/Reset ---
     const handleExportConfig = useCallback(() => {
         try {
+            // 从 appLayout 提取 dock 和 desktop 应用
+            const dockApps = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null);
+            const desktopApps = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null);
+            
             // 创建配置对象
             const config: GlobalConfig = {
                 version: '1.0',
                 createdAt: new Date().toISOString(),
                 settings: sysSettings,
                 wallpaper,
-                shortcuts,
-                dockItems
+                shortcuts: desktopApps,
+                dockItems: dockApps
             };
 
             console.log('Exporting config:', config); // 调试日志
@@ -257,7 +291,7 @@ export default function App() {
             
             // 检查YAML是否为空
             if (!yamlStr || yamlStr.trim() === '') {
-                alert('导出失败：生成的配置文件为空\n\n请检查是否有数据需要导出。');
+                dialog.showAlert('导出失败', '生成的配置文件为空\n\n请检查是否有数据需要导出。');
                 return;
             }
 
@@ -279,62 +313,75 @@ export default function App() {
         } catch (e) {
             console.error('Export failed:', e);
             const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-            alert(`导出配置失败:\n\n${errorMsg}\n\n请查看控制台获取更多信息。`);
+            dialog.showAlert('导出配置失败', `${errorMsg}\n\n请查看控制台获取更多信息。`);
         }
-    }, [sysSettings, wallpaper, shortcuts, dockItems]);
+    }, [sysSettings, wallpaper, appLayout]);
 
     const handleImportConfig = useCallback(async (file: File) => {
         try {
             // Validate file type
             const fileName = file.name.toLowerCase();
             if (!fileName.endsWith('.yaml') && !fileName.endsWith('.yml') && !fileName.endsWith('.json')) {
-                alert('Please select a valid YAML or JSON configuration file (.yaml, .yml, or .json)');
+                dialog.showAlert('Please select a valid YAML or JSON configuration file (.yaml, .yml, or .json)');
                 return;
             }
 
             const text = await file.text();
 
             if (!text || text.trim() === '') {
-                alert('Configuration file is empty');
+                dialog.showAlert('Configuration file is empty');
                 return;
             }
 
-            const config = parseYamlConfig(text);
+            try {
+                const config = parseYamlConfig(text);
 
-            if (config) {
-                const confirmMsg = `Import configuration from "${file.name}"?\n\nThis will overwrite:\n• ${shortcuts.length} shortcuts → ${config.shortcuts.length} shortcuts\n• ${dockItems.length} dock items → ${config.dockItems.length} dock items\n• Current wallpaper and settings\n\nThis action cannot be undone.`;
+                if (config) {
+                    const dockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
+                    const desktopCount = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
+                    const confirmMsg = `This will overwrite:\n• ${dockCount} Dock apps → ${config.dockItems?.length || 0} apps\n• ${desktopCount} Desktop apps → ${config.shortcuts?.length || 0} apps\n• Current wallpaper and settings\n\nThis action cannot be undone.`;
 
-                if (window.confirm(confirmMsg)) {
-                    setSysSettings(config.settings);
-                    setWallpaper(config.wallpaper);
-                    setShortcuts(config.shortcuts);
-                    setDockItems(config.dockItems);
+                    if (await dialog.showConfirm(`Import configuration from "${file.name}"?`, confirmMsg)) {
+                        setSysSettings(config.settings);
+                        setWallpaper(config.wallpaper);
+                        
+                        // 合并导入的dock和shortcuts到appLayout
+                        const dockApps = config.dockItems || [];
+                        const desktopApps = config.shortcuts || [];
+                        const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
+                        setAppLayout([...dockApps, ...emptySlots, ...desktopApps]);
 
-                    // Reset page to first page
-                    setPage(0);
+                        // Reset page to first page
+                        setPage(0);
 
-                    // Success notification
-                    setTimeout(() => {
-                        alert(`✓ Configuration imported successfully!\n\n• ${config.shortcuts.length} shortcuts loaded\n• ${config.dockItems.length} dock items loaded\n• Settings and wallpaper applied`);
-                    }, 100);
+                        // Success notification
+                        setTimeout(() => {
+                            dialog.showAlert('✓ Configuration imported successfully!', `• ${dockApps.length} Dock apps loaded\n• ${desktopApps.length} Desktop apps loaded\n• Settings and wallpaper applied`);
+                        }, 100);
+                    }
                 }
+            } catch (parseError) {
+                const errorMsg = parseError instanceof Error ? parseError.message : 'Unknown error';
+                dialog.showAlert('Failed to parse configuration', errorMsg);
             }
         } catch (e) {
             console.error('Import error:', e);
             const errorMsg = e instanceof Error ? e.message : 'Unknown error occurred';
-            alert(`Failed to import configuration:\n\n${errorMsg}\n\nPlease check the file format and try again.`);
+            dialog.showAlert('Failed to import configuration', `${errorMsg}\n\nPlease check the file format and try again.`);
         }
-    }, [shortcuts.length, dockItems.length]);
+    }, [appLayout.length]);
 
-    const handleReset = useCallback(() => {
-        const confirmMsg = `⚠️ RESET ALL DATA\n\nThis will permanently delete:\n• ${shortcuts.length} shortcuts\n• ${dockItems.length} dock items\n• All system settings\n• Custom wallpaper\n• Saved notes\n\nThe system will reload with default settings.\n\nThis action CANNOT be undone!`;
+    const handleReset = useCallback(async () => {
+        const dockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(i => i !== null).length;
+        const desktopCount = appLayout.slice(DOCK_RESERVED_SLOTS).filter(i => i !== null).length;
+        const confirmMsg = `This will permanently delete:\n• ${desktopCount} Desktop apps\n• ${dockCount} Dock apps\n• All system settings\n• Custom wallpaper\n• Saved notes\n\nThe system will reload with default settings.\n\nThis action CANNOT be undone!`;
 
-        if (window.confirm(confirmMsg)) {
+        if (await dialog.showConfirm('⚠️ RESET ALL DATA', confirmMsg)) {
             // Double confirmation for safety
-            if (window.confirm('Are you absolutely sure? This is your last chance to cancel.')) {
+            if (await dialog.showConfirm('Are you absolutely sure?', 'This is your last chance to cancel.')) {
                 try {
                     // Clear all localStorage keys
-                    localStorage.removeItem('os-shortcuts');
+                    localStorage.removeItem('os-app-layout');
                     localStorage.removeItem('os-dock');
                     localStorage.removeItem('os-settings');
                     localStorage.removeItem('os-bg');
@@ -348,29 +395,33 @@ export default function App() {
                     });
 
                     // Show brief success message before reload
-                    alert('System data cleared. Reloading with defaults...');
+                    dialog.showAlert('System data cleared. Reloading with defaults...');
 
                     // Force reload to reset all state
                     window.location.reload();
                 } catch (e) {
                     console.error('Reset error:', e);
-                    alert('Failed to reset system data. Please try clearing your browser cache manually.');
+                    dialog.showAlert('Failed to reset system data. Please try clearing your browser cache manually.');
                 }
             }
         }
-    }, [shortcuts.length, dockItems.length]);
+    }, [appLayout.length]);
 
     // --- Config Editor ---
     const handleEditConfig = useCallback(() => {
         try {
+            // 从 appLayout 提取 dock 和 desktop 应用
+            const dockApps = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null);
+            const desktopApps = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null);
+            
             // 创建当前配置对象
             const config: GlobalConfig = {
                 version: '1.0',
                 createdAt: new Date().toISOString(),
                 settings: sysSettings,
                 wallpaper,
-                shortcuts,
-                dockItems
+                shortcuts: desktopApps,
+                dockItems: dockApps
             };
 
             // 生成YAML
@@ -388,7 +439,7 @@ export default function App() {
             console.error('Failed to open config editor:', e);
             alert(`打开配置编辑器失败:\n\n${e instanceof Error ? e.message : 'Unknown error'}`);
         }
-    }, [sysSettings, wallpaper, shortcuts, dockItems]);
+    }, [sysSettings, wallpaper, appLayout]);
 
     const handleSaveConfig = useCallback((yamlContent: string) => {
         try {
@@ -408,16 +459,11 @@ export default function App() {
             if (config.wallpaper) {
                 setWallpaper(config.wallpaper);
             }
-            if (Array.isArray(config.shortcuts)) {
-                setShortcuts(config.shortcuts.filter(i => !!i));
-            }
-            if (Array.isArray(config.dockItems)) {
-                // 保留内置系统应用(AI, Notes, Calc, Settings)
-                const systemApps = DEFAULT_DOCK.filter(item => item.type === 'sys');
-                const userDockItems = config.dockItems.filter((item: any) => item && item.id !== 'edit' && item.type !== 'sys');
-                // 合并: 先用户自定义项,再系统应用
-                setDockItems([...userDockItems, ...systemApps]);
-            }
+            // 合并dock和shortcuts到appLayout
+            const dockApps = Array.isArray(config.dockItems) ? config.dockItems.filter((i: any) => i && i.id !== 'edit') : [];
+            const desktopApps = Array.isArray(config.shortcuts) ? config.shortcuts.filter(i => !!i) : [];
+            const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
+            setAppLayout([...dockApps, ...emptySlots, ...desktopApps]);
 
             // 关闭编辑器窗口
             closeWin('configEditor');
@@ -439,7 +485,7 @@ export default function App() {
     const dockRef = useRef<HTMLDivElement>(null);
     
     // --- Widget Resize State ---
-    const [resizingWidget, setResizingWidget] = useState<{ id: number | string, startW: number, startH: number, startX: number, startY: number } | null>(null);
+    const [resizingWidget, setResizingWidget] = useState<{ id: number | string, startW: number, startH: number, startX: number, startY: number, newW?: number, newH?: number } | null>(null);
 
     // Auto-pagination refs
     const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -453,8 +499,8 @@ export default function App() {
     const DOCK_CONTAINER_PADDING = 24;
     const SLOT_WIDTH = DOCK_ICON_SIZE + DOCK_ITEM_GAP;
 
-    // Calculate count based on whether the edit button is shown
-    const dockCount = dockItems.length + (sysSettings.showDockEdit ? 1 : 0);
+    // Calculate count based on visible items and whether the edit button is shown
+    const dockCount = dockApps.length + (sysSettings.showDockEdit ? 1 : 0);
     // If no items and no edit button, width is small (but dock logic usually requires at least one item or padding)
     const dockWidth = Math.max(
         DOCK_CONTAINER_PADDING * 2,
@@ -505,20 +551,55 @@ export default function App() {
     };
 
     const handleSaveApp = (updated: Shortcut) => {
-        setShortcuts(prev => prev.map(s => s.id === updated.id ? updated : s));
-        // Also update dockItems if the app is in dock
-        setDockItems(prev => prev.map(d => d.id === updated.id ? updated : d));
+        setAppLayout(prev => prev.map(item => item?.id === updated.id ? updated : item));
         closeWin('edit');
     };
 
-    const handleDeleteApp = (app: Shortcut) => {
-        if (window.confirm(`确定要删除 "${app.title || '此应用'}" 吗？`)) {
-            setShortcuts(prev => prev.filter(s => s.id !== app.id));
+    const handleDeleteApp = async (app: Shortcut) => {
+        const appName = app.title || app.displayName || '此应用';
+        const confirmMessage = app.type === 'sys' 
+            ? `确定要删除系统应用 "${appName}" 吗？\n\n删除后可以通过添加按钮重新添加`
+            : `确定要删除 "${appName}" 吗？`;
+            
+        if (await dialog.showConfirm(confirmMessage)) {
+            // 从appLayout中删除该应用
+            setAppLayout(prev => prev.map(item => item?.id === app.id ? null : item));
+        }
+    };
+
+    const handleEditAppFromSettings = (app: Shortcut) => {
+        // 从设置中打开编辑窗口
+        const idx = windows.findIndex(w => w.id === 'edit');
+        if (idx >= 0) {
+            // 如果编辑窗口已存在，更新它
+            const nw = [...windows];
+            nw[idx] = {
+                ...nw[idx],
+                isOpen: true,
+                z: maxZ + 1,
+                editData: app,
+                title: app.type === 'widget' ? '编辑小组件' : '编辑应用'
+            };
+            setWindows(nw);
+            setMaxZ(prev => prev + 1);
+        } else {
+            // 创建新的编辑窗口
+            setWindows([...windows, {
+                id: 'edit',
+                type: 'edit',
+                title: app.type === 'widget' ? '编辑小组件' : '编辑应用',
+                isOpen: true,
+                isMaximized: false,
+                z: maxZ + 1,
+                w: 500,
+                h: 600,
+                editData: app
+            }]);
+            setMaxZ(prev => prev + 1);
         }
     };
 
     const handleAppContextMenu = (e: React.MouseEvent, app: Shortcut) => {
-        if (isEditing) return; // Don't show context menu in edit mode
         e.preventDefault();
         e.stopPropagation();
         setContextMenu(null); // Close desktop context menu
@@ -619,10 +700,10 @@ export default function App() {
 
                     if (targetItem) {
                         if (targetItem.isAdd) {
-                            insertIndex = shortcuts.length; // Insert at end
+                            insertIndex = desktopApps.length; // Insert at end
                         } else {
-                            // Find index in raw shortcuts array
-                            insertIndex = shortcuts.findIndex(s => s.id === targetItem.id);
+                            // Find index in desktop apps array
+                            insertIndex = desktopApps.findIndex(s => s.id === targetItem.id);
                         }
                     } else {
                         // Hovering empty space. 
@@ -636,46 +717,46 @@ export default function App() {
                         const afterItem = pageItems.find(i => (i.y > row) || (i.y === row && i.x > col));
 
                         if (afterItem) {
-                            insertIndex = shortcuts.findIndex(s => s.id === afterItem.id);
+                            insertIndex = desktopApps.findIndex(s => s.id === afterItem.id);
                         } else {
-                            insertIndex = shortcuts.length;
+                            insertIndex = desktopApps.length;
                         }
                     }
 
                     if (insertIndex !== -1 && dragState.item) {
                         if (dragState.source === 'dock') {
-                            // Dock -> Grid
-                            const newDock = dockItems.filter(i => i.id !== dragState.item!.id);
-                            setDockItems(newDock);
-
-                            const newShortcuts = [...shortcuts];
-                            newShortcuts.splice(insertIndex, 0, dragState.item as Shortcut);
-                            setShortcuts(newShortcuts);
-
+                            // Dock -> Grid: 从Dock移到桌面
+                            const newLayout = [...appLayout];
+                            // 找到并移除Dock中的项
+                            for (let i = 0; i < DOCK_RESERVED_SLOTS; i++) {
+                                if (newLayout[i]?.id === dragState.item!.id) {
+                                    newLayout[i] = null;
+                                    break;
+                                }
+                            }
+                            // 插入到桌面区域
+                            const desktopInsertIndex = DOCK_RESERVED_SLOTS + insertIndex;
+                            newLayout.splice(desktopInsertIndex, 0, dragState.item as Shortcut);
+                            setAppLayout(newLayout);
                             setDragState(prev => ({ ...prev, source: 'grid', index: insertIndex }));
                         } else if (dragState.source === 'grid') {
-                            // Grid -> Grid
-                            // Only perform move if the index is significantly different to prevent jitter
-                            // Identify current index of dragging item
-                            const currentIndex = shortcuts.findIndex(s => s.id === dragState.item!.id);
+                            // Grid -> Grid: 桌面内部移动
+                            const desktopStart = DOCK_RESERVED_SLOTS;
+                            const desktopItems = appLayout.slice(desktopStart).filter(i => i !== null);
+                            const currentIndex = desktopItems.findIndex(s => s?.id === dragState.item!.id);
 
                             if (currentIndex !== -1 && currentIndex !== insertIndex) {
-                                // Safe swap/move logic
-                                // If we are moving 'forward' (current < insert), we need to adjust insertIndex because removal shifts array
-                                let adjustedInsert = insertIndex;
-                                if (currentIndex < insertIndex) {
-                                    adjustedInsert = insertIndex - 1;
-                                }
-
-                                if (adjustedInsert !== currentIndex) {
-                                    const newShortcuts = [...shortcuts];
-                                    const [moved] = newShortcuts.splice(currentIndex, 1);
-
-                                    newShortcuts.splice(insertIndex > currentIndex ? insertIndex - 1 : insertIndex, 0, moved);
-
-                                    setShortcuts(newShortcuts);
-                                    setDragState(prev => ({ ...prev, index: insertIndex > currentIndex ? insertIndex - 1 : insertIndex }));
-                                }
+                                const newDesktopItems = [...desktopItems];
+                                const [moved] = newDesktopItems.splice(currentIndex, 1);
+                                const adjustedInsert = currentIndex < insertIndex ? insertIndex - 1 : insertIndex;
+                                newDesktopItems.splice(adjustedInsert, 0, moved);
+                                
+                                const newLayout = [
+                                    ...appLayout.slice(0, desktopStart),
+                                    ...newDesktopItems
+                                ];
+                                setAppLayout(newLayout);
+                                setDragState(prev => ({ ...prev, index: adjustedInsert }));
                             }
                         }
                     }
@@ -690,43 +771,61 @@ export default function App() {
                 const relX = e.clientX - dockRect.left;
                 let hoverIndex = Math.floor((relX - DOCK_CONTAINER_PADDING + (SLOT_WIDTH / 2)) / SLOT_WIDTH);
                 if (hoverIndex < 0) hoverIndex = 0;
-                if (hoverIndex > dockItems.length) hoverIndex = dockItems.length;
+                if (hoverIndex > dockApps.length) hoverIndex = dockApps.length;
 
                 if (dragState.source === 'grid') {
-                    // Grid -> Dock
-                    const currentIndex = shortcuts.findIndex(s => s.id === dragState.item!.id);
+                    // Grid -> Dock: 从桌面移到Dock
+                    const desktopStart = DOCK_RESERVED_SLOTS;
+                    const desktopItems = appLayout.slice(desktopStart).filter(i => i !== null);
+                    const currentIndex = desktopItems.findIndex(s => s?.id === dragState.item!.id);
+                    
                     if (currentIndex !== -1) {
-                        const newShortcuts = [...shortcuts];
-                        const [moved] = newShortcuts.splice(currentIndex, 1);
-
+                        const moved = desktopItems[currentIndex];
                         if (moved) {
-                            setShortcuts(newShortcuts);
-                            const newItem: DockItem = {
-                                ...moved,
-                                size: { w: 1, h: 1 }, // Force to 1x1 in Dock
-                                iconType: moved.iconType || '',
-                            };
-                            const newDock = [...dockItems];
-                            newDock.splice(hoverIndex, 0, newItem);
-                            setDockItems(newDock);
+                            // 从桌面移除
+                            const newDesktopItems = desktopItems.filter(i => i?.id !== moved.id);
+                            
+                            // 强制为1x1大小
+                            const dockItem = { ...moved, size: { w: 1, h: 1 } };
+                            
+                            // 在Dock中插入
+                            const dockItems = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(i => i !== null);
+                            dockItems.splice(hoverIndex, 0, dockItem);
+                            
+                            // 重建布局
+                            const newLayout = new Array(DOCK_RESERVED_SLOTS).fill(null);
+                            dockItems.forEach((item, idx) => {
+                                if (idx < DOCK_RESERVED_SLOTS) newLayout[idx] = item;
+                            });
+                            
+                            setAppLayout([...newLayout, ...newDesktopItems]);
                             setDragState(prev => ({ ...prev, source: 'dock', index: hoverIndex }));
                         }
                     }
                 } else if (dragState.source === 'dock' && hoverIndex !== dragState.index) {
-                    // Dock -> Dock
-                    const newDock = [...dockItems];
-                    if (dragState.index >= 0 && dragState.index < newDock.length) {
-                        const [moved] = newDock.splice(dragState.index, 1);
+                    // Dock -> Dock: Dock内部移动
+                    const dockItems = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(i => i !== null);
+                    
+                    if (dragState.index >= 0 && dragState.index < dockItems.length) {
+                        const [moved] = dockItems.splice(dragState.index, 1);
                         if (moved) {
-                            newDock.splice(hoverIndex, 0, moved);
-                            setDockItems(newDock);
+                            dockItems.splice(hoverIndex, 0, moved);
+                            
+                            // 重建Dock布局
+                            const newLayout = new Array(DOCK_RESERVED_SLOTS).fill(null);
+                            dockItems.forEach((item, idx) => {
+                                if (idx < DOCK_RESERVED_SLOTS) newLayout[idx] = item;
+                            });
+                            
+                            const desktopItems = appLayout.slice(DOCK_RESERVED_SLOTS);
+                            setAppLayout([...newLayout, ...desktopItems]);
                             setDragState(prev => ({ ...prev, index: hoverIndex }));
                         }
                     }
                 }
             }
         }
-    }, [dragState, shortcuts, dockItems, cols, rows, cellWidth, cellHeight, page, layoutItems, SLOT_WIDTH]);
+    }, [dragState, appLayout, cols, rows, cellWidth, cellHeight, page, layoutItems, SLOT_WIDTH, DOCK_RESERVED_SLOTS]);
 
     const handlePointerUp = useCallback(() => {
         if (longPressTimer.current) clearTimeout(longPressTimer.current);
@@ -763,14 +862,14 @@ export default function App() {
         const newW = Math.max(1, Math.min(6, resizingWidget.startW + Math.round(deltaX / cellWidth)));
         const newH = Math.max(1, Math.min(6, resizingWidget.startH + Math.round(deltaY / cellHeight)));
         
-        // Update both resizing state and shortcuts immediately for live preview
+        // Update both resizing state and appLayout immediately for live preview
         if (newW !== resizingWidget.newW || newH !== resizingWidget.newH) {
             setResizingWidget(prev => prev ? { ...prev, newW, newH } : null);
-            // Also update shortcuts immediately to trigger layout recalculation
-            setShortcuts(prev => prev.map(s => 
-                s.id === resizingWidget.id 
-                    ? { ...s, size: { w: newW, h: newH } }
-                    : s
+            // Also update appLayout immediately to trigger layout recalculation
+            setAppLayout(prev => prev.map(item => 
+                item?.id === resizingWidget.id 
+                    ? { ...item, size: { w: newW, h: newH } }
+                    : item
             ));
         }
     }, [resizingWidget, cellWidth, cellHeight]);
@@ -939,7 +1038,7 @@ export default function App() {
                     onClose={() => setContextMenu(null)}
                     onEdit={() => setIsEditing(!isEditing)}
                     onChangeWallpaper={() => openWin('settings')}
-                    onReset={() => { if (window.confirm('Reset Layout?')) { localStorage.removeItem('os-shortcuts'); window.location.reload(); } }}
+                    onReset={async () => { if (await dialog.showConfirm('Reset Layout?')) { localStorage.removeItem('os-app-layout'); window.location.reload(); } }}
                     onOpenSettings={() => openWin('settings')}
                     onExportConfig={handleExportConfig}
                     onImportConfig={() => {
@@ -1064,8 +1163,8 @@ export default function App() {
                         const width = `${displayW * cellWidth}px`;
                         const height = `${displayH * cellHeight}px`;
 
-                        // Find index in original shortcuts for drag identification
-                        const originalIndex = shortcuts.findIndex(s => s.id === item.id);
+                        // Find index in original desktopApps for drag identification
+                        const originalIndex = desktopApps.findIndex(s => s.id === item.id);
                         const isDraggingMe = dragState.isDragging && dragState.source === 'grid' && dragState.item?.id === item.id;
 
                         if (isDraggingMe) return null;
@@ -1108,20 +1207,19 @@ export default function App() {
                                                     }
                                                 }}
                                             >
-                                                {isEditing && (
-                                                    <div
-                                                        onPointerDown={(e) => { e.stopPropagation(); }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setShortcuts(prev => prev.filter(sc => sc.id !== s.id));
-                                                        }}
-                                                        className="absolute -top-2 -left-2 z-20 w-7 h-7 bg-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
-                                                    >
-                                                        <Minus size={16} strokeWidth={3} />
-                                                    </div>
-                                                )}
-                                                
-                                                {/* Resize handle for widgets in edit mode */}
+                                {isEditing && (
+                                    <div
+                                        onPointerDown={(e) => { e.stopPropagation(); }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            // 直接从appLayout中删除
+                                            setAppLayout(prev => prev.map(item => item?.id === s.id ? null : item));
+                                        }}
+                                        className="absolute -top-2 -left-2 z-20 w-7 h-7 bg-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
+                                    >
+                                        <Minus size={16} strokeWidth={3} />
+                                    </div>
+                                )}                                                {/* Resize handle for widgets in edit mode */}
                                                 {isEditing && isWidget && (
                                                     <>
                                                         {/* Corner arc indicator */}
@@ -1229,7 +1327,7 @@ export default function App() {
                     style={{ width: dockWidth + 'px' }}
                 >
                     {/* Render Apps */}
-                    {dockItems.map((item, index) => {
+                    {dockApps.map((item, index) => {
                         const isDraggingMe = dragState.isDragging && dragState.source === 'dock' && dragState.index === index;
                         const opacity = isDraggingMe ? 0 : 1;
                         const leftPos = DOCK_CONTAINER_PADDING + (index * SLOT_WIDTH);
@@ -1254,7 +1352,8 @@ export default function App() {
                                             onPointerDown={(e) => { e.stopPropagation(); }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setDockItems(prev => prev.filter(d => d.id !== item.id));
+                                                // 直接从appLayout中删除
+                                                setAppLayout(prev => prev.map(i => i?.id === item.id ? null : i));
                                             }}
                                             className="absolute -top-3 -left-3 z-20 w-7 h-7 bg-gray-200 text-gray-900 border border-gray-300 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
                                         >
@@ -1298,7 +1397,7 @@ export default function App() {
                         <div
                             className="absolute"
                             style={{
-                                left: (DOCK_CONTAINER_PADDING + (dockItems.length * SLOT_WIDTH)) + 'px',
+                                left: (DOCK_CONTAINER_PADDING + (dockApps.length * SLOT_WIDTH)) + 'px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: DOCK_ICON_SIZE + 'px',
@@ -1344,13 +1443,22 @@ export default function App() {
                                 onImport={handleImportConfig}
                                 onReset={handleReset}
                                 onEditConfig={handleEditConfig}
+                                shortcuts={desktopApps}
+                                onShortcutUpdate={(newShortcuts) => {
+                                    // 更新appLayout中的桌面应用部分
+                                    const dockPart = appLayout.slice(0, DOCK_RESERVED_SLOTS);
+                                    setAppLayout([...dockPart, ...newShortcuts]);
+                                }}
+                                onEditShortcut={handleEditAppFromSettings}
                             />
                         )}
                         {w.type === 'add' && <AddShortcutApp onAdd={(d) => {
                             const newId = Date.now();
                             // Default to valid size if not provided
                             const size = d.size || { w: 1, h: 1 };
-                            setShortcuts(prev => [...prev, { ...d, id: newId, type: d.type || 'auto', color: d.color || 'from-gray-800 to-gray-700', size } as Shortcut])
+                            const newApp = { ...d, id: newId, type: d.type || 'auto', color: d.color || 'from-gray-800 to-gray-700', size } as Shortcut;
+                            // 添加到appLayout末尾（桌面区域）
+                            setAppLayout(prev => [...prev, newApp]);
                         }} onClose={() => closeWin('add')} />}
                         {w.type === 'edit' && w.editData && <EditApp app={w.editData} onSave={handleSaveApp} language={lang} />}
                         {w.type === 'configEditor' && (
@@ -1383,5 +1491,13 @@ export default function App() {
                 />
             )}
         </div>
+    );
+}
+
+export default function App() {
+    return (
+        <DialogProvider>
+            <DesktopApp />
+        </DialogProvider>
     );
 }

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useDialog } from './Dialog';
 import * as monaco from 'monaco-editor';
 import { Save, X, RotateCcw, FileJson, FileCode } from 'lucide-react';
 
@@ -11,6 +12,7 @@ interface CodeEditorProps {
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({ value, language, onSave, onClose, readOnly = false }) => {
+    const dialog = useDialog();
     const editorRef = useRef<HTMLDivElement>(null);
     const monacoEditorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const [hasChanges, setHasChanges] = useState(false);
@@ -106,8 +108,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, language, onSave,
         }
     };
 
-    const handleReset = () => {
-        if (monacoEditorRef.current && window.confirm('确定要重置到初始内容吗？所有未保存的更改将丢失。')) {
+    const handleReset = async () => {
+        if (monacoEditorRef.current && await dialog.showConfirm('确定要重置到初始内容吗？', '所有未保存的更改将丢失。')) {
             monacoEditorRef.current.setValue(initialValue);
             setHasChanges(false);
         }

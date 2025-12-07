@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDialog } from './Dialog';
 import { Check, Loader2, AlertCircle, Upload, Link as LinkIcon } from 'lucide-react';
 import { getAllIconUrls, getIconSources } from '../utils';
 
@@ -16,6 +17,7 @@ interface IconSourceStatus {
 }
 
 export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, onSelect, onCustom }) => {
+    const dialog = useDialog();
     const [sources, setSources] = useState<IconSourceStatus[]>([]);
     const [selectedIcon, setSelectedIcon] = useState<string>(currentIcon || '');
     const [customIconInput, setCustomIconInput] = useState<string>('');
@@ -85,19 +87,19 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, on
         onCustom(value);
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         // 验证文件大小 (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            alert('图标文件大小不能超过 2MB');
+            dialog.showAlert('图标文件大小不能超过 2MB');
             return;
         }
 
         // 验证文件类型
         if (!file.type.startsWith('image/')) {
-            alert('请上传图片文件');
+            dialog.showAlert('请上传图片文件');
             return;
         }
 
@@ -288,14 +290,6 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, on
                         )}
                     </div>
                 )}
-            </div>
-
-            {/* 提示信息 */}
-            <div className="flex items-start gap-2 p-3 rounded-lg" style={{ backgroundColor: 'rgba(10, 132, 255, 0.1)' }}>
-                <AlertCircle size={16} style={{ color: '#0A84FF', marginTop: '2px' }} />
-                <div className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    系统会自动测试所有图标源的可用性。只显示可用的图标源，无法加载的图标会自动隐藏。
-                </div>
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDialog } from '../Dialog';
 import { Upload, Link as LinkIcon, Monitor, Maximize2, Code, Globe } from 'lucide-react';
 import { Shortcut, WidgetType } from '../../types';
 import { t, Language } from '../../i18n';
@@ -11,6 +12,7 @@ interface EditAppProps {
 }
 
 export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }) => {
+    const dialog = useDialog();
     const isWidget = app.type === 'widget';
     const lang = language;
     
@@ -27,19 +29,19 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
     const [widgetHeight, setWidgetHeight] = useState(app.size?.h || 2);
     const [widgetContent, setWidgetContent] = useState(app.widgetContent || '');
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         // Validate file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            alert('图标文件大小不能超过 2MB');
+            dialog.showAlert('图标文件大小不能超过 2MB');
             return;
         }
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            alert('请上传图片文件');
+            dialog.showAlert('请上传图片文件');
             return;
         }
 
@@ -141,26 +143,31 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
 
                     {/* Window Mode (only for apps) */}
                     {!isWidget && (
-                        <div 
-                            className="flex items-center justify-between p-4 rounded-lg"
-                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Monitor size={20} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
-                                <span className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>窗口模式打开</span>
-                            </div>
-                            <button
-                                onClick={() => setIsWindowMode(!isWindowMode)}
-                                className={`relative w-12 h-6 rounded-full transition-colors`}
-                                style={{ backgroundColor: isWindowMode ? '#34C759' : 'rgba(255, 255, 255, 0.2)' }}
-                                aria-label="切换窗口模式"
-                                title={isWindowMode ? "禁用窗口模式" : "启用窗口模式"}
+                        <div className="space-y-2">
+                            <div 
+                                className="flex items-center justify-between p-4 rounded-lg"
+                                style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
                             >
-                                <div 
-                                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform`}
-                                    style={{ transform: isWindowMode ? 'translateX(24px)' : 'translateX(0)' }}
-                                />
-                            </button>
+                                <div className="flex items-center gap-3">
+                                    <Monitor size={20} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+                                    <span className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>窗口模式打开</span>
+                                </div>
+                                <button
+                                    onClick={() => setIsWindowMode(!isWindowMode)}
+                                    className={`relative w-12 h-6 rounded-full transition-colors`}
+                                    style={{ backgroundColor: isWindowMode ? '#34C759' : 'rgba(255, 255, 255, 0.2)' }}
+                                    aria-label="切换窗口模式"
+                                    title={isWindowMode ? "禁用窗口模式" : "启用窗口模式"}
+                                >
+                                    <div 
+                                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform`}
+                                        style={{ transform: isWindowMode ? 'translateX(24px)' : 'translateX(0)' }}
+                                    />
+                                </button>
+                            </div>
+                            <div className="text-xs px-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                大部分网站不支持在窗口中打开
+                            </div>
                         </div>
                     )}
 
@@ -290,9 +297,12 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
             <div 
                 className="absolute bottom-0 left-0 right-0 px-6 py-4 flex justify-end"
                 style={{
-                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                    borderTop: '0.5px solid rgba(255, 255, 255, 0.1)'
+                    background: 'linear-gradient(to top, rgba(30, 30, 35, 0.95) 0%, rgba(30, 30, 35, 0.85) 100%)',
+                    borderTop: '0.5px solid rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)'
                 }}
+                onClick={(e) => e.stopPropagation()}
             >
                 <button
                     onClick={handleSave}

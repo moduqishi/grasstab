@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useDialog } from '../Dialog';
 import { Plus, AppWindow, LayoutGrid, Clock, Calendar, CloudSun, Code, Monitor, Upload, Image as ImageIcon, Check, X, Link, Maximize2 } from 'lucide-react';
 import { Shortcut, WidgetType } from '../../types';
 import { IconSelector } from '../IconSelector';
@@ -17,6 +18,7 @@ const WIDGET_TYPES: { type: WidgetType, label: string, icon: any, desc: string }
 ];
 
 export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) => {
+    const dialog = useDialog();
     const [mode, setMode] = useState<'app' | 'widget'>('app');
     
     // App State
@@ -34,17 +36,17 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     const [wContent, setWContent] = useState('');
 
     // Handle icon file upload
-    const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             // Check file type
             if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
+                dialog.showAlert('Please select an image file');
                 return;
             }
             // Check file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert('Image size must be less than 2MB');
+                dialog.showAlert('Image size must be less than 2MB');
                 return;
             }
             // Convert to base64

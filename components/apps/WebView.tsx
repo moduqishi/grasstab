@@ -6,22 +6,60 @@ interface WebViewProps {
     title: string;
 }
 
+// 已知会阻止iframe嵌入的域名列表
+const BLOCKED_DOMAINS = [
+    'bilibili.com',
+    'youtube.com',
+    'youtu.be',
+    'twitter.com',
+    'x.com',
+    'facebook.com',
+    'instagram.com',
+    'tiktok.com',
+    'douyin.com',
+    'weibo.com',
+    'zhihu.com',
+    'xiaohongshu.com',
+    'netflix.com',
+    'twitch.tv',
+    'baidu.com',
+    'taobao.com',
+    'tmall.com',
+    'jd.com',
+];
+
+const isDomainBlocked = (url: string): boolean => {
+    try {
+        const hostname = new URL(url).hostname.toLowerCase();
+        return BLOCKED_DOMAINS.some(domain => hostname.includes(domain));
+    } catch {
+        return false;
+    }
+};
+
 export const WebView: React.FC<WebViewProps> = ({ url, title }) => {
     const [loadError, setLoadError] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // 检查是否为已知的阻止iframe的网站
+        if (isDomainBlocked(url)) {
+            setLoadError(true);
+            setIsLoading(false);
+            return;
+        }
+
         // 重置状态当 URL 改变时
         setLoadError(false);
         setIsLoading(true);
 
-        // 设置超时检测（5秒后如果还在加载，可能是被阻止了）
+        // 设置超时检测（3秒后如果还在加载，可能是被阻止了）
         const timeout = setTimeout(() => {
             if (isLoading) {
                 setLoadError(true);
                 setIsLoading(false);
             }
-        }, 5000);
+        }, 3000);
 
         return () => clearTimeout(timeout);
     }, [url]);

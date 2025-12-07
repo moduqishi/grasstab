@@ -98,8 +98,7 @@ export const generateYamlConfig = (config: GlobalConfig): string => {
     } catch (e) {
         console.error('Failed to generate YAML', e);
         const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-        alert(`导出配置失败: ${errorMsg}\n\n请检查配置数据是否有效。`);
-        return '';
+        throw new Error(`导出配置失败: ${errorMsg}\n\n请检查配置数据是否有效。`);
     }
 };
 
@@ -188,8 +187,7 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
     } catch (e) {
         console.error('Failed to parse YAML', e);
         const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-        alert('Invalid Configuration File: ' + errorMsg);
-        return null;
+        throw new Error('Invalid Configuration File: ' + errorMsg);
     }
 };
 

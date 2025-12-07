@@ -131,6 +131,8 @@ export const DEFAULT_DOCK: DockItem[] = [
         id: 'ai',
         iconType: 'cpu',
         name: 'AI',
+        displayName: 'AI助手',
+        title: 'AI助手',
         isApp: true,
         type: 'sys',
         color: 'from-purple-600 via-purple-500 to-pink-500'
@@ -139,6 +141,8 @@ export const DEFAULT_DOCK: DockItem[] = [
         id: 'notes',
         iconType: 'sticky-note',
         name: 'Notes',
+        displayName: '便笺',
+        title: '便笺',
         isApp: true,
         type: 'sys',
         color: 'from-yellow-300 via-yellow-400 to-yellow-500'
@@ -147,6 +151,8 @@ export const DEFAULT_DOCK: DockItem[] = [
         id: 'calc',
         iconType: 'calculator',
         name: 'Calc',
+        displayName: '计算器',
+        title: '计算器',
         isApp: true,
         type: 'sys',
         color: 'from-orange-400 via-orange-500 to-red-500'
@@ -155,6 +161,8 @@ export const DEFAULT_DOCK: DockItem[] = [
         id: 'settings',
         iconType: 'settings',
         name: 'Settings',
+        displayName: '设置',
+        title: '设置',
         isApp: true,
         type: 'sys',
         color: 'from-gray-400 via-gray-500 to-gray-600'

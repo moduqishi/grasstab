@@ -3,6 +3,17 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './src/index.css';
 
+// 全局错误捕获
+window.addEventListener('error', (event) => {
+    console.error('Global error:', event.error);
+    console.error('Error message:', event.message);
+    console.error('Error at:', event.filename, event.lineno, event.colno);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+});
+
 // Configure Monaco Editor workers for Chrome Extension
 (window as any).MonacoEnvironment = {
   getWorker(_: string, label: string) {

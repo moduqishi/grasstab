@@ -3,6 +3,7 @@ export type WidgetType = 'clock' | 'weather' | 'calendar' | 'custom' | 'iframe';
 export interface Shortcut {
     id: number | string;
     title?: string;
+    displayName?: string; // 显示名称
     url?: string;
     type: 'github' | 'bilibili' | 'youtube' | 'chatgpt' | 'code' | 'twitter' | 'gmail' | 'sys' | 'auto' | 'widget';
     color: string;
@@ -10,6 +11,7 @@ export interface Shortcut {
     isAdd?: boolean; // UI helper
     iconType?: string; // For dock mapping
     customIcon?: string; // Custom icon URL or base64 data
+    hidden?: boolean; // 是否隐藏（用于系统应用）
     
     // Widget Properties
     size?: { w: number, h: number };
@@ -25,6 +27,7 @@ export interface PackedShortcut extends Shortcut {
 
 export interface DockItem extends Shortcut {
     name?: string;
+    displayName?: string; // 显示名称
     iconType: string; // Identifier for the Lucide icon
 }
 
@@ -68,6 +71,10 @@ export interface SystemSettings {
     showPagination: boolean;
     showDock: boolean;
     language: 'zh' | 'en';
+    searchEngine?: SearchEngineKey;
+    gridCols?: number;
+    gridRows?: number;
+    hiddenSystemApps?: string[]; // 隐藏的系统应用ID列表
 }
 
 export interface GlobalConfig {
