@@ -963,11 +963,11 @@ export default function App() {
             {/* Top Zone - Search Bar (Conditional) */}
             {sysSettings.showSearchBar && (
                 <div
-                    className={`absolute w-full flex flex-col items-center z-10 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${viewState === 'hero'
+                    className={`absolute w-full flex flex-col items-center transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${viewState === 'hero'
                         ? 'top-[30vh] scale-125'
                         : 'top-0 pt-[8vh] scale-100'
                         }`}
-                    style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto' }}
+                    style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto', zIndex: 99999 }}
                 >
                     <div className="text-center mb-6 sm:mb-8 drop-shadow-md select-none">
                         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
@@ -1010,8 +1010,8 @@ export default function App() {
 
                         {/* Search Suggestions Dropdown */}
                         <div
-                            className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-xl border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
-                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', zIndex: 99999 }}
+                            className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
+                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', zIndex: 99999, willChange: 'transform, opacity, max-height' }}
                         >
                             {suggestions.map((s, i) => (
                                 <div
