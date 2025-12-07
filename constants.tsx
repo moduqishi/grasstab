@@ -26,7 +26,7 @@ export const SEARCH_ENGINES: Record<SearchEngineKey, { name: string; url: string
         )
     },
     baidu: {
-        name: 'Baidu',
+        name: '百度',
         url: 'https://www.baidu.com/s?wd=',
         icon: (
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -34,85 +34,91 @@ export const SEARCH_ENGINES: Record<SearchEngineKey, { name: string; url: string
             </svg>
         )
     },
+    duckduckgo: {
+        name: 'DuckDuckGo',
+        url: 'https://duckduckgo.com/?q=',
+        icon: (
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 23C5.925 23 1 18.075 1 12S5.925 1 12 1s11 4.925 11 11-4.925 11-11 11zm5.5-15a1.5 1.5 0 1 1-3.001-.001A1.5 1.5 0 0 1 17.5 8zm-11 0a1.5 1.5 0 1 1-3.001-.001A1.5 1.5 0 0 1 6.5 8zM12 17.5c2.33 0 4.304-1.456 5.106-3.5H6.894c.802 2.044 2.776 3.5 5.106 3.5z"/>
+            </svg>
+        )
+    }
 };
 
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
+    // === 搜索引擎 (Search Engines) ===
+    { id: 'google', title: 'Google', url: 'https://www.google.com', type: 'auto', color: 'from-blue-500 to-red-500' },
+    { id: 'bing', title: 'Bing', url: 'https://www.bing.com', type: 'auto', color: 'from-blue-600 to-cyan-500' },
+    { id: 'baidu', title: '百度', url: 'https://www.baidu.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
+    { id: 'ddg', title: 'DuckDuckGo', url: 'https://duckduckgo.com', type: 'auto', color: 'from-orange-600 to-red-600' },
+    
+    // === 社交媒体 (Social Media) ===
+    { id: 'twitter', title: 'Twitter/X', url: 'https://twitter.com', type: 'twitter', color: 'from-sky-400 to-blue-500' },
+    { id: 'facebook', title: 'Facebook', url: 'https://facebook.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
+    { id: 'instagram', title: 'Instagram', url: 'https://instagram.com', type: 'auto', color: 'from-purple-500 to-pink-500' },
+    { id: 'linkedin', title: 'LinkedIn', url: 'https://linkedin.com', type: 'auto', color: 'from-blue-700 to-blue-800' },
+    { id: 'reddit', title: 'Reddit', url: 'https://reddit.com', type: 'auto', color: 'from-orange-500 to-red-600' },
+    { id: 'weibo', title: '微博', url: 'https://weibo.com', type: 'auto', color: 'from-red-500 to-orange-500' },
+    { id: 'zhihu', title: '知乎', url: 'https://www.zhihu.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
+    { id: 'douban', title: '豆瓣', url: 'https://www.douban.com', type: 'auto', color: 'from-green-600 to-green-700' },
+    
+    // === 视频平台 (Video Platforms) ===
+    { id: 'youtube', title: 'YouTube', url: 'https://youtube.com', type: 'youtube', color: 'from-red-500 to-red-600' },
+    { id: 'bilibili', title: 'Bilibili', url: 'https://www.bilibili.com', type: 'bilibili', color: 'from-pink-400 to-pink-500' },
+    { id: 'netflix', title: 'Netflix', url: 'https://netflix.com', type: 'auto', color: 'from-red-600 to-black' },
+    { id: 'twitch', title: 'Twitch', url: 'https://twitch.tv', type: 'auto', color: 'from-purple-600 to-purple-700' },
+    { id: 'iqiyi', title: '爱奇艺', url: 'https://www.iqiyi.com', type: 'auto', color: 'from-green-500 to-green-600' },
+    { id: 'youku', title: '优酷', url: 'https://www.youku.com', type: 'auto', color: 'from-blue-500 to-blue-600' },
+    
     // === 开发工具 (Development Tools) ===
-    { id: 'gh', title: 'GitHub', url: 'https://github.com', type: 'github', color: 'from-gray-900 to-black' },
+    { id: 'github', title: 'GitHub', url: 'https://github.com', type: 'github', color: 'from-gray-900 to-black' },
     { id: 'gitlab', title: 'GitLab', url: 'https://gitlab.com', type: 'auto', color: 'from-orange-600 to-red-600' },
+    { id: 'stackoverflow', title: 'Stack Overflow', url: 'https://stackoverflow.com', type: 'code', color: 'from-orange-500 to-orange-600' },
+    { id: 'npm', title: 'NPM', url: 'https://www.npmjs.com', type: 'auto', color: 'from-red-600 to-red-700' },
+    { id: 'codepen', title: 'CodePen', url: 'https://codepen.io', type: 'auto', color: 'from-gray-900 to-black' },
     { id: 'gitee', title: 'Gitee', url: 'https://gitee.com', type: 'auto', color: 'from-red-700 to-red-800' },
-    { id: 'so', title: 'Stack Overflow', url: 'https://stackoverflow.com', type: 'code', color: 'from-orange-500 to-orange-600' },
-    { id: 'lc', title: 'LeetCode', url: 'https://leetcode.cn', type: 'code', color: 'from-orange-400 to-yellow-500' },
-    { id: 'mdn', title: 'MDN Web Docs', url: 'https://developer.mozilla.org', type: 'auto', color: 'from-gray-800 to-gray-900' },
+    
+    // === 购物 (E-commerce) ===
+    { id: 'amazon', title: 'Amazon', url: 'https://amazon.com', type: 'auto', color: 'from-orange-400 to-yellow-600' },
+    { id: 'taobao', title: '淘宝', url: 'https://www.taobao.com', type: 'auto', color: 'from-orange-500 to-red-500' },
+    { id: 'jd', title: '京东', url: 'https://www.jd.com', type: 'auto', color: 'from-red-600 to-red-700' },
+    { id: 'tmall', title: '天猫', url: 'https://www.tmall.com', type: 'auto', color: 'from-red-600 to-pink-600' },
+    { id: 'ebay', title: 'eBay', url: 'https://www.ebay.com', type: 'auto', color: 'from-blue-500 to-red-500' },
+    
+    // === 新闻资讯 (News) ===
+    { id: 'bbc', title: 'BBC', url: 'https://www.bbc.com', type: 'auto', color: 'from-gray-900 to-black' },
+    { id: 'cnn', title: 'CNN', url: 'https://www.cnn.com', type: 'auto', color: 'from-red-600 to-red-700' },
+    { id: 'nyt', title: 'New York Times', url: 'https://www.nytimes.com', type: 'auto', color: 'from-gray-800 to-gray-900' },
+    { id: 'toutiao', title: '今日头条', url: 'https://www.toutiao.com', type: 'auto', color: 'from-red-500 to-red-600' },
+    { id: '36kr', title: '36氪', url: 'https://36kr.com', type: 'auto', color: 'from-blue-500 to-blue-600' },
+    
+    // === 工具 (Tools) ===
+    { id: 'gmail', title: 'Gmail', url: 'https://mail.google.com', type: 'gmail', color: 'from-red-500 to-rose-500' },
+    { id: 'outlook', title: 'Outlook', url: 'https://outlook.com', type: 'auto', color: 'from-blue-600 to-blue-800' },
+    { id: 'gdrive', title: 'Google Drive', url: 'https://drive.google.com', type: 'auto', color: 'from-blue-500 to-green-500' },
+    { id: 'dropbox', title: 'Dropbox', url: 'https://www.dropbox.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
+    { id: 'notion', title: 'Notion', url: 'https://notion.so', type: 'auto', color: 'from-gray-100 to-gray-200 text-black' },
+    { id: 'feishu', title: '飞书', url: 'https://www.feishu.cn', type: 'auto', color: 'from-blue-500 to-blue-600' },
+    { id: 'dingtalk', title: '钉钉', url: 'https://www.dingtalk.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
+    { id: 'wechat', title: '微信', url: 'https://weixin.qq.com', type: 'auto', color: 'from-green-500 to-green-600' },
+    
+    // === 学习 (Learning) ===
+    { id: 'coursera', title: 'Coursera', url: 'https://www.coursera.org', type: 'auto', color: 'from-blue-600 to-blue-800' },
+    { id: 'udemy', title: 'Udemy', url: 'https://www.udemy.com', type: 'auto', color: 'from-purple-600 to-purple-800' },
+    { id: 'khan', title: 'Khan Academy', url: 'https://www.khanacademy.org', type: 'auto', color: 'from-teal-500 to-teal-600' },
+    { id: 'duolingo', title: 'Duolingo', url: 'https://www.duolingo.com', type: 'auto', color: 'from-green-500 to-green-600' },
+    
+    // === 设计 (Design) ===
+    { id: 'figma', title: 'Figma', url: 'https://figma.com', type: 'auto', color: 'from-purple-500 to-rose-500' },
+    { id: 'dribbble', title: 'Dribbble', url: 'https://dribbble.com', type: 'auto', color: 'from-pink-500 to-rose-400' },
+    { id: 'behance', title: 'Behance', url: 'https://www.behance.net', type: 'auto', color: 'from-blue-600 to-blue-800' },
+    { id: 'pinterest', title: 'Pinterest', url: 'https://www.pinterest.com', type: 'auto', color: 'from-red-600 to-red-700' },
     
     // === AI工具 (AI Tools) ===
     { id: 'chatgpt', title: 'ChatGPT', url: 'https://chat.openai.com', type: 'chatgpt', color: 'from-emerald-500 to-teal-600', isApp: true },
     { id: 'claude', title: 'Claude', url: 'https://claude.ai', type: 'auto', color: 'from-amber-600 to-orange-600' },
     { id: 'gemini', title: 'Gemini', url: 'https://gemini.google.com', type: 'auto', color: 'from-blue-500 to-purple-600' },
-    { id: 'hf', title: 'Hugging Face', url: 'https://huggingface.co', type: 'auto', color: 'from-yellow-400 to-orange-300' },
-    
-    // === 技术社区 (Tech Community) ===
-    { id: 'csdn', title: 'CSDN', url: 'https://www.csdn.net', type: 'auto', color: 'from-red-600 to-red-700' },
-    { id: 'juejin', title: '掘金', url: 'https://juejin.cn', type: 'auto', color: 'from-blue-500 to-blue-600' },
-    { id: 'sf', title: 'SegmentFault', url: 'https://segmentfault.com', type: 'auto', color: 'from-green-500 to-teal-600' },
-    { id: 'bokeyuan', title: '博客园', url: 'https://www.cnblogs.com', type: 'auto', color: 'from-blue-400 to-blue-500' },
-    { id: 'v2ex', title: 'V2EX', url: 'https://www.v2ex.com', type: 'auto', color: 'from-slate-700 to-slate-800' },
-    { id: 'runoob', title: '菜鸟教程', url: 'https://www.runoob.com', type: 'auto', color: 'from-green-500 to-emerald-500' },
-    
-    // === 云服务 (Cloud Services) ===
-    { id: 'vercel', title: 'Vercel', url: 'https://vercel.com', type: 'code', color: 'from-gray-900 to-black' },
-    { id: 'netlify', title: 'Netlify', url: 'https://netlify.com', type: 'auto', color: 'from-teal-400 to-cyan-500' },
-    { id: 'aliyun', title: '阿里云', url: 'https://www.aliyun.com', type: 'auto', color: 'from-orange-500 to-orange-600' },
-    { id: 'tencent', title: '腾讯云', url: 'https://cloud.tencent.com', type: 'auto', color: 'from-blue-500 to-blue-700' },
-    
-    // === 在线学习 (Online Learning) ===
-    { id: 'coursera', title: 'Coursera', url: 'https://www.coursera.org', type: 'auto', color: 'from-blue-600 to-blue-800' },
-    { id: 'udemy', title: 'Udemy', url: 'https://www.udemy.com', type: 'auto', color: 'from-purple-600 to-purple-800' },
-    { id: 'mooc', title: '中国大学MOOC', url: 'https://www.icourse163.org', type: 'auto', color: 'from-green-600 to-green-700' },
-    { id: 'xuetangx', title: '学堂在线', url: 'https://www.xuetangx.com', type: 'auto', color: 'from-blue-500 to-purple-600' },
-    { id: 'bilibili', title: 'Bilibili', url: 'https://www.bilibili.com', type: 'bilibili', color: 'from-pink-400 to-pink-500' },
-    { id: 'youtube', title: 'YouTube', url: 'https://youtube.com', type: 'youtube', color: 'from-red-500 to-red-600' },
-    
-    // === 文档工具 (Documentation) ===
-    { id: 'notion', title: 'Notion', url: 'https://notion.so', type: 'auto', color: 'from-gray-100 to-gray-200 text-black' },
-    { id: 'evernote', title: '印象笔记', url: 'https://www.yinxiang.com', type: 'auto', color: 'from-green-600 to-green-700' },
-    { id: 'yuque', title: '语雀', url: 'https://www.yuque.com', type: 'auto', color: 'from-blue-500 to-blue-600' },
-    { id: 'wolai', title: 'Wolai', url: 'https://www.wolai.com', type: 'auto', color: 'from-indigo-500 to-purple-600' },
-    
-    // === 设计工具 (Design Tools) ===
-    { id: 'figma', title: 'Figma', url: 'https://figma.com', type: 'auto', color: 'from-purple-500 to-rose-500' },
-    { id: 'canva', title: 'Canva', url: 'https://www.canva.com', type: 'auto', color: 'from-purple-500 to-cyan-400' },
-    { id: 'dribbble', title: 'Dribbble', url: 'https://dribbble.com', type: 'auto', color: 'from-pink-500 to-rose-400' },
-    { id: 'behance', title: 'Behance', url: 'https://www.behance.net', type: 'auto', color: 'from-blue-600 to-blue-800' },
-    
-    // === 知识社区 (Knowledge Community) ===
-    { id: 'zhihu', title: '知乎', url: 'https://www.zhihu.com', type: 'auto', color: 'from-blue-600 to-blue-700' },
-    { id: 'quora', title: 'Quora', url: 'https://www.quora.com', type: 'auto', color: 'from-red-600 to-red-700' },
-    { id: 'reddit', title: 'Reddit', url: 'https://www.reddit.com', type: 'auto', color: 'from-orange-500 to-red-600' },
-    { id: 'douban', title: '豆瓣', url: 'https://www.douban.com', type: 'auto', color: 'from-green-600 to-green-700' },
-    
-    // === 邮箱通讯 (Email & Communication) ===
-    { id: 'gmail', title: 'Gmail', url: 'https://mail.google.com', type: 'gmail', color: 'from-red-500 to-rose-500' },
-    { id: 'outlook', title: 'Outlook', url: 'https://outlook.com', type: 'auto', color: 'from-blue-600 to-blue-800' },
-    { id: 'discord', title: 'Discord', url: 'https://discord.com', type: 'auto', color: 'from-indigo-500 to-blue-600' },
-    { id: 'slack', title: 'Slack', url: 'https://slack.com', type: 'auto', color: 'from-purple-600 to-pink-600' },
-    
-    // === 工具网站 (Utility Sites) ===
-    { id: 'translate', title: 'Google 翻译', url: 'https://translate.google.com', type: 'auto', color: 'from-blue-500 to-blue-600' },
-    { id: 'deepl', title: 'DeepL', url: 'https://www.deepl.com', type: 'auto', color: 'from-blue-700 to-blue-900' },
-    { id: 'regex101', title: 'Regex101', url: 'https://regex101.com', type: 'auto', color: 'from-green-600 to-teal-600' },
-    { id: 'caniuse', title: 'Can I Use', url: 'https://caniuse.com', type: 'auto', color: 'from-yellow-500 to-orange-500' },
-    
-    // === 资源下载 (Resources) ===
-    { id: 'npm', title: 'npm', url: 'https://www.npmjs.com', type: 'auto', color: 'from-red-600 to-red-700' },
-    { id: 'pypi', title: 'PyPI', url: 'https://pypi.org', type: 'auto', color: 'from-blue-500 to-yellow-400' },
-    { id: 'docker', title: 'Docker Hub', url: 'https://hub.docker.com', type: 'auto', color: 'from-blue-500 to-blue-700' },
-    
-    // === 新闻资讯 (News) ===
-    { id: 'hackernews', title: 'Hacker News', url: 'https://news.ycombinator.com', type: 'auto', color: 'from-orange-500 to-orange-600' },
-    { id: 'producthunt', title: 'Product Hunt', url: 'https://www.producthunt.com', type: 'auto', color: 'from-orange-500 to-red-500' },
-    { id: 'techcrunch', title: 'TechCrunch', url: 'https://techcrunch.com', type: 'auto', color: 'from-green-600 to-green-800' },
-    { id: '36kr', title: '36氪', url: 'https://36kr.com', type: 'auto', color: 'from-blue-500 to-blue-600' },
+    { id: 'midjourney', title: 'Midjourney', url: 'https://www.midjourney.com', type: 'auto', color: 'from-purple-600 to-pink-600' },
 ];
 
 export const DEFAULT_DOCK: DockItem[] = [

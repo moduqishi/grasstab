@@ -21,13 +21,84 @@ export const formatTime = (date: Date) => {
 // --- Config Helpers ---
 export const generateYamlConfig = (config: GlobalConfig): string => {
     try {
-        return dump(config, {
+        // 确保配置对象有效
+        if (!config || typeof config !== 'object') {
+            throw new Error('Invalid config object');
+        }
+
+        // 精简shortcuts：移除布局相关字段和默认值
+        const cleanShortcuts = (config.shortcuts || []).filter(s => s && s.id).map(s => {
+            const clean: any = {
+                id: s.id,
+                title: s.title,
+                url: s.url,
+                type: s.type
+            };
+            
+            // color：只在没有自定义图标时才保存（有图标时背景色不可见）
+            if (!s.customIcon && s.color) {
+                clean.color = s.color;
+            }
+            
+            // 只有非默认值才保存
+            if (s.customIcon) clean.icon = s.customIcon;
+            if (s.size && (s.size.w !== 1 || s.size.h !== 1)) clean.size = s.size;
+            if (s.widgetType) {
+                clean.widget = {
+                    type: s.widgetType,
+                    content: s.widgetContent
+                };
+            }
+            
+            return clean;
+        });
+
+        // 精简dockItems：只保存必要字段
+        const cleanDockItems = (config.dockItems || []).filter(d => d && d.id).map(d => {
+            const clean: any = {
+                id: d.id,
+                title: d.title || d.name,
+                url: d.url,
+                type: d.type || 'auto'
+            };
+            
+            // color：只在没有自定义图标时才保存
+            if (!d.customIcon && d.color) {
+                clean.color = d.color;
+            }
+            
+            if (d.customIcon) clean.icon = d.customIcon;
+            return clean;
+        });
+
+        // 创建一个干净的配置副本
+        const cleanConfig = {
+            version: config.version || '1.0',
+            createdAt: config.createdAt || new Date().toISOString(),
+            settings: config.settings || {},
+            wallpaper: config.wallpaper || '',
+            shortcuts: cleanShortcuts,
+            dock: cleanDockItems
+        };
+
+        const yamlStr = dump(cleanConfig, {
             indent: 2,
             lineWidth: -1, // Don't break long lines (like base64 or long URLs)
             noRefs: true,
+            skipInvalid: true, // 跳过无法序列化的值
+            sortKeys: false, // 保持原始顺序
         });
+
+        // 验证生成的YAML不为空
+        if (!yamlStr || yamlStr.trim() === '') {
+            throw new Error('Generated YAML is empty');
+        }
+
+        return yamlStr;
     } catch (e) {
         console.error('Failed to generate YAML', e);
+        const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+        alert(`导出配置失败: ${errorMsg}\n\n请检查配置数据是否有效。`);
         return '';
     }
 };
@@ -49,7 +120,9 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
             throw new Error('Missing or invalid shortcuts array');
         }
 
-        if (!Array.isArray(doc.dockItems)) {
+        // 支持新旧格式：dock 或 dockItems
+        const dockItems = doc.dock || doc.dockItems;
+        if (!Array.isArray(dockItems)) {
             throw new Error('Missing or invalid dock items array');
         }
 
@@ -71,30 +144,45 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
             throw new Error('Missing or invalid wallpaper URL');
         }
 
-        // Filter out invalid shortcuts (null, undefined, or missing required fields)
-        const validShortcuts = doc.shortcuts.filter((s: any) =>
-            s &&
-            (s.id !== null && s.id !== undefined) &&
-            s.type &&
-            s.color
-        );
+        // 解析shortcuts：恢复默认值和布局字段
+        const shortcuts = doc.shortcuts.map((s: any) => {
+            if (!s || !s.id) return null;
+            return {
+                id: s.id,
+                title: s.title,
+                url: s.url,
+                type: s.type || 'auto',
+                color: s.color || 'from-gray-800 to-gray-700',
+                customIcon: s.icon, // 新格式用icon，映射回customIcon
+                size: s.size || { w: 1, h: 1 },
+                isApp: s.url?.startsWith('#') || false,
+                widgetType: s.widget?.type,
+                widgetContent: s.widget?.content
+            };
+        }).filter((s: any) => s !== null);
 
-        // Filter out invalid dock items
-        const validDockItems = doc.dockItems.filter((d: any) =>
-            d &&
-            (d.id !== null && d.id !== undefined) &&
-            d.iconType &&
-            d.type &&
-            d.color
-        );
+        // 解析dockItems：恢复完整字段
+        const parsedDockItems = dockItems.map((d: any) => {
+            if (!d || !d.id) return null;
+            return {
+                id: d.id,
+                title: d.title,
+                name: d.title,
+                url: d.url,
+                type: d.type || 'auto',
+                color: d.color || 'from-gray-800 to-gray-700',
+                customIcon: d.icon, // 新格式用icon，映射回customIcon
+                iconType: d.type || 'auto'
+            };
+        }).filter((d: any) => d !== null);
 
         return {
             version: doc.version || '1.0',
             createdAt: doc.createdAt || new Date().toISOString(),
             settings: doc.settings,
             wallpaper: doc.wallpaper,
-            shortcuts: validShortcuts,
-            dockItems: validDockItems
+            shortcuts,
+            dockItems: parsedDockItems
         } as GlobalConfig;
 
     } catch (e) {
@@ -217,4 +305,58 @@ export const jsonp = (url: string, callbackParam: string = 'callback'): Promise<
 
         document.body.appendChild(script);
     });
+};
+// --- Icon URL Helpers ---
+// Get the best icon URL for a website
+export const getIconUrl = (url: string) => {
+    try {
+        const domain = new URL(url).hostname;
+        // Using icon.horse as primary - best quality and coverage
+        return `https://icon.horse/icon/${domain}`;
+    } catch (e) {
+        return null;
+    }
+};
+
+// Get all available icon URLs for fallback
+export const getAllIconUrls = (url: string) => {
+    try {
+        const domain = new URL(url).hostname;
+        return [
+            // Priority 1: icon.horse - High quality, good coverage, automatic fallbacks
+            { source: 'iconhorse', url: `https://icon.horse/icon/${domain}`, name: 'Icon Horse' },
+            // Priority 2: Clearbit - High quality logos for major companies
+            { source: 'clearbit', url: `https://logo.clearbit.com/${domain}`, name: 'Clearbit' },
+            // Priority 3: unavatar.io - Good alternatives from multiple sources
+            { source: 'unavatar', url: `https://unavatar.io/${domain}?fallback=false`, name: 'Unavatar' },
+            // Priority 4: Google Favicon - Reliable but sometimes low quality
+            { source: 'google', url: `https://www.google.com/s2/favicons?domain=${domain}&sz=128`, name: 'Google' },
+            // Priority 5: DuckDuckGo - Good fallback
+            { source: 'ddg', url: `https://icons.duckduckgo.com/ip3/${domain}.ico`, name: 'DuckDuckGo' },
+            // Priority 6: Favicon Kit - Another reliable source  
+            { source: 'faviconkit', url: `https://api.faviconkit.com/${domain}/128`, name: 'Favicon Kit' },
+            // Priority 7: Direct favicon from the site
+            { source: 'direct', url: `https://${domain}/favicon.ico`, name: 'Direct' }
+        ];
+    } catch (e) {
+        return [];
+    }
+};
+
+// Get icon sources object for fallback handling
+export const getIconSources = (url: string) => {
+    try {
+        const domain = new URL(url).hostname;
+        return {
+            iconhorse: `https://icon.horse/icon/${domain}`,
+            clearbit: `https://logo.clearbit.com/${domain}`,
+            unavatar: `https://unavatar.io/${domain}?fallback=false`,
+            google: `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+            ddg: `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+            faviconkit: `https://api.faviconkit.com/${domain}/128`,
+            direct: `https://${domain}/favicon.ico`
+        };
+    } catch (e) {
+        return null;
+    }
 };

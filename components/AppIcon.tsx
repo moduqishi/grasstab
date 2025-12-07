@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, StickyNote, Calculator, Settings, Check, Edit3, AppWindow, Youtube, Github, Twitter, Sparkles, Mail, Code, LayoutGrid } from 'lucide-react';
-import { getDomain } from '../utils';
+import { getDomain, getAllIconUrls } from '../utils';
 import { Shortcut } from '../types';
 import { ClockWidget, CalendarWidget, WeatherWidget, CustomHTMLWidget, IFrameWidget } from './widgets/SystemWidgets';
 import { AppContextMenu } from './AppContextMenu';
@@ -25,9 +25,16 @@ interface AppIconProps extends Shortcut {
 
 export const AppIcon: React.FC<AppIconProps> = (props) => {
     const { type, title, url, iconType, widgetType, widgetContent, size, customIcon, onContextMenu } = props;
-    const [iconMode, setIconMode] = useState<'brand' | 'favicon' | 'text'>('brand'); 
+    const [currentIconIndex, setCurrentIconIndex] = useState(0);
+    const [iconSources, setIconSources] = useState<Array<{source: string, url: string, name: string}>>([]);
     
-    useEffect(() => { setIconMode('brand'); }, [url]);
+    useEffect(() => {
+        if (url) {
+            const sources = getAllIconUrls(url);
+            setIconSources(sources);
+            setCurrentIconIndex(0);
+        }
+    }, [url]);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -118,17 +125,19 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
     }
 
     const handleError = () => {
-        if (iconMode === 'brand') setIconMode('favicon');
-        else if (iconMode === 'favicon') setIconMode('text');
+        // Move to next icon source in priority list
+        if (currentIconIndex < iconSources.length - 1) {
+            setCurrentIconIndex(prev => prev + 1);
+        }
     };
 
-    // 3. Web Icons - Full Cover Style
-    if (iconMode === 'brand' && url) {
-        const domain = getDomain(url);
+    // 3. Web Icons - Full Cover Style with fallback priority
+    if (url && iconSources.length > 0 && currentIconIndex < iconSources.length) {
+        const currentSource = iconSources[currentIconIndex];
         return (
             <div onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
                 <img 
-                    src={`https://logo.clearbit.com/${domain}`} 
+                    src={currentSource.url} 
                     alt={title} 
                     className="w-full h-full object-cover select-none pointer-events-none" 
                     onError={handleError} 
@@ -137,20 +146,6 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
         );
     }
     
-    if (iconMode === 'favicon' && url) {
-        const domain = getDomain(url);
-        return (
-            <div onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
-                <img 
-                    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`} 
-                    alt={title} 
-                    className="w-full h-full object-cover select-none pointer-events-none" 
-                    onError={handleError} 
-                />
-            </div>
-        );
-    }
-
     // 4. Fallback Text Icon
     return renderVector(<span className="text-3xl font-bold truncate px-1 select-none">{title ? title.substring(0, 1).toUpperCase() : '?'}</span>);
 };

@@ -23,6 +23,7 @@ export const translations = {
         // Data Management
         exportConfig: '导出配置',
         importConfig: '导入配置',
+        editConfig: '编辑配置',
         resetToDefault: '恢复默认',
         
         // Window Titles
@@ -114,6 +115,7 @@ export const translations = {
         // Data Management
         exportConfig: 'Export Config',
         importConfig: 'Import Config',
+        editConfig: 'Edit Config',
         resetToDefault: 'Reset to Default',
         
         // Window Titles

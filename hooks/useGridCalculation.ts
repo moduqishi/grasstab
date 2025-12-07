@@ -10,11 +10,15 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
             const h = window.innerHeight;
             const isMobile = w < 768;
 
-            const topReserved = 380;
-            const bottomReserved = showDock ? 200 : 60;
+            // 根据屏幕大小调整预留空间
+            const topReserved = isMobile ? (w < 640 ? 250 : 320) : 380;
+            const bottomReserved = isMobile 
+                ? (showDock ? (w < 640 ? 140 : 160) : 40)
+                : (showDock ? 200 : 60);
             let availableHeight = Math.max(100, h - topReserved - bottomReserved);
             
-            let itemHeight = isMobile ? 100 : 130;
+            // 移动端使用更小的图标
+            let itemHeight = isMobile ? (w < 640 ? 90 : 100) : 130;
             const maxGridWidth = Math.min(w * 0.92, 1200);
             
             let cols = 3;

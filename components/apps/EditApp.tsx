@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Upload, Link as LinkIcon, Monitor, Maximize2, Code, Globe } from 'lucide-react';
 import { Shortcut, WidgetType } from '../../types';
 import { t, Language } from '../../i18n';
+import { IconSelector } from '../IconSelector';
 
 interface EditAppProps {
     app: Shortcut;
@@ -16,6 +17,7 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
     const [title, setTitle] = useState(app.title || '');
     const [url, setUrl] = useState(app.url || '');
     const [customIcon, setCustomIcon] = useState(app.customIcon || '');
+    const [selectedIconUrl, setSelectedIconUrl] = useState('');
     const [iconPreview, setIconPreview] = useState(app.customIcon || '');
     const [isWindowMode, setIsWindowMode] = useState(app.isApp || false);
     
@@ -56,11 +58,14 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
     };
 
     const handleSave = () => {
+        // 优先使用选中的图标URL,其次是自定义图标
+        const finalIcon = selectedIconUrl || customIcon || undefined;
+        
         const updated: Shortcut = {
             ...app,
             title,
             url,
-            customIcon: customIcon || undefined,
+            customIcon: finalIcon,
             isApp: isWidget ? app.isApp : isWindowMode,
         };
 
@@ -115,65 +120,22 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
                         </div>
                     )}
 
-                    {/* Custom Icon (only for apps) */}
-                    {!isWidget && (
+                    {/* Icon Selector (only for apps) */}
+                    {!isWidget && url && (
                         <div>
-                            <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>自定义图标</label>
-                            <div className="space-y-3">
-                                {/* URL Input */}
-                                <div className="flex gap-2">
-                                    <div className="flex-1 relative">
-                                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255, 255, 255, 0.4)' }} size={18} />
-                                        <input
-                                            type="text"
-                                            value={customIcon}
-                                            onChange={(e) => handleIconUrlChange(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-lg outline-none transition-all"
-                                            style={{
-                                                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                color: 'rgba(255, 255, 255, 0.9)'
-                                            }}
-                                            placeholder="图标 URL"
-                                        />
-                                    </div>
-                                    <label 
-                                        className="px-4 py-2.5 rounded-lg cursor-pointer transition-colors flex items-center gap-2 text-sm font-medium"
-                                        style={{
-                                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                                            color: 'rgba(255, 255, 255, 0.8)'
-                                        }}
-                                    >
-                                        <Upload size={18} />
-                                        上传
-                                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                                    </label>
-                                </div>
-
-                                {/* Preview */}
-                                {iconPreview && (
-                                    <div className="flex items-center gap-3">
-                                        <div 
-                                            className="w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center"
-                                            style={{
-                                                border: '2px solid rgba(255, 255, 255, 0.15)',
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)'
-                                            }}
-                                        >
-                                            <img src={iconPreview} alt="预览" className="w-full h-full object-cover" onError={() => setIconPreview('')} />
-                                        </div>
-                                        <button
-                                            onClick={() => { setCustomIcon(''); setIconPreview(''); }}
-                                            className="text-sm font-medium"
-                                            style={{ color: 'rgba(239, 68, 68, 0.9)' }}
-                                            title="清除自定义图标"
-                                        >
-                                            清除图标
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                            <IconSelector
+                                url={url}
+                                currentIcon={selectedIconUrl || customIcon}
+                                onSelect={(iconUrl) => {
+                                    setSelectedIconUrl(iconUrl);
+                                    setIconPreview(iconUrl);
+                                }}
+                                onCustom={(icon) => {
+                                    setCustomIcon(icon);
+                                    setIconPreview(icon);
+                                    setSelectedIconUrl(''); // 清除选中的图标URL
+                                }}
+                            />
                         </div>
                     )}
 

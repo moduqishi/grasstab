@@ -1,0 +1,127 @@
+# GrassTab 配置文件示例
+# 这是优化后的简洁格式，移除了冗余字段
+
+version: '1.0'
+createdAt: '2025-12-07T06:00:00.000Z'
+
+# 系统设置
+settings:
+  showDockEdit: true        # 显示Dock编辑按钮
+  showSearchBar: true       # 显示搜索栏
+  showPagination: true      # 显示分页指示器
+  showDock: true            # 显示Dock栏
+  language: zh              # 语言：zh 或 en
+
+# 壁纸URL
+wallpaper: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564
+
+# 桌面快捷方式
+shortcuts:
+  # 基础格式（最小配置）
+  - id: google
+    title: Google
+    url: https://www.google.com
+    type: auto
+    color: from-blue-500 to-red-500
+
+  # 带自定义图标
+  - id: github
+    title: GitHub
+    url: https://github.com
+    type: github
+    color: from-gray-700 to-gray-900
+    icon: https://github.githubassets.com/favicons/favicon.svg
+
+  # 大尺寸小组件 (2x2)
+  - id: clock-widget
+    title: 时钟
+    type: auto
+    color: from-purple-600 to-blue-600
+    size:
+      w: 2
+      h: 2
+    widget:
+      type: clock
+      content: ""
+
+  # 自定义HTML小组件
+  - id: custom-widget
+    title: 自定义
+    type: auto
+    color: from-green-600 to-teal-600
+    size:
+      w: 2
+      h: 1
+    widget:
+      type: custom
+      content: <div style="color:white;">Hello World</div>
+
+  # 更多快捷方式...
+  - id: twitter
+    title: Twitter/X
+    url: https://twitter.com
+    type: twitter
+    color: from-sky-400 to-blue-500
+
+  - id: youtube
+    title: YouTube
+    url: https://youtube.com
+    type: youtube
+    color: from-red-500 to-red-600
+
+# Dock栏应用（底部栏）
+dock:
+  - id: calculator
+    title: 计算器
+    url: "#calc"
+    type: auto
+    color: from-orange-500 to-red-600
+
+  - id: notes
+    title: 便签
+    url: "#notes"
+    type: auto
+    color: from-yellow-400 to-orange-500
+
+  - id: ai
+    title: AI助手
+    url: "#ai"
+    type: auto
+    color: from-purple-500 to-pink-500
+
+  - id: settings
+    title: 设置
+    url: "#settings"
+    type: auto
+    color: from-gray-600 to-gray-800
+    icon: https://cdn-icons-png.flaticon.com/512/3524/3524659.png
+
+# 说明：
+# 1. 字段简化：
+#    - 移除了 x/y/page/isApp 等布局字段（自动计算）
+#    - customIcon 简化为 icon
+#    - dockItems 简化为 dock
+#    - size 默认为 1x1，只在非默认时才需要指定
+#
+# 2. 图标设置：
+#    - 不设置 icon 字段时，会自动从多个图标源获取
+#    - 可选图标源：Google Favicon, Clearbit, Unavatar等
+#    - 支持自定义 icon URL
+#    - 支持上传的base64图标
+#
+# 3. 颜色渐变：
+#    - 使用 Tailwind CSS 渐变类名
+#    - 格式：from-{color}-{shade} to-{color}-{shade}
+#    - 示例：from-blue-500 to-purple-600
+#
+# 4. 小组件类型：
+#    - clock: 时钟小组件
+#    - calendar: 日历小组件
+#    - weather: 天气小组件
+#    - custom: 自定义HTML
+#    - iframe: 嵌入网页
+#
+# 5. 应用类型 (type)：
+#    - auto: 自动检测图标
+#    - github/twitter/youtube/bilibili: 特定平台
+#    - 其他自定义类型

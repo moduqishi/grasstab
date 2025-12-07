@@ -30,7 +30,7 @@ export interface DockItem extends Shortcut {
 
 export interface WindowState {
     id: string;
-    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web' | 'edit';
+    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web' | 'edit' | 'configEditor';
     title: string;
     isOpen: boolean;
     isMaximized?: boolean; // Lifted state

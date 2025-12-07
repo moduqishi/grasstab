@@ -57,3 +57,42 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  /* 增加触摸目标大小 */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 优化文字选择 */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  /* 隐藏点击高亮 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 优化输入框 */
+  input {
+    font-size: 16px; /* 防止iOS自动缩放 */
+  }
+}
+
+/* 安全区域适配（iPhone刘海屏等） */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}

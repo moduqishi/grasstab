@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { DEFAULT_WALLPAPER } from '../../constants.tsx';
 import { SystemSettings } from '../../types';
-import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages } from 'lucide-react';
+import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages, FileEdit } from 'lucide-react';
 import { t } from '../../i18n';
 
 interface SettingsAppProps {
@@ -11,13 +11,12 @@ interface SettingsAppProps {
     onExport: () => void;
     onImport: (file: File) => void;
     onReset: () => void;
+    onEditConfig?: () => void;
 }
 
 const WALLPAPERS = [
     DEFAULT_WALLPAPER,
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564",
-    "https://images.unsplash.com/photo-1534796636912-3b95b3ab5980?q=80&w=2672",
-    "https://images.unsplash.com/photo-1519681393798-38e43269d877?q=80&w=2670",
     "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2574",
     "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2670"
 ];
@@ -56,8 +55,7 @@ const SettingsItem = ({ icon: Icon, label, children, isLast }: { icon: any, labe
         </div>
     </div>
 );
-
-export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpdate, onExport, onImport, onReset }) => {
+export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpdate, onExport, onImport, onReset, onEditConfig }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const lang = settings.language || 'zh';
 
@@ -168,6 +166,18 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                         </div>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'importConfig')}</span>
                     </div>
+
+                    {onEditConfig && (
+                        <div
+                            onClick={onEditConfig}
+                            className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] cursor-pointer active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-white/5"
+                        >
+                            <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                                <FileEdit size={18} />
+                            </div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">{t(lang, 'editConfig')}</span>
+                        </div>
+                    )}
 
                     <div
                         onClick={onReset}
