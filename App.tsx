@@ -282,7 +282,7 @@ function DesktopApp() {
                 settings: sysSettings,
                 wallpaper,
                 shortcuts: desktopApps,
-                dockItems: dockApps
+                dockItems: dockApps as DockItem[]
             };
 
             console.log('Exporting config:', config); // 调试日志
@@ -422,7 +422,7 @@ function DesktopApp() {
                 settings: sysSettings,
                 wallpaper,
                 shortcuts: desktopApps,
-                dockItems: dockApps
+                dockItems: dockApps as DockItem[]
             };
 
             // 生成YAML
@@ -1485,7 +1485,7 @@ function DesktopApp() {
                                 value={configEditorContent}
                                 language="yaml"
                                 onSave={handleSaveConfig}
-                                onClose={() => closeWindow('configEditor')}
+                                onClose={() => closeWin('configEditor')}
                             />
                         )}
                         {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
