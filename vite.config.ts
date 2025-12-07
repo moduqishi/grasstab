@@ -83,6 +83,32 @@ export default defineConfig(({ mode }) => {
               }
             });
             console.log('✓ 图标文件已复制');
+            
+            // 复制所有文件到chrome-extension目录
+            const chromeExtPath = path.resolve(__dirname, 'chrome-extension');
+            if (!fs.existsSync(chromeExtPath)) {
+              fs.mkdirSync(chromeExtPath, { recursive: true });
+            }
+            
+            // 递归复制dist目录中的所有文件
+            const copyRecursive = (src, dest) => {
+              const entries = fs.readdirSync(src, { withFileTypes: true });
+              for (const entry of entries) {
+                const srcPath = path.join(src, entry.name);
+                const destPath = path.join(dest, entry.name);
+                if (entry.isDirectory()) {
+                  if (!fs.existsSync(destPath)) {
+                    fs.mkdirSync(destPath, { recursive: true });
+                  }
+                  copyRecursive(srcPath, destPath);
+                } else {
+                  fs.copyFileSync(srcPath, destPath);
+                }
+              }
+            };
+            
+            copyRecursive(distPath, chromeExtPath);
+            console.log('✓ 所有文件已复制到chrome-extension目录');
           }
         }
       ].filter(Boolean),

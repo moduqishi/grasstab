@@ -98,6 +98,10 @@ export default function App() {
     const [engine, setEngine] = useState<SearchEngineKey>('google');
     const [search, setSearch] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    
+    // Scroll accumulation for smoother page/view transitions
+    const scrollAccumulator = useRef(0);
+    const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
 
@@ -433,6 +437,9 @@ export default function App() {
     const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const gridRef = useRef<HTMLDivElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
+    
+    // --- Widget Resize State ---
+    const [resizingWidget, setResizingWidget] = useState<{ id: number | string, startW: number, startH: number, startX: number, startY: number } | null>(null);
 
     // Auto-pagination refs
     const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -726,7 +733,56 @@ export default function App() {
             flipInterval.current = null;
         }
         setDragState(prev => ({ ...prev, isDragging: false }));
-    }, []);
+        
+        // Just clear resizing state, size already updated during drag
+        setResizingWidget(null);
+    }, [resizingWidget]);
+    
+    // Widget resize handlers
+    const handleResizeStart = useCallback((e: React.PointerEvent, widget: Shortcut) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setResizingWidget({
+            id: widget.id,
+            startW: widget.size?.w || 2,
+            startH: widget.size?.h || 2,
+            startX: e.clientX,
+            startY: e.clientY
+        });
+    }, [cellWidth, cellHeight]);
+    
+    const handleResizeMove = useCallback((e: PointerEvent) => {
+        if (!resizingWidget || cellWidth <= 0 || cellHeight <= 0) return;
+        
+        const deltaX = e.clientX - resizingWidget.startX;
+        const deltaY = e.clientY - resizingWidget.startY;
+        
+        // Calculate new size based on cell dimensions
+        const newW = Math.max(1, Math.min(6, resizingWidget.startW + Math.round(deltaX / cellWidth)));
+        const newH = Math.max(1, Math.min(6, resizingWidget.startH + Math.round(deltaY / cellHeight)));
+        
+        // Update both resizing state and shortcuts immediately for live preview
+        if (newW !== resizingWidget.newW || newH !== resizingWidget.newH) {
+            setResizingWidget(prev => prev ? { ...prev, newW, newH } : null);
+            // Also update shortcuts immediately to trigger layout recalculation
+            setShortcuts(prev => prev.map(s => 
+                s.id === resizingWidget.id 
+                    ? { ...s, size: { w: newW, h: newH } }
+                    : s
+            ));
+        }
+    }, [resizingWidget, cellWidth, cellHeight]);
+    
+    useEffect(() => {
+        if (resizingWidget) {
+            window.addEventListener('pointermove', handleResizeMove);
+            window.addEventListener('pointerup', handlePointerUp);
+        }
+        return () => {
+            window.removeEventListener('pointermove', handleResizeMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, [resizingWidget, handleResizeMove, handlePointerUp]);
 
     useEffect(() => {
         if (dragState.isDragging) {
@@ -767,16 +823,48 @@ export default function App() {
             onClick={() => { setContextMenu(null); setAppContextMenu(null); if (isEditing) setIsEditing(false); }}
             onPointerUp={() => { if (longPressTimer.current) clearTimeout(longPressTimer.current); }}
             onWheel={(e) => {
+                // Accumulate scroll delta
+                scrollAccumulator.current += e.deltaY;
+                
+                // Clear previous timeout
+                if (scrollTimeout.current) {
+                    clearTimeout(scrollTimeout.current);
+                }
+                
+                // Reset accumulator after 150ms of no scrolling
+                scrollTimeout.current = setTimeout(() => {
+                    scrollAccumulator.current = 0;
+                }, 150);
+                
+                // Different thresholds for different actions
+                const heroToDesktopThreshold = 150;  // 大时间 -> 桌面：需要明确滚动
+                const desktopToHeroThreshold = 300;  // 桌面 -> 大时间：需要更大的滚动量，且必须在第0页
+                const pageChangeThreshold = 150;     // 页面切换：正常滚动量
+                
                 if (viewState === 'hero') {
-                    if (e.deltaY > 30) {
+                    // 在大时间模式，只能向下滚动进入桌面
+                    if (scrollAccumulator.current > heroToDesktopThreshold) {
                         setViewState('desktop');
+                        scrollAccumulator.current = 0;
                     }
                 } else {
                     // Desktop mode
-                    if (e.deltaY < -30 && page === 0) {
+                    // 只有在第0页时，向上滚动才能回到大时间模式，且需要更大的滚动量
+                    if (page === 0 && scrollAccumulator.current < -desktopToHeroThreshold) {
                         setViewState('hero');
-                    } else if (Math.abs(e.deltaY) > 30) {
-                        changePage(e.deltaY);
+                        scrollAccumulator.current = 0;
+                    } 
+                    // 向下滚动：翻到下一页
+                    else if (scrollAccumulator.current > pageChangeThreshold) {
+                        if (page < totalPages - 1) {
+                            changePage(1);
+                            scrollAccumulator.current = 0;
+                        }
+                    } 
+                    // 向上滚动：翻到上一页（不在第0页时）
+                    else if (scrollAccumulator.current < -pageChangeThreshold && page > 0) {
+                        changePage(-1);
+                        scrollAccumulator.current = 0;
                     }
                 }
             }}
@@ -885,7 +973,7 @@ export default function App() {
                         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
                         <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mt-1 font-light tracking-widest uppercase">{time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    <div className="relative w-[95%] sm:w-[90%] max-w-xl z-50">
+                    <div className="relative w-[95%] sm:w-[90%] max-w-xl" style={{ zIndex: 99999 }}>
                         <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
                             <button onClick={() => setEngine(prev => {
                                 const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
@@ -922,8 +1010,8 @@ export default function App() {
 
                         {/* Search Suggestions Dropdown */}
                         <div
-                            className={`absolute top-full left-0 w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
-                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+                            className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-xl border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
+                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', zIndex: 99999 }}
                         >
                             {suggestions.map((s, i) => (
                                 <div
@@ -962,12 +1050,17 @@ export default function App() {
                     style={{ width: gridWidth + 'px', margin: '0 auto' }}
                 >
                     {currentItems.map((item) => {
+                        // Check if this widget is being resized
+                        const isBeingResized = resizingWidget?.id === item.id;
+                        const displayW = isBeingResized && resizingWidget.newW ? resizingWidget.newW : (item?.size?.w || 1);
+                        const displayH = isBeingResized && resizingWidget.newH ? resizingWidget.newH : (item?.size?.h || 1);
+                        
                         // Calculate position based on packed coordinates
                         const left = `${item.x * cellWidth}px`;
                         const top = `${item.y * cellHeight}px`;
                         // Calculate dimension based on size (w * cellWidth, h * cellHeight)
-                        const width = `${(item?.size?.w || 1) * cellWidth}px`;
-                        const height = `${(item?.size?.h || 1) * cellHeight}px`;
+                        const width = `${displayW * cellWidth}px`;
+                        const height = `${displayH * cellHeight}px`;
 
                         // Find index in original shortcuts for drag identification
                         const originalIndex = shortcuts.findIndex(s => s.id === item.id);
@@ -1024,6 +1117,36 @@ export default function App() {
                                                     >
                                                         <Minus size={16} strokeWidth={3} />
                                                     </div>
+                                                )}
+                                                
+                                                {/* Resize handle for widgets in edit mode */}
+                                                {isEditing && isWidget && (
+                                                    <>
+                                                        {/* Corner arc indicator */}
+                                                        <svg className="absolute -bottom-0.5 -right-0.5 z-20 pointer-events-none" width="32" height="32" viewBox="0 0 32 32">
+                                                            <path d="M 32 32 L 32 20 Q 32 12 24 12 L 12 12" stroke="white" strokeWidth="2" fill="none" opacity="0.3"/>
+                                                        </svg>
+                                                        
+                                                        {/* Resize handle */}
+                                                        <div
+                                                            onPointerDown={(e) => handleResizeStart(e, s)}
+                                                            className="absolute -bottom-1.5 -right-1.5 z-20 w-10 h-10 backdrop-blur-md bg-white/20 border border-white/40 rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] cursor-se-resize hover:bg-white/30 hover:scale-105 transition-all active:scale-95"
+                                                            title="拖动调整大小"
+                                                        >
+                                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                                                <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.9"/>
+                                                                <circle cx="5" cy="10" r="1.5" fill="white" opacity="0.7"/>
+                                                                <circle cx="10" cy="5" r="1.5" fill="white" opacity="0.7"/>
+                                                            </svg>
+                                                        </div>
+                                                        
+                                                        {/* Size indicator when resizing */}
+                                                        {isBeingResized && resizingWidget.newW && resizingWidget.newH && (
+                                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-3 py-1.5 rounded-lg text-sm font-medium pointer-events-none">
+                                                                {resizingWidget.newW} × {resizingWidget.newH}
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
 
                                                 <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${s.color} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
