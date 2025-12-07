@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useDialog } from '../Dialog';
-import { DEFAULT_WALLPAPER } from '../../constants.tsx';
+import { DEFAULT_WALLPAPER, SYSTEM_APPS } from '../../constants.tsx';
 import { SystemSettings, Shortcut } from '../../types';
-import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages, FileEdit, ChevronRight, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MessageSquare, Key, Cpu, Thermometer, Hash, Plus, X, Check, Loader2, AppWindow, LayoutGrid } from 'lucide-react';
+import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages, FileEdit, ChevronRight, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MessageSquare, Key, Cpu, Thermometer, Hash, Plus, X, Check, Loader2, AppWindow, LayoutGrid, RefreshCw } from 'lucide-react';
 import { t } from '../../i18n';
 import { AIProvider } from './AI.tsx';
 
@@ -17,6 +17,9 @@ interface SettingsAppProps {
     shortcuts: Shortcut[];
     onShortcutUpdate: (shortcuts: Shortcut[]) => void;
     onEditShortcut: (shortcut: Shortcut) => void;
+    onDeleteApp: (app: Shortcut) => void;
+    allApps: (Shortcut | null)[];
+    onRestoreSystemApp: (appId: string) => void;
 }
 
 const WALLPAPERS = [
@@ -25,6 +28,16 @@ const WALLPAPERS = [
     "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2574",
     "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2670"
 ];
+
+// 验证URL是否有效
+const isValidUrl = (urlString: string): boolean => {
+    try {
+        new URL(urlString);
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 const ToggleSwitch = ({ checked, onChange }: { checked: boolean, onChange: (v: boolean) => void }) => (
     <div
@@ -90,7 +103,7 @@ const SettingsItem = ({ icon: Icon, label, children, isLast, onClick, hasChevron
         </div>
     </div>
 );
-export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpdate, onExport, onImport, onReset, onEditConfig, shortcuts, onShortcutUpdate, onEditShortcut }) => {
+export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpdate, onExport, onImport, onReset, onEditConfig, shortcuts, onShortcutUpdate, onEditShortcut, onDeleteApp, allApps, onRestoreSystemApp }) => {
     const dialog = useDialog();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const wallpaperInputRef = useRef<HTMLInputElement>(null);
@@ -925,26 +938,70 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                             <span className="text-base font-semibold" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>应用管理</span>
                         </div>
 
-                        {/* 提示信息 */}
-                        <div className="p-4">
-                            <div className="p-3 rounded-lg" style={{
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                border: '1px solid rgba(59, 130, 246, 0.3)'
-                            }}>
-                                <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                                    💡 所有应用（包括系统应用）可直接在桌面或Dock栏右键删除，删除后可通过"+"按钮重新添加
-                                </p>
+                        {/* 系统应用管理区域 */}
+                        <div className="px-4 pt-4">
+                            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                系统应用
                             </div>
                         </div>
+                        <div className="mx-4 mb-4 rounded-xl overflow-hidden" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+                            {SYSTEM_APPS.map((app, index) => {
+                                // 直接检查allApps中是否存在该系统应用
+                                const isActive = allApps.some(item => item?.id === app.id);
+                                const isLast = index === SYSTEM_APPS.length - 1;
+                                
+                                return (
+                                    <div
+                                        key={app.id}
+                                        className="flex items-center justify-between p-4 transition-all"
+                                        style={{
+                                            backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                                            borderBottom: isLast ? 'none' : '0.5px solid rgba(255, 255, 255, 0.08)'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)'}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${app.color}`}>
+                                                {app.id === 'ai' && <Cpu size={18} className="text-white" />}
+                                                {app.id === 'notes' && <FileEdit size={18} className="text-white" />}
+                                                {app.id === 'calc' && <Hash size={18} className="text-white" />}
+                                                {app.id === 'settings' && <Monitor size={18} className="text-white" />}
+                                            </div>
+                                            <span className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                                                {app.displayName || app.title}
+                                            </span>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={isActive}
+                                            onChange={(enabled) => {
+                                                if (enabled) {
+                                                    // 恢复应用（添加到末尾）
+                                                    onRestoreSystemApp(app.id as string);
+                                                } else {
+                                                    // 删除应用（使用主程序的删除逻辑）
+                                                    dialog.showConfirm(`确定要关闭 "${app.displayName || app.title}" 吗？\n\n关闭后可以随时在这里重新开启`).then((confirmed) => {
+                                                        if (confirmed) {
+                                                            // 直接调用删除回调
+                                                            onDeleteApp(app);
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
 
-                        {/* 应用列表 */}
+                        {/* 桌面应用列表 */}
                         <div className="px-4">
-                            <div className="text-xs font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                                所有应用
+                            <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                桌面应用
                             </div>
                         </div>
                         <div className="px-4 space-y-2">
-                            {sortAndGroupShortcuts(shortcuts, 'app').map((app, index) => (
+                            {sortAndGroupShortcuts(shortcuts, 'app').filter(app => app.type !== 'sys').map((app, index) => (
                                 <div
                                     key={app.id}
                                     className="flex items-center justify-between p-3 rounded-lg transition-all"
@@ -959,7 +1016,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                                         <div className="w-10 h-10 shrink-0">
                                             {app.customIcon ? (
                                                 <img src={app.customIcon} className="w-full h-full rounded-lg object-cover" alt={app.displayName} />
-                                            ) : app.url ? (
+                                            ) : app.url && isValidUrl(app.url) ? (
                                                 <img 
                                                     src={`https://www.google.com/s2/favicons?domain=${new URL(app.url).hostname}&sz=128`} 
                                                     className="w-full h-full rounded-lg object-cover"
@@ -998,11 +1055,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                                             <Edit3 size={16} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
                                         </button>
                                         <button
-                                            onClick={async () => {
-                                                if (await dialog.showConfirm(`确定要删除 "${app.displayName}" 吗？`)) {
-                                                    onShortcutUpdate(shortcuts.filter(s => s.id !== app.id));
-                                                }
-                                            }}
+                                            onClick={() => onDeleteApp(app)}
                                             className="p-2 rounded-lg transition-all"
                                             style={{ backgroundColor: 'rgba(255, 59, 48, 0.15)' }}
                                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 59, 48, 0.25)'}

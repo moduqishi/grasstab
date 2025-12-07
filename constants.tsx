@@ -126,6 +126,50 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     { id: 'midjourney', title: 'Midjourney', url: 'https://www.midjourney.com', type: 'auto', color: 'from-purple-600 to-pink-600' },
 ];
 
+// 系统应用列表 (可以被隐藏/恢复)
+export const SYSTEM_APPS: Shortcut[] = [
+    {
+        id: 'ai',
+        iconType: 'cpu',
+        name: 'AI',
+        title: 'AI助手',
+        displayName: 'AI助手',
+        isApp: true,
+        type: 'sys',
+        color: 'from-purple-600 via-purple-500 to-pink-500'
+    },
+    {
+        id: 'notes',
+        iconType: 'sticky-note',
+        name: 'Notes',
+        title: '便笺',
+        displayName: '便笺',
+        isApp: true,
+        type: 'sys',
+        color: 'from-yellow-300 via-yellow-400 to-yellow-500'
+    },
+    {
+        id: 'calc',
+        iconType: 'calculator',
+        name: 'Calc',
+        title: '计算器',
+        displayName: '计算器',
+        isApp: true,
+        type: 'sys',
+        color: 'from-orange-400 via-orange-500 to-red-500'
+    },
+    {
+        id: 'settings',
+        iconType: 'settings',
+        name: 'Settings',
+        title: '设置',
+        displayName: '设置',
+        isApp: true,
+        type: 'sys',
+        color: 'from-gray-400 via-gray-500 to-gray-600'
+    }
+];
+
 export const DEFAULT_DOCK: DockItem[] = [
     {
         id: 'ai',

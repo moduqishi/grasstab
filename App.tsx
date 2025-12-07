@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, X, Minus, Check, Edit3, Plus, Search } from 'lucide-react';
-import { DEFAULT_WALLPAPER, SEARCH_ENGINES, DEFAULT_SHORTCUTS, DEFAULT_DOCK } from './constants.tsx';
+import { DEFAULT_WALLPAPER, SEARCH_ENGINES, DEFAULT_SHORTCUTS, DEFAULT_DOCK, SYSTEM_APPS } from './constants.tsx';
 import { Shortcut, DockItem, WindowState, DragState, SearchEngineKey, PackedShortcut, SystemSettings, GlobalConfig } from './types';
 import { useGridCalculation } from './hooks/useGridCalculation';
 import { AppIcon } from './components/AppIcon';
@@ -20,7 +20,8 @@ import { t } from './i18n';
 import { DialogProvider, useDialog } from './components/Dialog';
 
 // 统一应用布局管理：前100个位置预留给Dock栏，后面的是桌面应用
-const DOCK_RESERVED_SLOTS = 100;
+// Dock栏预留位置数量（前10个位置）
+const DOCK_RESERVED_SLOTS = 10;
 
 function DesktopApp() {
     const dialog = useDialog();
@@ -557,13 +558,21 @@ function DesktopApp() {
 
     const handleDeleteApp = async (app: Shortcut) => {
         const appName = app.title || app.displayName || '此应用';
-        const confirmMessage = app.type === 'sys' 
-            ? `确定要删除系统应用 "${appName}" 吗？\n\n删除后可以通过添加按钮重新添加`
-            : `确定要删除 "${appName}" 吗？`;
+        const confirmMessage = `确定要删除 "${appName}" 吗？`;
             
         if (await dialog.showConfirm(confirmMessage)) {
-            // 从appLayout中删除该应用
-            setAppLayout(prev => prev.map(item => item?.id === app.id ? null : item));
+            // 完全删除，过滤掉该应用
+            setAppLayout(prev => prev.filter(item => item?.id !== app.id));
+        }
+    };
+    
+    // 恢复系统应用（直接添加到末尾）
+    const handleRestoreSystemApp = (appId: string) => {
+        // 找到系统应用
+        const systemApp = SYSTEM_APPS.find(app => app.id === appId);
+        if (systemApp) {
+            // 添加到数组末尾
+            setAppLayout(prev => [...prev, systemApp]);
         }
     };
 
@@ -775,6 +784,13 @@ function DesktopApp() {
 
                 if (dragState.source === 'grid') {
                     // Grid -> Dock: 从桌面移到Dock
+                    // 检查Dock是否已满
+                    const currentDockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(i => i !== null).length;
+                    if (currentDockCount >= DOCK_RESERVED_SLOTS) {
+                        // Dock已满，不允许添加
+                        return;
+                    }
+                    
                     const desktopStart = DOCK_RESERVED_SLOTS;
                     const desktopItems = appLayout.slice(desktopStart).filter(i => i !== null);
                     const currentIndex = desktopItems.findIndex(s => s?.id === dragState.item!.id);
@@ -1443,13 +1459,16 @@ function DesktopApp() {
                                 onImport={handleImportConfig}
                                 onReset={handleReset}
                                 onEditConfig={handleEditConfig}
-                                shortcuts={desktopApps}
+                                shortcuts={appLayout.filter((item): item is Shortcut => item !== null && item.type !== 'sys')}
                                 onShortcutUpdate={(newShortcuts) => {
-                                    // 更新appLayout中的桌面应用部分
-                                    const dockPart = appLayout.slice(0, DOCK_RESERVED_SLOTS);
-                                    setAppLayout([...dockPart, ...newShortcuts]);
+                                    // 更新所有应用（保留系统应用）
+                                    const systemApps = appLayout.filter(item => item?.type === 'sys');
+                                    setAppLayout([...newShortcuts, ...systemApps]);
                                 }}
                                 onEditShortcut={handleEditAppFromSettings}
+                                onDeleteApp={handleDeleteApp}
+                                allApps={appLayout}
+                                onRestoreSystemApp={handleRestoreSystemApp}
                             />
                         )}
                         {w.type === 'add' && <AddShortcutApp onAdd={(d) => {
