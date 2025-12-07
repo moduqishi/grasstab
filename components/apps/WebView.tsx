@@ -78,7 +78,7 @@ export const WebView: React.FC<WebViewProps> = ({ url, title }) => {
     }
 
     return (
-        <div className="w-full h-full relative bg-white">
+        <div className="w-full h-full relative bg-white" onWheel={(e) => e.stopPropagation()}>
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-[#1e1e1e] z-10">
                     <div className="flex flex-col items-center gap-4">

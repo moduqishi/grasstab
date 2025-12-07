@@ -2,17 +2,69 @@ import React, { useState } from 'react';
 
 export const CalculatorApp = () => {
     const [disp, setDisp] = useState('0');
+    
+    const calculate = (expr: string): number => {
+        // Simple math parser without eval
+        const tokens = expr.match(/(\d+\.?\d*|[+\-*/()])/g);
+        if (!tokens) throw new Error('Invalid expression');
+        
+        let pos = 0;
+        
+        const parseNumber = (): number => {
+            const token = tokens[pos++];
+            if (token === '(') {
+                const result = parseExpression();
+                pos++; // skip ')'
+                return result;
+            }
+            return parseFloat(token);
+        };
+        
+        const parseFactor = (): number => {
+            let result = parseNumber();
+            while (pos < tokens.length && (tokens[pos] === '*' || tokens[pos] === '/')) {
+                const op = tokens[pos++];
+                const right = parseNumber();
+                if (op === '*') result *= right;
+                else result /= right;
+            }
+            return result;
+        };
+        
+        const parseExpression = (): number => {
+            let result = parseFactor();
+            while (pos < tokens.length && (tokens[pos] === '+' || tokens[pos] === '-')) {
+                const op = tokens[pos++];
+                const right = parseFactor();
+                if (op === '+') result += right;
+                else result -= right;
+            }
+            return result;
+        };
+        
+        return parseExpression();
+    };
+    
     const click = (v: string) => { 
-        if(v==='C') setDisp('0'); 
-        else if(v==='=') { 
+        if(v==='C') {
+            setDisp('0');
+        } else if(v==='=') { 
             try { 
-                // eslint-disable-next-line no-new-func
-                setDisp(String(new Function('return '+disp)())); 
-            } catch { setDisp('Error'); } 
-        } else setDisp(disp==='0'?v:disp+v); 
+                const result = calculate(disp);
+                if (!isNaN(result) && isFinite(result)) {
+                    setDisp(String(result));
+                } else {
+                    setDisp('Error');
+                }
+            } catch { 
+                setDisp('Error'); 
+            } 
+        } else {
+            setDisp(disp==='0' && v !== '.' ? v : disp + v); 
+        }
     };
     return (
-        <div className="p-4 h-full flex flex-col">
+        <div className="p-4 h-full flex flex-col" onWheel={(e) => e.stopPropagation()}>
             <div className="flex-1 flex items-end justify-end mb-4 px-2">
                 <span className="text-6xl font-light text-white tracking-tight drop-shadow-md truncate">{disp}</span>
             </div>

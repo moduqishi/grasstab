@@ -117,6 +117,7 @@ export const ResponsiveWindow: React.FC<ResponsiveWindowProps> = ({
             className={`fixed flex flex-col overflow-hidden ${isOpen ? 'animate-in zoom-in-95' : ''} ${isDragging || isResizing ? 'transition-none' : 'transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1)'}`} 
             style={windowStyle}
             onMouseDown={onFocus}
+            onWheel={(e) => e.stopPropagation()}
         >
             {/* Window Header */}
             <div 

@@ -84,7 +84,6 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     return (
         <div
             className="flex flex-col h-full text-white"
-            style={{ backgroundColor: 'rgba(30, 30, 30, 0.3)' }}
             onWheel={(e) => e.stopPropagation()} // 阻止滚轮事件冒泡到主界面
             onClick={(e) => e.stopPropagation()} // 阻止点击事件冒泡
         >
@@ -317,16 +316,22 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                 )}</div>
             </div>
 
-            {/* Action Footer - Dark Mode */}
-            <div className="p-4 border-t" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+            {/* Action Footer - Apple Style */}
+            <div 
+                className="p-4"
+                style={{
+                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    borderTop: '0.5px solid rgba(255, 255, 255, 0.1)'
+                }}
+            >
                 <div className="flex gap-3">
                     <button 
                         onClick={onClose}
-                        className="flex-1 py-2.5 rounded-lg font-medium transition-all"
+                        className="flex-1 py-2.5 rounded-lg font-medium transition-all hover:bg-white/10 active:scale-95"
                         style={{
                             backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            color: 'rgba(255, 255, 255, 0.7)'
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            color: 'rgba(255, 255, 255, 0.8)'
                         }}
                     >
                         取消
@@ -334,12 +339,12 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                     <button 
                         onClick={handleSubmit} 
                         disabled={!canSubmit}
-                        className="flex-1 py-2.5 rounded-lg font-semibold transition-all"
+                        className="flex-1 py-2.5 rounded-lg font-semibold transition-all active:scale-95"
                         style={{
                             backgroundColor: canSubmit ? '#007AFF' : 'rgba(255, 255, 255, 0.1)',
                             color: canSubmit ? 'white' : 'rgba(255, 255, 255, 0.4)',
                             cursor: canSubmit ? 'pointer' : 'not-allowed',
-                            boxShadow: canSubmit ? '0 1px 3px rgba(0, 122, 255, 0.3)' : 'none'
+                            boxShadow: canSubmit ? '0 2px 8px rgba(0, 122, 255, 0.4)' : 'none'
                         }}
                     >
                         添加

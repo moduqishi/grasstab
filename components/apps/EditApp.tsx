@@ -79,9 +79,9 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
     };
 
     return (
-        <div className="w-full h-full relative flex flex-col" style={{ backgroundColor: 'rgba(30, 30, 30, 0.3)' }}>
+        <div className="w-full h-full relative flex flex-col">
             {/* Content - with padding bottom for fixed footer */}
-            <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-5">
+            <div className="flex-1 overflow-y-auto p-6 pb-24 space-y-5" onWheel={(e) => e.stopPropagation()}>
                     {/* Title */}
                     <div>
                         <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>{t(lang, 'name')}</label>
@@ -286,21 +286,21 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
                     )}
                 </div>
 
-            {/* Footer - Fixed at bottom */}
+            {/* Footer - Apple Style */}
             <div 
                 className="absolute bottom-0 left-0 right-0 px-6 py-4 flex justify-end"
                 style={{
-                    backgroundColor: 'rgba(20, 20, 20, 0.95)',
-                    borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(40px)'
+                    background: 'linear-gradient(to top, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                    borderTop: '0.5px solid rgba(255, 255, 255, 0.1)'
                 }}
             >
                 <button
                     onClick={handleSave}
-                    className="px-6 py-2.5 rounded-lg transition-colors font-medium"
+                    className="px-6 py-2.5 rounded-lg transition-all font-medium hover:brightness-110 active:scale-95"
                     style={{
                         backgroundColor: '#007AFF',
-                        color: 'white'
+                        color: 'white',
+                        boxShadow: '0 2px 8px rgba(0, 122, 255, 0.4)'
                     }}
                 >
                     保存
