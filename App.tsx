@@ -137,12 +137,9 @@ export default function App() {
                     }
                 } else if (engine === 'baidu') {
                     try {
-                        // 百度建议API
-                        const response = await fetch(`https://www.baidu.com/sugrec?prod=pc&wd=${q}`);
-                        const data = await response.json();
-                        if (data && data.g && Array.isArray(data.g)) {
-                            results = data.g.map((item: any) => item.q);
-                        }
+                        // 百度建议API (可能需要JSONP,暂时禁用)
+                        console.warn('Baidu suggestions not supported in Manifest V3');
+                        results = [];
                     } catch (err) {
                         console.warn('Baidu suggestions unavailable:', err);
                     }
