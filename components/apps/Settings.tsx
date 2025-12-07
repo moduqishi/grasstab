@@ -286,7 +286,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
         if (models.length > 0) {
             // 将获取的模型添加到 customModels 列表，去重
             const existingModels = new Set(provider.customModels);
-            const newModels = models.filter(m => !existingModels.has(m));
+            const newModels = models.filter((m: string) => !existingModels.has(m));
             
             setEditingProvider(prev => prev ? { 
                 ...prev,

@@ -499,7 +499,7 @@ export const AIApp = () => {
                                 <div className="prose prose-invert prose-sm max-w-none">
                                     <ReactMarkdown
                                         components={{
-                                            code({ inline, className, children, ...props }) {
+                                            code({ node, inline, className, children, ...props }: any) {
                                                 const match = /language-(\w+)/.exec(className || '');
                                                 return !inline && match ? (
                                                     <CodeBlock
@@ -579,7 +579,7 @@ export const AIApp = () => {
                             <div className="prose prose-invert prose-sm max-w-none">
                                 <ReactMarkdown
                                     components={{
-                                        code({ inline, className, children, ...props }) {
+                                        code({ node, inline, className, children, ...props }: any) {
                                             const match = /language-(\w+)/.exec(className || '');
                                             return !inline && match ? (
                                                 <CodeBlock

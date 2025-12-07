@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ],
+  "unwantedRecommendations": [
+    "stylelint.vscode-stylelint",
+    "webhint.vscode-webhint",
+    "ms-vscode.vscode-edge-devtools-preview",
+    "ms-vscode.vscode-edge-devtools"
+  ]
+}

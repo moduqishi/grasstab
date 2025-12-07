@@ -43,7 +43,7 @@ export const SEARCH_ENGINES: Record<SearchEngineKey, { name: string; url: string
                 <circle cx="12" cy="12" r="10" fill="#DE5833"/>
                 <ellipse cx="9" cy="10" rx="1.5" ry="2" fill="#2D4F8E"/>
                 <ellipse cx="15" cy="10" rx="1.5" ry="2" fill="#2D4F8E"/>
-                <path d="M8 14c0 .5.5 1 1 1h6c.5 0 1-.5 1-1" stroke="#2D4F8E" strokeWidth="1.5" fill="none"/>
+                <path d="M8 14c0 .5.5 1 1 1h6c.5 0 1-.5 1-1" stroke="#2D4F8E" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
             </svg>
         )
     }

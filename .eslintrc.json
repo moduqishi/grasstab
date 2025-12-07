@@ -4,9 +4,7 @@
     "es2021": true
   },
   "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "eslint:recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -21,20 +19,29 @@
     "@typescript-eslint"
   ],
   "rules": {
-    "no-inline-styles": "off",
-    "axe/name-role-value": "off",
-    "axe/forms": "off",
-    "meta-viewport": "off",
-    "compat-api/css": "off",
-    "css-prefix-order": "off",
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off"
+    "no-inline-styles": 0,
+    "axe/name-role-value": 0,
+    "axe/forms": 0,
+    "meta-viewport": 0,
+    "compat-api/css": 0,
+    "css-prefix-order": 0,
+    "@typescript-eslint/no-unused-vars": 0,
+    "@typescript-eslint/no-explicit-any": 0,
+    "react/react-in-jsx-scope": 0,
+    "react/prop-types": 0,
+    "@typescript-eslint/ban-ts-comment": 0,
+    "@typescript-eslint/no-non-null-assertion": 0
   },
   "settings": {
     "react": {
       "version": "detect"
     }
-  }
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "chrome-extension/**",
+    "node_modules/**",
+    "*.config.js",
+    "*.config.ts"
+  ]
 }
