@@ -36,16 +36,16 @@ export const SEARCH_ENGINES: Record<SearchEngineKey, { name: string; url: string
 
 export const DEFAULT_SHORTCUTS: Shortcut[] = [
     // === 视频娱乐 (Video & Entertainment) ===
-    { id: 1765193991934, title: '抖音', url: 'https://www.douyin.com/', type: 'auto', color: 'from-gray-600 to-gray-800', customIcon: 'https://logo.clearbit.com/www.douyin.com' },
-    { id: 1765194042238, title: 'bilibili', url: 'https://www.bilibili.com/', type: 'auto', color: 'from-pink-500 to-blue-500', customIcon: 'https://logo.clearbit.com/www.bilibili.com' },
-    { id: 1765196356678, title: '爱奇艺', url: 'https://www.iqiyi.com/', type: 'auto', color: 'from-green-500 to-green-700', customIcon: 'https://logo.clearbit.com/www.iqiyi.com' },
+    { id: 1765193991934, title: '抖音', url: 'https://www.douyin.com/', type: 'auto', color: 'from-gray-600 to-gray-800', customIcon: 'https://img.logo.dev/www.douyin.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
+    { id: 1765194042238, title: 'bilibili', url: 'https://www.bilibili.com/', type: 'auto', color: 'from-pink-500 to-blue-500', customIcon: 'https://img.logo.dev/www.bilibili.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
+    { id: 1765196356678, title: '爱奇艺', url: 'https://www.iqiyi.com/', type: 'auto', color: 'from-green-500 to-green-700', customIcon: 'https://img.logo.dev/www.iqiyi.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     { id: 1765196407071, title: '腾讯视频', url: 'https://v.qq.com/', type: 'auto', color: 'from-orange-500 to-red-600', customIcon: 'https://icon.horse/icon/v.qq.com', iconType: 'iconhorse' },
     { id: 1765196439382, title: '芒果TV', url: 'https://www.mgtv.com/', type: 'auto', color: 'from-yellow-500 to-orange-600', iconType: 'unavatar' },
     { id: 1765196473480, title: '优酷', url: 'https://www.youku.com/', type: 'auto', color: 'from-blue-500 to-blue-700', customIcon: 'https://pp.myapp.com/ma_icon/0/icon_10197_1764143650/256' },
-    { id: 1765195218788, title: 'YouTube', url: 'https://youtube.com', type: 'auto', color: 'from-red-500 to-red-700', customIcon: 'https://logo.clearbit.com/youtube.com' },
+    { id: 1765195218788, title: 'YouTube', url: 'https://youtube.com', type: 'auto', color: 'from-red-500 to-red-700', customIcon: 'https://img.logo.dev/youtube.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     
     // === 开发工具 (Development) ===
-    { id: 1765196938765, title: 'GitHub', url: 'https://github.com/', type: 'auto', color: 'from-gray-700 to-gray-900', iconType: 'clearbit', customIcon: 'https://logo.clearbit.com/github.com' },
+    { id: 1765196938765, title: 'GitHub', url: 'https://github.com/', type: 'auto', color: 'from-gray-700 to-gray-900', iconType: 'logodev', customIcon: 'https://img.logo.dev/github.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     
     // === 电影票务 (Movie Ticketing) ===
     { id: 1765196627763, title: '猫眼', url: 'https://www.maoyan.com/', type: 'auto', color: 'from-yellow-600 to-orange-700', iconType: 'unavatar', customIcon: 'https://pp.myapp.com/ma_icon/0/icon_46766_1762161597/256' },
@@ -60,7 +60,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     { id: 1765198534088, title: 'Calendar', url: '', type: 'widget', color: 'from-white to-gray-100', size: { w: 2, h: 2 }, widgetType: 'calendar', widgetContent: '' },
     
     // === AI & 技术 (AI & Tech) ===
-    { id: 1765194325676, title: 'Hugging Face', url: 'https://huggingface.co/', type: 'auto', color: 'from-yellow-400 to-yellow-600', customIcon: 'https://logo.clearbit.com/huggingface.co' },
+    { id: 1765194325676, title: 'Hugging Face', url: 'https://huggingface.co/', type: 'auto', color: 'from-yellow-400 to-yellow-600', customIcon: 'https://img.logo.dev/huggingface.co?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     { id: 1765197985565, title: '腾讯文档', url: 'https://docs.qq.com/', type: 'auto', color: 'from-blue-500 to-blue-700', iconType: 'unavatar', customIcon: 'https://pp.myapp.com/ma_icon/0/icon_52666442_1764918437/256' },
     
     // === 学习 (Learning) ===
@@ -92,7 +92,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     { id: 1765196781842, title: '飞书', url: 'https://www.feishu.cn/', type: 'auto', color: 'from-blue-500 to-blue-700', iconType: 'unavatar' },
     { id: 1765196823194, title: '企业微信', url: 'https://work.weixin.qq.com/', type: 'auto', color: 'from-blue-500 to-blue-700', customIcon: 'https://pp.myapp.com/ma_icon/0/icon_42270467_1763431984/256' },
     { id: 1765196874884, title: '腾讯会议', url: 'https://meeting.tencent.com/', type: 'auto', color: 'from-blue-500 to-blue-700', iconType: 'unavatar', customIcon: 'https://icons.duckduckgo.com/ip3/meeting.tencent.com.ico' },
-    { id: 1765197323190, title: '微博热搜', url: 'https://weibo.com/newlogin?tabtype=search&gid=&openLoginLayer=0&url=', type: 'auto', color: 'from-orange-500 to-red-600', customIcon: 'https://logo.clearbit.com/weibo.com' },
+    { id: 1765197323190, title: '微博热搜', url: 'https://weibo.com/newlogin?tabtype=search&gid=&openLoginLayer=0&url=', type: 'auto', color: 'from-orange-500 to-red-600', customIcon: 'https://img.logo.dev/weibo.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     { id: 1765197603278, title: '少数派', url: 'https://sspai.com/', type: 'auto', color: 'from-red-500 to-red-700', iconType: 'unavatar' },
     
     // === 搜索引擎 (Search Engines) ===
@@ -111,7 +111,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     { id: 1765197908143, title: '什么值得买', url: 'https://www.smzdm.com/', type: 'auto', color: 'from-red-600 to-red-800', customIcon: 'https://unavatar.io/www.smzdm.com?fallback=false' },
     
     // === 新闻 (News) ===
-    { id: 1765197935324, title: '今日头条', url: 'https://www.toutiao.com/', type: 'auto', color: 'from-red-500 to-red-700', iconType: 'clearbit', customIcon: 'https://logo.clearbit.com/www.toutiao.com' },
+    { id: 1765197935324, title: '今日头条', url: 'https://www.toutiao.com/', type: 'auto', color: 'from-red-500 to-red-700', iconType: 'logodev', customIcon: 'https://img.logo.dev/www.toutiao.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     
     // === 旅行 (Travel) ===
     { id: 1765198092873, title: '携程', url: 'https://www.ctrip.com/', type: 'auto', color: 'from-blue-500 to-blue-700', iconType: 'unavatar' },

@@ -36,7 +36,7 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
             setIconSources(sources);
             
             // 如果 iconType 是图标源名称，优先使用它
-            const knownSources = ['iconhorse', 'clearbit', 'unavatar', 'google', 'ddg', 'faviconkit', 'direct'];
+            const knownSources = ['iconhorse', 'logodev', 'unavatar', 'google', 'ddg', 'direct'];
             if (iconType && knownSources.includes(iconType)) {
                 const preferredIndex = sources.findIndex(s => s.source === iconType);
                 setCurrentIconIndex(preferredIndex >= 0 ? preferredIndex : 0);

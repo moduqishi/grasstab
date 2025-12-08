@@ -19,9 +19,13 @@ export default defineConfig(({ mode }) => {
             manualChunks: undefined,
           }
         },
-        modulePreload: false,
+        modulePreload: {
+          polyfill: false, // 禁用 polyfill 减小体积
+        },
         target: 'esnext',
         minify: 'esbuild',
+        cssCodeSplit: false, // 禁用 CSS 代码分割，减少请求数
+        reportCompressedSize: false, // 跳过压缩大小计算，加快构建
       },
       server: {
         port: 3000,

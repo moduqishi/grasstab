@@ -27,17 +27,16 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ url, currentIcon, on
     useEffect(() => {
         if (!url) return;
 
-        // 初始化所有图标源
+        // 初始化所有图标源（按优先级顺序）
         const iconSources = getIconSources(url);
         if (!iconSources) return;
         
         const initialSources: IconSourceStatus[] = [
-            { url: iconSources.iconhorse, name: 'Icon Horse', status: 'loading' },
-            { url: iconSources.clearbit, name: 'Clearbit', status: 'loading' },
+            { url: iconSources.logodev, name: 'Logo.dev', status: 'loading' },
             { url: iconSources.unavatar, name: 'Unavatar', status: 'loading' },
             { url: iconSources.google, name: 'Google', status: 'loading' },
             { url: iconSources.ddg, name: 'DuckDuckGo', status: 'loading' },
-            { url: iconSources.faviconkit, name: 'FaviconKit', status: 'loading' },
+            { url: iconSources.iconhorse, name: 'Icon Horse', status: 'loading' },
             { url: iconSources.direct, name: 'Direct', status: 'loading' },
         ];
 

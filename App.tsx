@@ -29,15 +29,17 @@ function DesktopApp() {
     const dialog = useDialog();
     // --- View State (Hero vs Desktop) ---
     const [viewState, setViewState] = useState<'hero' | 'desktop'>('hero');
-    const [wallpaper, setWallpaper] = useState(localStorage.getItem('os-bg') || DEFAULT_WALLPAPER);
+    const [wallpaper, setWallpaper] = useState(() => localStorage.getItem('os-bg') || DEFAULT_WALLPAPER);
 
     // --- System Settings ---
+    const defaultSettings = { showDockEdit: false, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' as const };
     const [sysSettings, setSysSettings] = useState<SystemSettings>(() => {
+        const saved = localStorage.getItem('os-settings');
+        if (!saved) return defaultSettings;
         try {
-            const saved = localStorage.getItem('os-settings');
-            return saved ? JSON.parse(saved) : { showDockEdit: false, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
+            return JSON.parse(saved);
         } catch {
-            return { showDockEdit: false, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
+            return defaultSettings;
         }
     });
 
@@ -65,26 +67,16 @@ function DesktopApp() {
     // --- Data State ---
     
     const [appLayout, setAppLayout] = useState<(Shortcut | null)[]>(() => {
-        try {
-            const saved = localStorage.getItem('os-app-layout');
-            if (saved) {
+        const saved = localStorage.getItem('os-app-layout');
+        if (saved) {
+            try {
                 const layout = JSON.parse(saved);
-                // 保持完整的数组结构，包括null值（Dock预留位置）
-                if (Array.isArray(layout) && layout.length > 0) {
-                    return layout;
-                }
-            }
-            // 首次初始化：Dock应用 + 填充空位 + 桌面应用
-            const dockApps = DEFAULT_DOCK;
-            const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
-            const desktopApps = DEFAULT_SHORTCUTS;
-            return [...dockApps, ...emptySlots, ...desktopApps];
-        } catch {
-            const dockApps = DEFAULT_DOCK;
-            const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
-            const desktopApps = DEFAULT_SHORTCUTS;
-            return [...dockApps, ...emptySlots, ...desktopApps];
+                if (Array.isArray(layout) && layout.length > 0) return layout;
+            } catch {}
         }
+        // 首次初始化：使用concat比展开运算符更快
+        const emptySlots = Array(DOCK_RESERVED_SLOTS - DEFAULT_DOCK.length).fill(null);
+        return DEFAULT_DOCK.concat(emptySlots, DEFAULT_SHORTCUTS);
     });
 
     // 从布局中提取Dock项和桌面项

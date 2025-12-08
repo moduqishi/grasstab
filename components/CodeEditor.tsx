@@ -21,6 +21,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, language, onSave,
     useEffect(() => {
         if (!editorRef.current) return;
 
+        // 确保 Monaco 已配置（延迟加载优化）
+        if (typeof (window as any).configureMonaco === 'function') {
+            (window as any).configureMonaco();
+        }
+
         // 配置Monaco编辑器主题
         monaco.editor.defineTheme('grasstab-dark', {
             base: 'vs-dark',
