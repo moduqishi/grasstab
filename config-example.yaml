@@ -1,127 +1,205 @@
-# GrassTab 配置文件示例
-# 这是优化后的简洁格式，移除了冗余字段
+# GrassTab Configuration Example
+# Version: 1.0
+# This file demonstrates all available configuration options
+# ==========================================
 
-version: '1.0'
-createdAt: '2025-12-07T06:00:00.000Z'
+version: "1.0"
+createdAt: "2025-12-08T00:00:00.000Z"
 
-# 系统设置
+# System Settings
 settings:
-  showDockEdit: true        # 显示Dock编辑按钮
-  showSearchBar: true       # 显示搜索栏
-  showPagination: true      # 显示分页指示器
-  showDock: true            # 显示Dock栏
-  language: zh              # 语言：zh 或 en
+  # Display Dock bar (bottom app bar)
+  showDock: true
+  
+  # Show Dock edit button
+  showDockEdit: true
+  
+  # Show desktop search bar
+  showSearchBar: true
+  
+  # Show pagination indicators
+  showPagination: true
+  
+  # Interface language: zh (Chinese) or en (English)
+  language: "zh"
+  
+  # Default search engine: google | bing | baidu | duckduckgo
+  searchEngine: "google"
+  
+  # Grid layout (optional, auto-calculated by system)
+  # gridCols: 6
+  # gridRows: 4
+  
+  # Hidden system apps list (optional)
+  # hiddenSystemApps:
+  #   - "calculator"
+  #   - "notes"
 
-# 壁纸URL
-wallpaper: https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564
+# Wallpaper URL (supports https URLs or base64 data URIs)
+wallpaper: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4"
 
-# 桌面快捷方式
+# AI Configuration (optional)
+aiSettings:
+  providers:
+    - id: "openai"
+      name: "OpenAI"
+      apiUrl: "https://api.openai.com/v1"
+      apiKey: "sk-..."
+      models:
+        - "gpt-4"
+        - "gpt-3.5-turbo"
+      customModels: []
+      temperature: 0.7
+      maxTokens: 2000
+    
+    - id: "claude"
+      name: "Claude"
+      apiUrl: "https://api.anthropic.com/v1"
+      apiKey: "sk-ant-..."
+      models:
+        - "claude-3-opus"
+        - "claude-3-sonnet"
+      customModels: []
+      temperature: 0.7
+      maxTokens: 4000
+  
+  currentProviderId: "openai"
+  currentModel: "gpt-4"
+
+# Notes Content (optional)
+notes: |
+  This is my notes content.
+  It can contain multiple lines.
+  Supports newlines and formatting.
+
+# Dock Bar Apps (bottom fixed bar)
+dock:
+  - id: 1001
+    title: "GitHub"
+    url: "https://github.com"
+    type: "github"
+
+  - id: 1002
+    title: "YouTube"
+    url: "https://youtube.com"
+    type: "youtube"
+
+  - id: 1003
+    title: "Gmail"
+    url: "https://mail.google.com"
+    type: "gmail"
+
+  - id: 1004
+    title: "ChatGPT"
+    url: "https://chat.openai.com"
+    type: "chatgpt"
+
+# Desktop Apps and Widgets
 shortcuts:
-  # 基础格式（最小配置）
-  - id: google
-    title: Google
-    url: https://www.google.com
-    type: auto
-    color: from-blue-500 to-red-500
+  # Regular app example
+  - id: 1
+    title: "Twitter"
+    url: "https://twitter.com"
+    type: "twitter"
 
-  # 带自定义图标
-  - id: github
-    title: GitHub
-    url: https://github.com
-    type: github
-    color: from-gray-700 to-gray-900
-    icon: https://github.githubassets.com/favicons/favicon.svg
+  - id: 2
+    title: "Bilibili"
+    url: "https://bilibili.com"
+    type: "bilibili"
 
-  # 大尺寸小组件 (2x2)
-  - id: clock-widget
-    title: 时钟
-    type: auto
-    color: from-purple-600 to-blue-600
+  # Large app example (multi-cell)
+  - id: 3
+    title: "Weather"
+    url: "https://weather.com"
+    type: "auto"
     size:
       w: 2
-      h: 2
-    widget:
-      type: clock
-      content: ""
+      h: 1
 
-  # 自定义HTML小组件
-  - id: custom-widget
-    title: 自定义
-    type: auto
-    color: from-green-600 to-teal-600
+  # Clock widget
+  - id: 4
+    title: "Clock"
+    url: ""
+    type: "widget"
     size:
       w: 2
       h: 1
     widget:
-      type: custom
-      content: <div style="color:white;">Hello World</div>
+      type: "clock"
+      content: ""
 
-  # 更多快捷方式...
-  - id: twitter
-    title: Twitter/X
-    url: https://twitter.com
-    type: twitter
-    color: from-sky-400 to-blue-500
+  # Calendar widget
+  - id: 5
+    title: "Calendar"
+    url: ""
+    type: "widget"
+    size:
+      w: 2
+      h: 2
+    widget:
+      type: "calendar"
+      content: ""
 
-  - id: youtube
-    title: YouTube
-    url: https://youtube.com
-    type: youtube
-    color: from-red-500 to-red-600
+  # Custom HTML widget example
+  - id: 6
+    title: "Custom Widget"
+    url: ""
+    type: "widget"
+    size:
+      w: 2
+      h: 2
+    widget:
+      type: "custom"
+      content: "<div style='padding: 20px; color: white;'>Custom HTML Content</div>"
 
-# Dock栏应用（底部栏）
-dock:
-  - id: calculator
-    title: 计算器
-    url: "#calc"
-    type: auto
-    color: from-orange-500 to-red-600
+  # Embedded webpage widget
+  - id: 7
+    title: "Embedded Page"
+    url: ""
+    type: "widget"
+    size:
+      w: 3
+      h: 2
+    widget:
+      type: "iframe"
+      content: "https://example.com"
 
-  - id: notes
-    title: 便签
-    url: "#notes"
-    type: auto
-    color: from-yellow-400 to-orange-500
+# ==========================================
+# Field Documentation
+# ==========================================
 
-  - id: ai
-    title: AI助手
-    url: "#ai"
-    type: auto
-    color: from-purple-500 to-pink-500
+# type options:
+# - auto: Auto-detect
+# - github: GitHub
+# - bilibili: Bilibili
+# - youtube: YouTube
+# - chatgpt: ChatGPT
+# - code: VS Code Web
+# - twitter: Twitter/X
+# - gmail: Gmail
+# - sys: System app
+# - widget: Widget
 
-  - id: settings
-    title: 设置
-    url: "#settings"
-    type: auto
-    color: from-gray-600 to-gray-800
-    icon: https://cdn-icons-png.flaticon.com/512/3524/3524659.png
+# widget.type options:
+# - clock: Clock widget
+# - calendar: Calendar widget
+# - weather: Weather widget
+# - custom: Custom HTML
+# - iframe: Embedded webpage
 
-# 说明：
-# 1. 字段简化：
-#    - 移除了 x/y/page/isApp 等布局字段（自动计算）
-#    - customIcon 简化为 icon
-#    - dockItems 简化为 dock
-#    - size 默认为 1x1，只在非默认时才需要指定
-#
-# 2. 图标设置：
-#    - 不设置 icon 字段时，会自动从多个图标源获取
-#    - 可选图标源：Google Favicon, Clearbit, Unavatar等
-#    - 支持自定义 icon URL
-#    - 支持上传的base64图标
-#
-# 3. 颜色渐变：
-#    - 使用 Tailwind CSS 渐变类名
-#    - 格式：from-{color}-{shade} to-{color}-{shade}
-#    - 示例：from-blue-500 to-purple-600
-#
-# 4. 小组件类型：
-#    - clock: 时钟小组件
-#    - calendar: 日历小组件
-#    - weather: 天气小组件
-#    - custom: 自定义HTML
-#    - iframe: 嵌入网页
-#
-# 5. 应用类型 (type)：
-#    - auto: 自动检测图标
-#    - github/twitter/youtube/bilibili: 特定平台
-#    - 其他自定义类型
+# Size notes:
+# - Default size is 1x1 (one cell)
+# - Maximum size depends on grid (usually 6x4)
+# - Recommended widget sizes: 2x1 or 2x2
+
+# Icon notes:
+# - Supports https:// URLs
+# - Supports base64 data URIs (data:image/png;base64,...)
+# - Auto-fetches favicon if not specified
+# - Custom icon has highest priority
+
+# Color notes:
+# - Uses Tailwind CSS gradient classes
+# - Format: from-{color}-{shade} to-{color}-{shade}
+# - Only visible when no custom icon is set
+# - Default: from-gray-800 to-gray-700

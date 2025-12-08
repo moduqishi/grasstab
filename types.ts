@@ -77,6 +77,23 @@ export interface SystemSettings {
     hiddenSystemApps?: string[]; // 隐藏的系统应用ID列表
 }
 
+export interface AIProvider {
+    id: string;
+    name: string;
+    apiUrl: string;
+    apiKey: string;
+    models: string[];
+    customModels: string[];
+    temperature: number;
+    maxTokens: number;
+}
+
+export interface AISettings {
+    providers: AIProvider[];
+    currentProviderId?: string;
+    currentModel?: string;
+}
+
 export interface GlobalConfig {
     version: string;
     createdAt: string;
@@ -84,4 +101,6 @@ export interface GlobalConfig {
     wallpaper: string;
     shortcuts: Shortcut[];
     dockItems: DockItem[];
+    aiSettings?: AISettings; // AI 配置
+    notes?: string; // 便签内容
 }

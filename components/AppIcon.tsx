@@ -21,20 +21,31 @@ export const getDockIcon = (type: string, isEditing: boolean = false) => {
 
 interface AppIconProps extends Shortcut {
     onContextMenu?: (e: React.MouseEvent, app: Shortcut) => void;
+    onIconLoaded?: (iconSource: string) => void; // 图标加载成功后的回调
 }
 
 export const AppIcon: React.FC<AppIconProps> = (props) => {
-    const { type, title, url, iconType, widgetType, widgetContent, size, customIcon, onContextMenu } = props;
+    const { type, title, url, iconType, widgetType, widgetContent, size, customIcon, onContextMenu, onIconLoaded } = props;
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
     const [iconSources, setIconSources] = useState<Array<{source: string, url: string, name: string}>>([]);
+    const [iconLoadNotified, setIconLoadNotified] = useState(false);
     
     useEffect(() => {
         if (url) {
             const sources = getAllIconUrls(url);
             setIconSources(sources);
-            setCurrentIconIndex(0);
+            
+            // 如果 iconType 是图标源名称，优先使用它
+            const knownSources = ['iconhorse', 'clearbit', 'unavatar', 'google', 'ddg', 'faviconkit', 'direct'];
+            if (iconType && knownSources.includes(iconType)) {
+                const preferredIndex = sources.findIndex(s => s.source === iconType);
+                setCurrentIconIndex(preferredIndex >= 0 ? preferredIndex : 0);
+            } else {
+                setCurrentIconIndex(0);
+            }
+            setIconLoadNotified(false);
         }
-    }, [url]);
+    }, [url, iconType]);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -96,7 +107,9 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
     }
 
     // 1. System/Vector Icons (Dock specific or Apps)
-    if (iconType) {
+    // 只有系统应用的 iconType（cpu, sticky-note, calculator 等）才走这里
+    const systemIconTypes = ['cpu', 'sticky-note', 'calculator', 'settings', 'edit'];
+    if (iconType && systemIconTypes.includes(iconType)) {
         return (
             <div 
                 className="w-full h-full flex items-center justify-center text-white drop-shadow-md"
@@ -144,12 +157,22 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
     // 3. Web Icons - Full Cover Style with fallback priority
     if (url && iconSources.length > 0 && currentIconIndex < iconSources.length) {
         const currentSource = iconSources[currentIconIndex];
+        
+        const handleLoad = () => {
+            // 通知父组件图标加载成功，保存图标源
+            if (onIconLoaded && !iconLoadNotified) {
+                onIconLoaded(currentSource.source);
+                setIconLoadNotified(true);
+            }
+        };
+        
         return (
             <div onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
                 <img 
                     src={currentSource.url} 
                     alt={title} 
                     className="w-full h-full object-cover select-none pointer-events-none" 
+                    onLoad={handleLoad}
                     onError={handleError} 
                 />
             </div>

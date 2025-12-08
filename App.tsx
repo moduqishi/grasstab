@@ -275,6 +275,37 @@ function DesktopApp() {
             const dockApps = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null);
             const desktopApps = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null);
             
+            // 获取 AI 配置
+            let aiSettings = undefined;
+            try {
+                const aiProvidersStr = localStorage.getItem('ai-providers');
+                const currentProviderId = localStorage.getItem('ai-current-provider');
+                const currentModel = localStorage.getItem('ai-current-model');
+                
+                if (aiProvidersStr) {
+                    const providers = JSON.parse(aiProvidersStr);
+                    aiSettings = {
+                        providers,
+                        currentProviderId: currentProviderId || undefined,
+                        currentModel: currentModel || undefined
+                    };
+                }
+            } catch (e) {
+                console.warn('Failed to export AI settings:', e);
+            }
+
+            // 获取便签内容
+            const notes = localStorage.getItem('os-note') || undefined;
+            
+            // 验证数据
+            if (dockApps.length === 0 && desktopApps.length === 0) {
+                dialog.showAlert(
+                    '无法导出配置',
+                    '当前没有任何应用或小组件需要导出。\n\n请先添加一些应用后再尝试导出。'
+                );
+                return;
+            }
+
             // 创建配置对象
             const config: GlobalConfig = {
                 version: '1.0',
@@ -282,115 +313,242 @@ function DesktopApp() {
                 settings: sysSettings,
                 wallpaper,
                 shortcuts: desktopApps,
-                dockItems: dockApps as DockItem[]
+                dockItems: dockApps as DockItem[],
+                aiSettings,
+                notes
             };
 
-            console.log('Exporting config:', config); // 调试日志
+            console.log('Exporting configuration:', {
+                dockApps: dockApps.length,
+                desktopApps: desktopApps.length,
+                aiProviders: aiSettings?.providers?.length || 0,
+                hasNotes: !!notes,
+                settings: sysSettings
+            });
 
             // 生成YAML
             const yamlStr = generateYamlConfig(config);
             
             // 检查YAML是否为空
             if (!yamlStr || yamlStr.trim() === '') {
-                dialog.showAlert('导出失败', '生成的配置文件为空\n\n请检查是否有数据需要导出。');
-                return;
+                throw new Error('生成的配置文件为空');
             }
-
-            console.log('Generated YAML length:', yamlStr.length); // 调试日志
 
             // 创建并下载文件
             const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
             a.href = url;
-            a.download = `grasstab-config-${new Date().toISOString().slice(0, 10)}.yaml`;
+            a.download = `grasstab-config-${timestamp}.yaml`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
             // 显示成功提示
+            const aiInfo = aiSettings ? `\n• AI 提供商: ${aiSettings.providers.length} 个` : '';
+            const notesInfo = notes ? `\n• 便签: 已保存 (${notes.length} 字符)` : '';
+            
+            dialog.showAlert(
+                '✓ 配置导出成功',
+                `文件名: grasstab-config-${timestamp}.yaml\n\n` +
+                `• Dock 应用: ${dockApps.length} 个\n` +
+                `• 桌面应用: ${desktopApps.length} 个\n` +
+                `• 系统设置: 已保存${aiInfo}${notesInfo}`
+            );
+
             console.log('✓ Configuration exported successfully');
         } catch (e) {
             console.error('Export failed:', e);
-            const errorMsg = e instanceof Error ? e.message : 'Unknown error';
-            dialog.showAlert('导出配置失败', `${errorMsg}\n\n请查看控制台获取更多信息。`);
+            const errorMsg = e instanceof Error ? e.message : '未知错误';
+            dialog.showAlert(
+                '❌ 导出配置失败', 
+                `错误信息: ${errorMsg}\n\n请检查浏览器控制台获取更多信息。`
+            );
         }
-    }, [sysSettings, wallpaper, appLayout]);
+    }, [sysSettings, wallpaper, appLayout, dialog]);
 
     const handleImportConfig = useCallback(async (file: File) => {
         try {
-            // Validate file type
+            // 验证文件类型
             const fileName = file.name.toLowerCase();
-            if (!fileName.endsWith('.yaml') && !fileName.endsWith('.yml') && !fileName.endsWith('.json')) {
-                dialog.showAlert('Please select a valid YAML or JSON configuration file (.yaml, .yml, or .json)');
+            const validExtensions = ['.yaml', '.yml', '.json'];
+            const isValidFile = validExtensions.some(ext => fileName.endsWith(ext));
+            
+            if (!isValidFile) {
+                dialog.showAlert(
+                    '文件格式不支持',
+                    `请选择有效的配置文件格式:\n• YAML (.yaml, .yml)\n• JSON (.json)\n\n当前文件: ${file.name}`
+                );
                 return;
             }
 
+            // 验证文件大小（最大 10MB）
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                dialog.showAlert(
+                    '文件过大',
+                    `配置文件不应超过 10MB\n\n当前文件大小: ${(file.size / 1024 / 1024).toFixed(2)} MB`
+                );
+                return;
+            }
+
+            // 读取文件内容
             const text = await file.text();
 
             if (!text || text.trim() === '') {
-                dialog.showAlert('Configuration file is empty');
+                dialog.showAlert('配置文件为空', '请选择一个有效的配置文件。');
                 return;
             }
 
+            // 解析配置
+            let config: GlobalConfig | null;
             try {
-                const config = parseYamlConfig(text);
+                config = parseYamlConfig(text);
+            } catch (parseError) {
+                const errorMsg = parseError instanceof Error ? parseError.message : '未知解析错误';
+                dialog.showAlert(
+                    '❌ 配置文件解析失败',
+                    `文件: ${file.name}\n\n错误: ${errorMsg}\n\n请确保配置文件格式正确。`
+                );
+                return;
+            }
 
-                if (config) {
-                    const dockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
-                    const desktopCount = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
-                    const confirmMsg = `This will overwrite:\n• ${dockCount} Dock apps → ${config.dockItems?.length || 0} apps\n• ${desktopCount} Desktop apps → ${config.shortcuts?.length || 0} apps\n• Current wallpaper and settings\n\nThis action cannot be undone.`;
+            if (!config) {
+                dialog.showAlert('配置文件无效', '无法解析配置文件，请检查文件格式。');
+                return;
+            }
 
-                    if (await dialog.showConfirm(`Import configuration from "${file.name}"?`, confirmMsg)) {
-                        setSysSettings(config.settings);
-                        setWallpaper(config.wallpaper);
-                        
-                        // 合并导入的dock和shortcuts到appLayout
-                        const dockApps = config.dockItems || [];
-                        const desktopApps = config.shortcuts || [];
-                        const emptySlots = Array(DOCK_RESERVED_SLOTS - dockApps.length).fill(null);
-                        setAppLayout([...dockApps, ...emptySlots, ...desktopApps]);
+            // 显示导入确认对话框
+            const currentDockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
+            const currentDesktopCount = appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null).length;
+            const newDockCount = config.dockItems?.length || 0;
+            const newDesktopCount = config.shortcuts?.length || 0;
+            const aiInfo = config.aiSettings ? `\n• AI 提供商: ${config.aiSettings.providers.length} 个` : '';
+            const notesInfo = config.notes !== undefined ? `\n• 便签: ${config.notes.length} 字符` : '';
 
-                        // Reset page to first page
-                        setPage(0);
+            const confirmMsg = 
+                `文件: ${file.name}\n` +
+                `版本: ${config.version || '未知'}\n\n` +
+                `即将导入:\n` +
+                `• Dock 应用: ${currentDockCount} → ${newDockCount}\n` +
+                `• 桌面应用: ${currentDesktopCount} → ${newDesktopCount}\n` +
+                `• 系统设置: 将被覆盖${aiInfo}${notesInfo}\n\n` +
+                `⚠️ 此操作无法撤销！`;
 
-                        // Success notification
-                        setTimeout(() => {
-                            dialog.showAlert('✓ Configuration imported successfully!', `• ${dockApps.length} Dock apps loaded\n• ${desktopApps.length} Desktop apps loaded\n• Settings and wallpaper applied`);
-                        }, 100);
+            if (await dialog.showConfirm('确认导入配置？', confirmMsg)) {
+                // 先清除所有现有数据
+                localStorage.removeItem('os-app-layout');
+                localStorage.removeItem('os-dock');
+                localStorage.removeItem('os-settings');
+                localStorage.removeItem('os-bg');
+                localStorage.removeItem('os-note');
+                
+                // 清除 AI 设置
+                localStorage.removeItem('ai-providers');
+                localStorage.removeItem('ai-current-provider');
+                localStorage.removeItem('ai-current-model');
+
+                // 清除所有 OS 和 AI 相关的键
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('os-') || key.startsWith('ai-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+
+                // 应用新配置
+                setSysSettings(config.settings);
+                setWallpaper(config.wallpaper);
+                
+                // 正确构建 appLayout：Dock区域(前DOCK_RESERVED_SLOTS个位置) + 桌面区域
+                const dockApps = config.dockItems || [];
+                const desktopApps = config.shortcuts || [];
+                
+                // Dock 区域：填充应用 + null（确保占满DOCK_RESERVED_SLOTS个位置）
+                const dockLayout = Array(DOCK_RESERVED_SLOTS).fill(null);
+                dockApps.forEach((app, index) => {
+                    if (index < DOCK_RESERVED_SLOTS) {
+                        dockLayout[index] = app;
+                    }
+                });
+                
+                // 完整布局 = Dock区域 + 桌面应用
+                setAppLayout([...dockLayout, ...desktopApps]);
+
+                // 应用 AI 配置
+                if (config.aiSettings) {
+                    localStorage.setItem('ai-providers', JSON.stringify(config.aiSettings.providers));
+                    if (config.aiSettings.currentProviderId) {
+                        localStorage.setItem('ai-current-provider', config.aiSettings.currentProviderId);
+                    }
+                    if (config.aiSettings.currentModel) {
+                        localStorage.setItem('ai-current-model', config.aiSettings.currentModel);
                     }
                 }
-            } catch (parseError) {
-                const errorMsg = parseError instanceof Error ? parseError.message : 'Unknown error';
-                dialog.showAlert('Failed to parse configuration', errorMsg);
+
+                // 应用便签内容
+                if (config.notes !== undefined) {
+                    localStorage.setItem('os-note', config.notes);
+                }
+
+                // 重置到第一页
+                setPage(0);
+
+                // 显示成功提示
+                setTimeout(() => {
+                    const statusText = 
+                        `• Dock 应用: ${newDockCount} 个已加载\n` +
+                        `• 桌面应用: ${newDesktopCount} 个已加载\n` +
+                        `• 系统设置: 已应用${aiInfo}${notesInfo}`;
+
+                    dialog.showAlert(
+                        '✓ 配置导入成功',
+                        `文件: ${file.name}\n\n${statusText}\n\n配置已生效！`
+                    );
+                }, 100);
+
+                console.log('✓ Configuration imported successfully', {
+                    dockApps: newDockCount,
+                    desktopApps: newDesktopCount,
+                    aiProviders: config.aiSettings?.providers?.length || 0,
+                    hasNotes: !!config.notes
+                });
             }
         } catch (e) {
             console.error('Import error:', e);
-            const errorMsg = e instanceof Error ? e.message : 'Unknown error occurred';
-            dialog.showAlert('Failed to import configuration', `${errorMsg}\n\nPlease check the file format and try again.`);
+            const errorMsg = e instanceof Error ? e.message : '未知错误';
+            dialog.showAlert(
+                '❌ 导入配置失败', 
+                `错误信息: ${errorMsg}\n\n请检查文件格式是否正确，或查看浏览器控制台获取详细信息。`
+            );
         }
-    }, [appLayout.length]);
+    }, [appLayout, dialog, setPage]);
 
     const handleReset = useCallback(async () => {
         const dockCount = appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(i => i !== null).length;
         const desktopCount = appLayout.slice(DOCK_RESERVED_SLOTS).filter(i => i !== null).length;
-        const confirmMsg = `This will permanently delete:\n• ${desktopCount} Desktop apps\n• ${dockCount} Dock apps\n• All system settings\n• Custom wallpaper\n• Saved notes\n\nThe system will reload with default settings.\n\nThis action CANNOT be undone!`;
+        const confirmMsg = `This will permanently delete:\n• ${desktopCount} Desktop apps\n• ${dockCount} Dock apps\n• All system settings\n• Custom wallpaper\n• Saved notes\n• AI API settings\n\nThe system will reload with default settings.\n\nThis action CANNOT be undone!`;
 
         if (await dialog.showConfirm('⚠️ RESET ALL DATA', confirmMsg)) {
             // Double confirmation for safety
             if (await dialog.showConfirm('Are you absolutely sure?', 'This is your last chance to cancel.')) {
                 try {
-                    // Clear all localStorage keys
+                    // Clear all localStorage keys related to the system
                     localStorage.removeItem('os-app-layout');
                     localStorage.removeItem('os-dock');
                     localStorage.removeItem('os-settings');
                     localStorage.removeItem('os-bg');
                     localStorage.removeItem('os-note');
+                    
+                    // Clear AI settings
+                    localStorage.removeItem('ai-providers');
+                    localStorage.removeItem('ai-current-provider');
+                    localStorage.removeItem('ai-current-model');
 
-                    // Optional: Clear all OS-related keys
+                    // Clear all OS-related and AI-related keys
                     Object.keys(localStorage).forEach(key => {
-                        if (key.startsWith('os-')) {
+                        if (key.startsWith('os-') || key.startsWith('ai-')) {
                             localStorage.removeItem(key);
                         }
                     });
@@ -561,8 +719,15 @@ function DesktopApp() {
         const confirmMessage = `确定要删除 "${appName}" 吗？`;
             
         if (await dialog.showConfirm(confirmMessage)) {
-            // 完全删除，过滤掉该应用
-            setAppLayout(prev => prev.filter(item => item?.id !== app.id));
+            // 找到应用的索引，将其设为 null（保持数组结构）
+            setAppLayout(prev => {
+                const index = prev.findIndex(item => item?.id === app.id);
+                if (index === -1) return prev;
+                
+                const newLayout = [...prev];
+                newLayout[index] = null;
+                return newLayout;
+            });
         }
     };
     
@@ -607,6 +772,16 @@ function DesktopApp() {
             setMaxZ(prev => prev + 1);
         }
     };
+
+    // 更新应用的 iconType（当图标成功加载时）
+    const handleIconLoaded = useCallback((appId: string | number, iconSource: string) => {
+        setAppLayout(prev => prev.map(item => {
+            if (item && item.id === appId && item.iconType !== iconSource) {
+                return { ...item, iconType: iconSource };
+            }
+            return item;
+        }));
+    }, []);
 
     const handleAppContextMenu = (e: React.MouseEvent, app: Shortcut) => {
         e.preventDefault();
@@ -1267,7 +1442,11 @@ function DesktopApp() {
 
                                                 <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${s.color} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
                                                     {!isWidget && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
-                                                    <AppIcon {...s} onContextMenu={handleAppContextMenu} />
+                                                    <AppIcon 
+                                                        {...s} 
+                                                        onContextMenu={handleAppContextMenu}
+                                                        onIconLoaded={(iconSource) => handleIconLoaded(s.id, iconSource)}
+                                                    />
                                                 </div>
 
                                                 {!isWidget && <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{s.title}</span>}
@@ -1399,7 +1578,11 @@ function DesktopApp() {
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none"></div>
                                         <div className="w-full h-full flex items-center justify-center">
-                                            <AppIcon {...item} onContextMenu={handleAppContextMenu} />
+                                            <AppIcon 
+                                                {...item} 
+                                                onContextMenu={handleAppContextMenu}
+                                                onIconLoaded={(iconSource) => handleIconLoaded(item.id, iconSource)}
+                                            />
                                         </div>
                                     </div>
                                     <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/80 transition-all duration-300 ${windows.find(w => w.id === item.id)?.isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}></div>
