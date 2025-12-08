@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrassTab - 隐私政策 / Privacy Policy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        h3 {
+            color: #764ba2;
+            font-size: 1.3em;
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+        
+        ul {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background-color: #f0f7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .important {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffa726;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .lang-switch {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .lang-switch button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 25px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .lang-switch button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .lang-switch button.active {
+            background: #764ba2;
+        }
+        
+        .lang-content {
+            display: none;
+        }
+        
+        .lang-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔒 GrassTab</h1>
+            <p>隐私政策 / Privacy Policy</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">最后更新 / Last Updated: 2025年12月8日</p>
+        </div>
+        
+        <div class="lang-switch">
+            <button onclick="switchLang('zh')" id="btn-zh" class="active">中文</button>
+            <button onclick="switchLang('en')" id="btn-en">English</button>
+        </div>
+        
+        <!-- 中文内容 -->
+        <div class="content lang-content active" id="content-zh">
+            <div class="highlight">
+                <strong>核心承诺：</strong> GrassTab 不收集任何个人数据，所有信息仅存储在您的浏览器本地。
+            </div>
+            
+            <div class="section">
+                <h2>📋 概述</h2>
+                <p>GrassTab（以下简称"本扩展"）尊重并保护用户的隐私。本隐私政策说明了我们如何处理您的数据。</p>
+            </div>
+            
+            <div class="section">
+                <h2>🚫 数据收集</h2>
+                <div class="important">
+                    <strong>本扩展不收集任何个人数据。</strong>
+                </div>
+                <p>所有数据均存储在您的浏览器本地存储（localStorage）中，包括：</p>
+                <ul>
+                    <li>应用快捷方式配置</li>
+                    <li>Dock 栏设置</li>
+                    <li>壁纸选择</li>
+                    <li>系统设置</li>
+                    <li>便签内容</li>
+                    <li>AI API 配置（如果您选择使用）</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>💾 数据存储</h2>
+                <ul>
+                    <li>✓ 所有数据仅存储在您的本地浏览器中</li>
+                    <li>✓ 数据不会上传到任何服务器</li>
+                    <li>✓ 数据不会与第三方共享</li>
+                    <li>✓ 卸载扩展后，所有本地数据将被清除</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🔑 权限说明</h2>
+                <p>本扩展请求以下权限，仅用于以下目的：</p>
+                
+                <h3>1. storage (存储)</h3>
+                <p>用于在浏览器本地存储您的设置和数据，包括应用布局、壁纸、便签等内容。</p>
+                
+                <h3>2. unlimitedStorage (无限存储)</h3>
+                <p>允许存储大量自定义内容，例如：</p>
+                <ul>
+                    <li>高分辨率自定义壁纸</li>
+                    <li>大量应用快捷方式</li>
+                    <li>多个小组件的配置</li>
+                </ul>
+                
+                <h3>3. host_permissions (主机权限 https://*/\*)</h3>
+                <p>用于以下功能，不会收集或传输您的个人信息：</p>
+                <ul>
+                    <li><strong>获取网站图标</strong> - 自动获取您添加的网站的 favicon</li>
+                    <li><strong>搜索建议</strong> - 提供搜索建议功能（可选）</li>
+                    <li><strong>嵌入式网页小组件</strong> - 允许在小组件中嵌入网页内容</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🌐 外部服务</h2>
+                <p>本扩展可能访问以下外部服务，但<strong>不会</strong>发送您的个人信息：</p>
+                
+                <h3>图标服务</h3>
+                <ul>
+                    <li>icon.horse</li>
+                    <li>logo.clearbit.com</li>
+                    <li>unavatar.io</li>
+                    <li>Google Favicon API</li>
+                </ul>
+                <p>这些服务仅用于获取网站图标，只会发送网站域名，不会传输您的浏览历史或个人信息。</p>
+                
+                <h3>搜索建议服务（可选）</h3>
+                <ul>
+                    <li>Google Suggest</li>
+                    <li>Bing Suggest</li>
+                    <li>Baidu Suggest</li>
+                    <li>DuckDuckGo</li>
+                </ul>
+                <p>仅在您使用搜索栏时，根据您输入的关键词提供建议。</p>
+                
+                <h3>AI 服务（可选）</h3>
+                <div class="important">
+                    <strong>重要：</strong>AI 功能需要您自行配置 API 密钥。我们不存储、不传输您的 API 密钥到任何服务器。所有 API 调用都是从您的浏览器直接发送到 AI 服务商。
+                </div>
+                <p>支持的 AI 服务：</p>
+                <ul>
+                    <li>OpenAI (ChatGPT)</li>
+                    <li>Anthropic (Claude)</li>
+                    <li>Google (Gemini)</li>
+                    <li>其他兼容 OpenAI API 的服务</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>👤 用户控制</h2>
+                <p>您完全控制您的数据：</p>
+                <ul>
+                    <li>✓ 可以随时导出配置文件备份</li>
+                    <li>✓ 可以随时导入配置恢复数据</li>
+                    <li>✓ 可以随时清除所有数据（恢复默认设置）</li>
+                    <li>✓ 可以随时卸载扩展删除所有数据</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🔒 安全性</h2>
+                <ul>
+                    <li>所有数据仅存储在您的本地浏览器</li>
+                    <li>不涉及服务器传输</li>
+                    <li>开源代码，透明可审计</li>
+                    <li>定期更新，修复安全问题</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>👶 儿童隐私</h2>
+                <p>本扩展不针对 13 岁以下儿童，也不会故意收集儿童的个人信息。</p>
+            </div>
+            
+            <div class="section">
+                <h2>📝 政策变更</h2>
+                <p>我们可能会不时更新本隐私政策。任何更改将在此页面发布，并更新"最后更新日期"。建议您定期查看本政策。</p>
+            </div>
+            
+            <div class="section">
+                <h2>📧 联系我们</h2>
+                <p>如果您对本隐私政策有任何疑问,请通过以下方式联系我们:</p>
+                <ul>
+                    <li>GitHub Issues: <a href="https://github.com/moduqishi/grasstab/issues" target="_blank">https://github.com/moduqishi/grasstab/issues</a></li>
+                    <li>项目地址: <a href="https://github.com/moduqishi/grasstab" target="_blank">https://github.com/moduqishi/grasstab</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- English Content -->
+        <div class="content lang-content" id="content-en">
+            <div class="highlight">
+                <strong>Core Commitment:</strong> GrassTab does not collect any personal data. All information is stored locally in your browser only.
+            </div>
+            
+            <div class="section">
+                <h2>📋 Overview</h2>
+                <p>GrassTab ("the Extension") respects and protects user privacy. This privacy policy explains how we handle your data.</p>
+            </div>
+            
+            <div class="section">
+                <h2>🚫 Data Collection</h2>
+                <div class="important">
+                    <strong>The Extension does not collect any personal data.</strong>
+                </div>
+                <p>All data is stored in your browser's local storage (localStorage), including:</p>
+                <ul>
+                    <li>App shortcuts configuration</li>
+                    <li>Dock bar settings</li>
+                    <li>Wallpaper selection</li>
+                    <li>System settings</li>
+                    <li>Notes content</li>
+                    <li>AI API configuration (if you choose to use it)</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>💾 Data Storage</h2>
+                <ul>
+                    <li>✓ All data is stored locally in your browser only</li>
+                    <li>✓ Data is not uploaded to any servers</li>
+                    <li>✓ Data is not shared with third parties</li>
+                    <li>✓ All local data will be cleared when uninstalled</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🔑 Permission Usage</h2>
+                <p>The Extension requests the following permissions for these purposes only:</p>
+                
+                <h3>1. storage</h3>
+                <p>Store your settings and data in browser local storage, including app layout, wallpapers, notes, etc.</p>
+                
+                <h3>2. unlimitedStorage</h3>
+                <p>Allow storing large amounts of custom content, such as:</p>
+                <ul>
+                    <li>High-resolution custom wallpapers</li>
+                    <li>Large number of app shortcuts</li>
+                    <li>Multiple widget configurations</li>
+                </ul>
+                
+                <h3>3. host_permissions (https://*/\*)</h3>
+                <p>Used for the following features, without collecting or transmitting your personal information:</p>
+                <ul>
+                    <li><strong>Fetch website icons</strong> - Auto-fetch favicons for added websites</li>
+                    <li><strong>Search suggestions</strong> - Provide search suggestions (optional)</li>
+                    <li><strong>Embedded webpage widgets</strong> - Allow embedding web content in widgets</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🌐 External Services</h2>
+                <p>The Extension may access the following external services, but <strong>does not</strong> send your personal information:</p>
+                
+                <h3>Icon Services</h3>
+                <ul>
+                    <li>icon.horse</li>
+                    <li>logo.clearbit.com</li>
+                    <li>unavatar.io</li>
+                    <li>Google Favicon API</li>
+                </ul>
+                <p>These services are only used to fetch website icons. Only the website domain is sent, without transmitting your browsing history or personal information.</p>
+                
+                <h3>Search Suggestion Services (Optional)</h3>
+                <ul>
+                    <li>Google Suggest</li>
+                    <li>Bing Suggest</li>
+                    <li>Baidu Suggest</li>
+                    <li>DuckDuckGo</li>
+                </ul>
+                <p>Only used when you use the search bar, providing suggestions based on your input.</p>
+                
+                <h3>AI Services (Optional)</h3>
+                <div class="important">
+                    <strong>Important:</strong> AI features require you to configure your own API keys. We do not store or transmit your API keys to any servers. All API calls are sent directly from your browser to AI service providers.
+                </div>
+                <p>Supported AI services:</p>
+                <ul>
+                    <li>OpenAI (ChatGPT)</li>
+                    <li>Anthropic (Claude)</li>
+                    <li>Google (Gemini)</li>
+                    <li>Other OpenAI-compatible services</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>👤 User Control</h2>
+                <p>You have complete control over your data:</p>
+                <ul>
+                    <li>✓ Export configuration file for backup anytime</li>
+                    <li>✓ Import configuration to restore data anytime</li>
+                    <li>✓ Clear all data anytime (reset to defaults)</li>
+                    <li>✓ Uninstall extension to delete all data anytime</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>🔒 Security</h2>
+                <ul>
+                    <li>All data stored locally in your browser only</li>
+                    <li>No server transmission involved</li>
+                    <li>Open source code, transparent and auditable</li>
+                    <li>Regular updates to fix security issues</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h2>👶 Children's Privacy</h2>
+                <p>The Extension is not directed to children under 13 and does not knowingly collect personal information from children.</p>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Policy Changes</h2>
+                <p>We may update this privacy policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date. We recommend reviewing this policy periodically.</p>
+            </div>
+            
+            <div class="section">
+                <h2>📧 Contact Us</h2>
+                <p>If you have any questions about this privacy policy, please contact us:</p>
+                <ul>
+                    <li>GitHub Issues: <a href="https://github.com/moduqishi/grasstab/issues" target="_blank">https://github.com/moduqishi/grasstab/issues</a></li>
+                    <li>Repository: <a href="https://github.com/moduqishi/grasstab" target="_blank">https://github.com/moduqishi/grasstab</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>本扩展完全开源,代码可在 GitHub 查看审计</strong></p>
+            <p><strong>This Extension is fully open source, code available on GitHub for audit</strong></p>
+            <p style="margin-top: 15px;">
+                <a href="https://github.com/moduqishi/grasstab" target="_blank">GitHub Repository</a> | 
+                <a href="https://moduqishi.github.io/grasstab/" target="_blank">Official Website</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function switchLang(lang) {
+            // Hide all content
+            document.querySelectorAll('.lang-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Remove active from all buttons
+            document.querySelectorAll('.lang-switch button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected content
+            document.getElementById('content-' + lang).classList.add('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+        }
+    </script>
+</body>
+</html>

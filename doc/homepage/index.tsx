@@ -475,7 +475,8 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center text-slate-400 text-sm mt-20 pt-10 border-t border-slate-200">
           <p>© 2025 ModuQishi. Open Source (MIT License).</p>
           <div className="flex gap-8 mt-4 md:mt-0 font-medium">
-            <a href="#" className="hover:text-slate-900 transition-colors">GitHub</a>
+            <a href="https://github.com/moduqishi/grasstab" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">GitHub</a>
+            <a href="https://moduqishi.github.io/grasstab/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">隐私政策</a>
             <a href="#" className="hover:text-slate-900 transition-colors">Twitter</a>
             <a href="#" className="hover:text-slate-900 transition-colors">Discord</a>
           </div>

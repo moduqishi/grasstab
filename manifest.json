@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "GrassTab",
+  "name": "__MSG_extensionName__",
   "version": "1.0.1",
-  "description": "一个美观的新标签页,支持自定义快捷方式和小部件",
-  "default_locale": "zh",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "zh_CN",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
