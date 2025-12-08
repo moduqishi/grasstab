@@ -157,6 +157,20 @@ export default defineConfig(({ mode }) => {
             
             console.log('✓ 所有文件已复制到chrome-extension目录');
           }
+        },
+        // 非扩展模式下复制隐私政策页面到dist目录
+        !isExtension && {
+          name: 'copy-privacy-page',
+          closeBundle() {
+            const distPath = path.resolve(__dirname, 'dist');
+            const privacySrc = path.resolve(__dirname, 'doc/privacy.html');
+            const privacyDest = path.resolve(distPath, 'privacy.html');
+            
+            if (fs.existsSync(privacySrc)) {
+              fs.copyFileSync(privacySrc, privacyDest);
+              console.log('✓ privacy.html已复制到dist目录');
+            }
+          }
         }
       ].filter(Boolean),
       define: {
