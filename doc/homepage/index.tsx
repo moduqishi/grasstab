@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform, useMotionValue, useMotionTemplate } from 'framer-motion';
 import { 
-  Download, Cpu, LayoutGrid, Zap, Shield, Globe, Maximize2, Terminal, Sparkles, Layers, 
-  MousePointer2, Command, ArrowRight, Check, Play, Loader2, ExternalLink, RotateCw, 
-  MonitorPlay, Bot, X, Lock, RefreshCw, ChevronLeft, ChevronRight
+  LayoutGrid, Zap, Sparkles, ExternalLink, RotateCw, 
+  MonitorPlay, Bot, Lock, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 // --- 0. 品牌图标 (SVG Assets) ---
 
-const ChromeIcon = ({ className }) => (
+const ChromeIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M12 0C8.21 0 4.831 1.757 2.632 4.501l3.953 6.848A5.954 5.954 0 0 1 12 6.001h9.368A12.003 12.003 0 0 0 12 0Z" />
     <path d="M12 6.001a5.954 5.954 0 0 0-3.321 1.652L2.632 4.501C1.047 6.55.152 9.074.004 11.777c-.147 2.703.567 5.297 2.01 7.456l5.044-8.737A5.962 5.962 0 0 1 12 6.001Z" />
@@ -18,7 +17,7 @@ const ChromeIcon = ({ className }) => (
   </svg>
 );
 
-const EdgeIcon = ({ className }) => (
+const EdgeIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
     <path d="M.485 10.865c-.015.347-.024.707-.024 1.077C.461 17.65 4.562 23.36 10.38 23.36c4.01 0 7.371-2.032 9.356-4.908.083-.122.03-.306-.115-.365-2.434-.98-4.226-2.91-4.706-5.467-.023-.118-.112-.218-.23-.228a6.34 6.34 0 0 0-.825-.035c-3.153 0-5.32 2.37-5.32 5.093 0 .74.153 1.346.368 1.838.077.177-.11.365-.285.259-3.237-1.937-4.912-4.98-4.823-8.682ZM11.455 1.05c-3.793 0-7.373 1.944-8.86 5.397-.074.17.07.357.247.312 2.115-.55 4.354-.265 6.273 1.002.102.067.236.035.297-.071a6.65 6.65 0 0 1 2.383-2.31c.108-.06.126-.208.033-.292C11.328 4.636 10.5 3.965 10.5 2.768c0-.77.29-1.282.68-1.574.075-.056.05-.173-.042-.186A6.24 6.24 0 0 0 11.454 1.05Zm9.262 5.07c-1.92-2.73-4.94-4.522-7.85-5.074-.15-.029-.247.135-.145.247.96 1.052 1.58 2.685 1.58 4.385 0 3.394-2.583 6.745-6.852 7.828-.13.033-.174.2-.07.288 1.854 1.575 4.567 1.99 7.357 1.258 2.924-.768 5.485-3.085 6.264-6.52.038-.168-.108-.31-.284-.412Z" />
   </svg>
@@ -27,13 +26,13 @@ const EdgeIcon = ({ className }) => (
 // --- 1. 高级 UI 组件 ---
 
 // 3D 倾斜容器 (通用版)
-const TiltContainer = ({ children, className = "", maxRotate = 5 }) => {
+const TiltContainer = ({ children, className = "", maxRotate = 5 }: { children: React.ReactNode; className?: string; maxRotate?: number }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-0.5, 0.5], [maxRotate, -maxRotate]);
   const rotateY = useTransform(x, [-0.5, 0.5], [-maxRotate, maxRotate]);
 
-  function handleMouseMove(event) {
+  function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -63,7 +62,7 @@ const TiltContainer = ({ children, className = "", maxRotate = 5 }) => {
 };
 
 // 流光边框按钮
-const BorderBeamButton = ({ children, onClick, primary, icon: Icon }) => (
+const BorderBeamButton = ({ children, onClick, primary, icon: Icon }: { children: React.ReactNode; onClick?: () => void; primary?: boolean; icon?: React.ComponentType<{ className?: string }> }) => (
   <button 
     onClick={onClick}
     className={`relative group overflow-hidden rounded-full p-[1px] focus:outline-none transition-transform active:scale-95`}
@@ -81,7 +80,7 @@ const BorderBeamButton = ({ children, onClick, primary, icon: Icon }) => (
 );
 
 // 模拟代码窗口
-const CodeWindow = ({ title, children, className = "" }) => (
+const CodeWindow = ({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) => (
   <div className={`bg-slate-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col ${className}`}>
     <div className="h-8 bg-white/5 border-b border-white/5 flex items-center px-3 space-x-2">
       <div className="flex space-x-1.5">
@@ -179,14 +178,15 @@ const Hero = () => {
         >
           <BorderBeamButton 
             primary 
-            icon={chromeBtnText.includes("提交") ? null : ChromeIcon}
+            icon={chromeBtnText.includes("提交") ? undefined : ChromeIcon}
             onClick={handleChromeClick}
           >
             {chromeBtnText}
           </BorderBeamButton>
           <BorderBeamButton 
-            icon={edgeBtnText.includes("提交") ? null : EdgeIcon}
+            icon={edgeBtnText.includes("提交") ? undefined : EdgeIcon}
             onClick={handleEdgeClick}
+            primary={false}
           >
             {edgeBtnText}
           </BorderBeamButton>
@@ -297,8 +297,8 @@ const AIDemo = () => {
 
 const InteractivePreview = () => {
     const [isLoading, setIsLoading] = useState(true);
-    const iframeRef = useRef(null);
-    const containerRef = useRef(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     // 滚动驱动的动画配置
     const { scrollYProgress } = useScroll({
