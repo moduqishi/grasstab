@@ -7,17 +7,19 @@ import { AppIcon } from './components/AppIcon';
 import { ContextMenu } from './components/ContextMenu';
 import { AppContextMenu } from './components/AppContextMenu';
 import { ResponsiveWindow } from './components/Window';
-import { CalculatorApp } from './components/apps/Calculator';
-import { NotesApp } from './components/apps/Notes';
-import { AIApp } from './components/apps/AI';
-import { SettingsApp } from './components/apps/Settings';
-import { AddShortcutApp } from './components/apps/AddShortcut';
-import { EditApp } from './components/apps/EditApp';
-import { WebView } from './components/apps/WebView';
-import { CodeEditor } from './components/CodeEditor';
 import { packItems, generateYamlConfig, parseYamlConfig } from './utils';
 import { t } from './i18n';
 import { DialogProvider, useDialog } from './components/Dialog';
+
+// Lazy load heavy components
+const CalculatorApp = React.lazy(() => import('./components/apps/Calculator').then(module => ({ default: module.CalculatorApp })));
+const NotesApp = React.lazy(() => import('./components/apps/Notes').then(module => ({ default: module.NotesApp })));
+const AIApp = React.lazy(() => import('./components/apps/AI').then(module => ({ default: module.AIApp })));
+const SettingsApp = React.lazy(() => import('./components/apps/Settings').then(module => ({ default: module.SettingsApp })));
+const AddShortcutApp = React.lazy(() => import('./components/apps/AddShortcut').then(module => ({ default: module.AddShortcutApp })));
+const EditApp = React.lazy(() => import('./components/apps/EditApp').then(module => ({ default: module.EditApp })));
+const WebView = React.lazy(() => import('./components/apps/WebView').then(module => ({ default: module.WebView })));
+const CodeEditor = React.lazy(() => import('./components/CodeEditor').then(module => ({ default: module.CodeEditor })));
 
 // 统一应用布局管理：前100个位置预留给Dock栏，后面的是桌面应用
 // Dock栏预留位置数量（前10个位置）
@@ -33,9 +35,9 @@ function DesktopApp() {
     const [sysSettings, setSysSettings] = useState<SystemSettings>(() => {
         try {
             const saved = localStorage.getItem('os-settings');
-            return saved ? JSON.parse(saved) : { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
+            return saved ? JSON.parse(saved) : { showDockEdit: false, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
         } catch {
-            return { showDockEdit: true, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
+            return { showDockEdit: false, showSearchBar: true, showPagination: true, showDock: true, language: 'zh' };
         }
     });
 
@@ -1271,7 +1273,7 @@ function DesktopApp() {
                                 const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
                                 const nextIdx = (keys.indexOf(prev) + 1) % keys.length;
                                 return keys[nextIdx];
-                            })} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors text-white font-bold text-sm sm:text-base">{SEARCH_ENGINES[engine].icon}</button>
+                            })} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors text-white font-bold text-sm sm:text-base"><span className="w-[75%] h-[75%] flex items-center justify-center">{SEARCH_ENGINES[engine].icon}</span></button>
                             <input
                                 className="flex-1 bg-transparent border-none outline-none text-white px-2 sm:px-3 text-base sm:text-lg placeholder-white/40 font-light h-8 sm:h-10"
                                 placeholder={`Search ${SEARCH_ENGINES[engine].name}...`}
@@ -1440,8 +1442,8 @@ function DesktopApp() {
                                                     </>
                                                 )}
 
-                                                <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${s.color} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
-                                                    {!isWidget && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
+                                                <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg ${s.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${s.color}`} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
+                                                    {!isWidget && !s.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
                                                     <AppIcon 
                                                         {...s} 
                                                         onContextMenu={handleAppContextMenu}
@@ -1476,7 +1478,7 @@ function DesktopApp() {
                     {/* iOS-style dragging icon - maintains aspect ratio */}
                     <div className="flex flex-col items-center gap-2">
                         <div
-                            className={`relative overflow-hidden flex items-center justify-center text-white shadow-2xl bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'} ring-2 ring-white/40 ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'}`}
+                            className={`relative overflow-hidden flex items-center justify-center text-white shadow-2xl ${dragState.item.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'}`} ring-2 ring-white/40 ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'}`}
                             style={{
                                 width: dragState.item.type === 'widget'
                                     ? `${(dragState.item.size?.w || 1) * 88}px`
@@ -1486,7 +1488,7 @@ function DesktopApp() {
                                     : '75px'
                             }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none" style={{ display: dragState.item.customIcon ? 'none' : 'block' }}></div>
                             <div className="w-full h-full flex items-center justify-center">
                                 <AppIcon {...dragState.item} />
                             </div>
@@ -1556,7 +1558,7 @@ function DesktopApp() {
                                         </div>
                                     )}
                                     <div
-                                        className={`w-full h-full rounded-[12px] sm:rounded-[14px] md:rounded-[16px] flex items-center justify-center text-white shadow-lg bg-gradient-to-br ${item.color || 'from-gray-700 to-gray-600'} border border-white/10 ring-1 ring-white/5 relative overflow-hidden cursor-pointer ${!isEditing && 'hover:-translate-y-4 hover:scale-110 active:scale-95 transition-all duration-200 ease-out'}`}
+                                        className={`w-full h-full rounded-[12px] sm:rounded-[14px] md:rounded-[16px] flex items-center justify-center text-white shadow-lg ${item.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${item.color || 'from-gray-700 to-gray-600'}`} border border-white/10 ring-1 ring-white/5 relative overflow-hidden cursor-pointer ${!isEditing && 'hover:-translate-y-4 hover:scale-110 active:scale-95 transition-all duration-200 ease-out'}`}
                                         onPointerDown={(e) => handlePointerDown(e, index, 'dock', item)}
                                         onDragStart={(e) => e.preventDefault()}
                                         onClick={() => {
@@ -1576,7 +1578,7 @@ function DesktopApp() {
                                         }}
                                         data-app-icon
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none" style={{ display: item.customIcon ? 'none' : 'block' }}></div>
                                         <div className="w-full h-full flex items-center justify-center">
                                             <AppIcon 
                                                 {...item} 
@@ -1630,48 +1632,50 @@ function DesktopApp() {
                         onToggleMaximize={() => toggleMaximize(w.id)}
                         isMaximized={w.isMaximized}
                     >
-                        {w.type === 'calc' && <CalculatorApp />}
-                        {w.type === 'notes' && <NotesApp />}
-                        {w.type === 'ai' && <AIApp />}
-                        {w.type === 'settings' && (
-                            <SettingsApp
-                                setWp={setWallpaper}
-                                settings={sysSettings}
-                                onUpdate={setSysSettings}
-                                onExport={handleExportConfig}
-                                onImport={handleImportConfig}
-                                onReset={handleReset}
-                                onEditConfig={handleEditConfig}
-                                shortcuts={appLayout.filter((item): item is Shortcut => item !== null && item.type !== 'sys')}
-                                onShortcutUpdate={(newShortcuts) => {
-                                    // 更新所有应用（保留系统应用）
-                                    const systemApps = appLayout.filter(item => item?.type === 'sys');
-                                    setAppLayout([...newShortcuts, ...systemApps]);
-                                }}
-                                onEditShortcut={handleEditAppFromSettings}
-                                onDeleteApp={handleDeleteApp}
-                                allApps={appLayout}
-                                onRestoreSystemApp={handleRestoreSystemApp}
-                            />
-                        )}
-                        {w.type === 'add' && <AddShortcutApp onAdd={(d) => {
-                            const newId = Date.now();
-                            // Default to valid size if not provided
-                            const size = d.size || { w: 1, h: 1 };
-                            const newApp = { ...d, id: newId, type: d.type || 'auto', color: d.color || 'from-gray-800 to-gray-700', size } as Shortcut;
-                            // 添加到appLayout末尾（桌面区域）
-                            setAppLayout(prev => [...prev, newApp]);
-                        }} onClose={() => closeWin('add')} />}
-                        {w.type === 'edit' && w.editData && <EditApp app={w.editData} onSave={handleSaveApp} language={lang} />}
-                        {w.type === 'configEditor' && (
-                            <CodeEditor
-                                value={configEditorContent}
-                                language="yaml"
-                                onSave={handleSaveConfig}
-                                onClose={() => closeWin('configEditor')}
-                            />
-                        )}
-                        {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
+                        <React.Suspense fallback={<div className="flex items-center justify-center h-full w-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/50"></div></div>}>
+                            {w.type === 'calc' && <CalculatorApp />}
+                            {w.type === 'notes' && <NotesApp />}
+                            {w.type === 'ai' && <AIApp />}
+                            {w.type === 'settings' && (
+                                <SettingsApp
+                                    setWp={setWallpaper}
+                                    settings={sysSettings}
+                                    onUpdate={setSysSettings}
+                                    onExport={handleExportConfig}
+                                    onImport={handleImportConfig}
+                                    onReset={handleReset}
+                                    onEditConfig={handleEditConfig}
+                                    shortcuts={appLayout.filter((item): item is Shortcut => item !== null && item.type !== 'sys')}
+                                    onShortcutUpdate={(newShortcuts) => {
+                                        // 更新所有应用（保留系统应用）
+                                        const systemApps = appLayout.filter(item => item?.type === 'sys');
+                                        setAppLayout([...newShortcuts, ...systemApps]);
+                                    }}
+                                    onEditShortcut={handleEditAppFromSettings}
+                                    onDeleteApp={handleDeleteApp}
+                                    allApps={appLayout}
+                                    onRestoreSystemApp={handleRestoreSystemApp}
+                                />
+                            )}
+                            {w.type === 'add' && <AddShortcutApp onAdd={(d) => {
+                                const newId = Date.now();
+                                // Default to valid size if not provided
+                                const size = d.size || { w: 1, h: 1 };
+                                const newApp = { ...d, id: newId, type: d.type || 'auto', color: d.color || 'from-gray-800 to-gray-700', size } as Shortcut;
+                                // 添加到appLayout末尾（桌面区域）
+                                setAppLayout(prev => [...prev, newApp]);
+                            }} onClose={() => closeWin('add')} />}
+                            {w.type === 'edit' && w.editData && <EditApp app={w.editData} onSave={handleSaveApp} language={lang} />}
+                            {w.type === 'configEditor' && (
+                                <CodeEditor
+                                    value={configEditorContent}
+                                    language="yaml"
+                                    onSave={handleSaveConfig}
+                                    onClose={() => closeWin('configEditor')}
+                                />
+                            )}
+                            {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
+                        </React.Suspense>
                     </ResponsiveWindow>
                 )
             ))}

@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDialog } from '../Dialog';
-import { Plus, AppWindow, LayoutGrid, Clock, Calendar, CloudSun, Code, Monitor, Upload, Image as ImageIcon, Check, X, Link, Maximize2 } from 'lucide-react';
+import { Plus, AppWindow, LayoutGrid, Clock, Calendar, CloudSun, Code, Monitor, Upload, Image as ImageIcon, Check, X, Link, Maximize2, Sparkles } from 'lucide-react';
 import { Shortcut, WidgetType } from '../../types';
 import { IconSelector } from '../IconSelector';
+import { fetchPageTitle } from '../../utils';
 
 interface AddShortcutProps {
     onAdd: (data: Partial<Shortcut>) => void;
@@ -28,12 +29,68 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     const [customIcon, setCustomIcon] = useState('');
     const [selectedIconUrl, setSelectedIconUrl] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const hasFetchedTitle = useRef(false); // 只获取一次
+    const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
     // Widget State
     const [wType, setWType] = useState<WidgetType>('clock');
     const [wWidth, setWWidth] = useState(2);
     const [wHeight, setWHeight] = useState(2);
     const [wContent, setWContent] = useState('');
+
+    // Auto-fetch title when URL changes and title is empty
+    useEffect(() => {
+        const fetchTitle = async () => {
+            let processedUrl = u.trim();
+            
+            // 只在URL有效时获取标题
+            if (processedUrl && !t && !hasFetchedTitle.current && processedUrl.match(/^https?:\/\/.+/)) {
+                setIsFetchingTitle(true);
+                hasFetchedTitle.current = true;
+                
+                try {
+                    const title = await fetchPageTitle(processedUrl);
+                    if (title && !t) {
+                        // 处理标题：只保留 - 前面的部分
+                        const cleanTitle = title.split(' - ')[0].split(' – ')[0].split('|')[0].trim();
+                        setT(cleanTitle);
+                    }
+                } catch (e) {
+                    console.warn('Failed to fetch title:', e);
+                } finally {
+                    setIsFetchingTitle(false);
+                }
+            }
+        };
+
+        // 防抖：延迟执行
+        const timer = setTimeout(fetchTitle, 800);
+        return () => clearTimeout(timer);
+    }, [u]);
+
+    // 当用户手动输入标题时，不再自动获取
+    const handleTitleChange = (value: string) => {
+        setT(value);
+        if (value) {
+            hasFetchedTitle.current = true; // 用户输入了，不要再自动获取
+        }
+    };
+
+    // URL 输入框失去焦点时处理
+    const handleUrlBlur = () => {
+        let processedUrl = u.trim();
+        if (!processedUrl) return;
+        
+        // 替换中文句号为英文句号
+        processedUrl = processedUrl.replace(/。/g, '.');
+        
+        // 自动添加 https:// 协议
+        if (!processedUrl.match(/^https?:\/\//i)) {
+            processedUrl = 'https://' + processedUrl;
+        }
+        
+        setU(processedUrl);
+    };
 
     // Handle icon file upload
     const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,8 +188,13 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                     <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {/* Name Input */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold px-1" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                                应用名称
+                            <label className="block text-sm font-semibold px-1 flex items-center gap-2" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                                <span>应用名称</span>
+                                {isFetchingTitle && (
+                                    <span className="inline-flex items-center">
+                                        <Sparkles className="w-3.5 h-3.5 animate-pulse" style={{ color: '#fbbf24' }} />
+                                    </span>
+                                )}
                             </label>
                             <input 
                                 className="w-full px-4 py-2.5 rounded-lg outline-none transition-all" 
@@ -142,8 +204,8 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                                     color: 'rgba(255, 255, 255, 0.9)'
                                 }}
                                 value={t} 
-                                onChange={e => setT(e.target.value)} 
-                                placeholder="例如：我的博客" 
+                                onChange={e => handleTitleChange(e.target.value)} 
+                                placeholder="留空将自动填充" 
                                 autoFocus
                             />
                         </div>
@@ -161,7 +223,8 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
                                     color: 'rgba(255, 255, 255, 0.9)'
                                 }}
                                 value={u} 
-                                onChange={e => setU(e.target.value)} 
+                                onChange={e => setU(e.target.value)}
+                                onBlur={handleUrlBlur}
                                 placeholder="https://example.com" 
                             />
                         </div>

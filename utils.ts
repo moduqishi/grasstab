@@ -362,7 +362,7 @@ export const parseYamlConfig = (yamlStr: string): GlobalConfig | null => {
         // 解析便签内容（如果存在）
         if (doc.notes !== undefined) {
             config.notes = typeof doc.notes === 'string' ? doc.notes : '';
-            console.log(`Parsed notes: ${config.notes.length} chars`);
+            console.log(`Parsed notes: ${config.notes?.length || 0} chars`);
         }
 
         return config;
@@ -504,20 +504,20 @@ export const getAllIconUrls = (url: string) => {
     try {
         const domain = new URL(url).hostname;
         return [
-            // Priority 1: icon.horse - High quality, good coverage, automatic fallbacks
-            { source: 'iconhorse', url: `https://icon.horse/icon/${domain}`, name: 'Icon Horse' },
-            // Priority 2: Clearbit - High quality logos for major companies
+            // Priority 1: Clearbit - High quality logos for major companies
             { source: 'clearbit', url: `https://logo.clearbit.com/${domain}`, name: 'Clearbit' },
-            // Priority 3: unavatar.io - Good alternatives from multiple sources
+            // Priority 2: unavatar.io - Good alternatives from multiple sources
             { source: 'unavatar', url: `https://unavatar.io/${domain}?fallback=false`, name: 'Unavatar' },
-            // Priority 4: Google Favicon - Reliable but sometimes low quality
+            // Priority 3: Google Favicon - Reliable but sometimes low quality
             { source: 'google', url: `https://www.google.com/s2/favicons?domain=${domain}&sz=128`, name: 'Google' },
-            // Priority 5: DuckDuckGo - Good fallback
+            // Priority 4: DuckDuckGo - Good fallback
             { source: 'ddg', url: `https://icons.duckduckgo.com/ip3/${domain}.ico`, name: 'DuckDuckGo' },
-            // Priority 6: Favicon Kit - Another reliable source  
+            // Priority 5: Favicon Kit - Another reliable source  
             { source: 'faviconkit', url: `https://api.faviconkit.com/${domain}/128`, name: 'Favicon Kit' },
-            // Priority 7: Direct favicon from the site
-            { source: 'direct', url: `https://${domain}/favicon.ico`, name: 'Direct' }
+            // Priority 6: Direct favicon from the site
+            { source: 'direct', url: `https://${domain}/favicon.ico`, name: 'Direct' },
+            // Priority 7: icon.horse - Moved to last as fallback
+            { source: 'iconhorse', url: `https://icon.horse/icon/${domain}`, name: 'Icon Horse' }
         ];
     } catch (e) {
         return [];
@@ -529,15 +529,94 @@ export const getIconSources = (url: string) => {
     try {
         const domain = new URL(url).hostname;
         return {
-            iconhorse: `https://icon.horse/icon/${domain}`,
             clearbit: `https://logo.clearbit.com/${domain}`,
             unavatar: `https://unavatar.io/${domain}?fallback=false`,
             google: `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
             ddg: `https://icons.duckduckgo.com/ip3/${domain}.ico`,
             faviconkit: `https://api.faviconkit.com/${domain}/128`,
-            direct: `https://${domain}/favicon.ico`
+            direct: `https://${domain}/favicon.ico`,
+            iconhorse: `https://icon.horse/icon/${domain}`
         };
     } catch (e) {
+        return null;
+    }
+};
+
+// Fetch page title from URL
+export const fetchPageTitle = async (url: string): Promise<string | null> => {
+    try {
+        // Validate URL
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname;
+        
+        // Method 1: Try direct fetch (will work if CORS is allowed)
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'omit'
+            });
+            
+            if (response.ok) {
+                const html = await response.text();
+                const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
+                if (titleMatch && titleMatch[1]) {
+                    const title = titleMatch[1]
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'")
+                        .replace(/&#x27;/g, "'")
+                        .trim();
+                    if (title) return title;
+                }
+            }
+        } catch (e) {
+            // CORS blocked, continue to fallback
+        }
+        
+        // Method 2: Try CORS proxy
+        try {
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.contents) {
+                    const titleMatch = data.contents.match(/<title[^>]*>(.*?)<\/title>/i);
+                    if (titleMatch && titleMatch[1]) {
+                        const title = titleMatch[1]
+                            .replace(/&amp;/g, '&')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#39;/g, "'")
+                            .replace(/&#x27;/g, "'")
+                            .trim();
+                        if (title) return title;
+                    }
+                }
+            }
+        } catch (e) {
+            // Proxy failed, continue to fallback
+        }
+        
+        // Method 3: Use domain name as fallback
+        // Extract meaningful part from domain (remove www, keep main part)
+        const domainParts = domain.replace(/^www\./, '').split('.');
+        if (domainParts.length >= 2) {
+            // Capitalize first letter
+            const mainDomain = domainParts[domainParts.length - 2];
+            return mainDomain.charAt(0).toUpperCase() + mainDomain.slice(1);
+        }
+        
+        return null;
+    } catch (e) {
+        console.warn('Failed to fetch page title:', e);
         return null;
     }
 };

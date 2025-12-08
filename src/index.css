@@ -10,14 +10,33 @@
 
 /* 禁止缩放 - 使用 CSS 而非 meta 标签避免可访问性警告 */
 html {
+  background-color: #000000;
   touch-action: pan-x pan-y;
   -ms-touch-action: pan-x pan-y;
+}
+
+/* 优雅的入场动画 */
+@keyframes ui-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.ui-enter-active {
+  animation: ui-enter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 body { 
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
   overflow: hidden;
-  background-color: #000;
+  background-color: transparent;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
