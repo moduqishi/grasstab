@@ -32,6 +32,29 @@ export default defineConfig(({ mode }) => {
         // 扩展模式下复制并修改manifest.json
         isExtension && {
           name: 'copy-extension-files',
+          buildStart() {
+            // 在构建开始前备份chrome-extension目录中的图标文件
+            const chromeExtPath = path.resolve(__dirname, 'chrome-extension');
+            const backupPath = path.resolve(__dirname, '.icon-backup');
+            
+            if (fs.existsSync(chromeExtPath)) {
+              const icons = ['icon16.png', 'icon48.png', 'icon128.png'];
+              
+              // 创建备份目录
+              if (!fs.existsSync(backupPath)) {
+                fs.mkdirSync(backupPath, { recursive: true });
+              }
+              
+              // 备份图标文件
+              icons.forEach(icon => {
+                const iconSrc = path.join(chromeExtPath, icon);
+                const iconBackup = path.join(backupPath, icon);
+                if (fs.existsSync(iconSrc)) {
+                  fs.copyFileSync(iconSrc, iconBackup);
+                }
+              });
+            }
+          },
           closeBundle() {
             const distPath = path.resolve(__dirname, 'dist');
             const manifestSrc = path.resolve(__dirname, 'manifest.json');
@@ -86,12 +109,20 @@ export default defineConfig(({ mode }) => {
             
             // 复制所有文件到chrome-extension目录
             const chromeExtPath = path.resolve(__dirname, 'chrome-extension');
+            const backupPath = path.resolve(__dirname, '.icon-backup');
+            
+            // 删除旧的chrome-extension目录(如果存在)
+            if (fs.existsSync(chromeExtPath)) {
+              fs.rmSync(chromeExtPath, { recursive: true, force: true });
+            }
+            
+            // 创建新的chrome-extension目录
             if (!fs.existsSync(chromeExtPath)) {
               fs.mkdirSync(chromeExtPath, { recursive: true });
             }
             
             // 递归复制dist目录中的所有文件
-            const copyRecursive = (src, dest) => {
+            const copyRecursive = (src: string, dest: string) => {
               const entries = fs.readdirSync(src, { withFileTypes: true });
               for (const entry of entries) {
                 const srcPath = path.join(src, entry.name);
@@ -108,6 +139,22 @@ export default defineConfig(({ mode }) => {
             };
             
             copyRecursive(distPath, chromeExtPath);
+            
+            // 恢复备份的图标文件
+            if (fs.existsSync(backupPath)) {
+              const icons = ['icon16.png', 'icon48.png', 'icon128.png'];
+              icons.forEach(icon => {
+                const iconBackup = path.join(backupPath, icon);
+                const iconDest = path.join(chromeExtPath, icon);
+                if (fs.existsSync(iconBackup)) {
+                  fs.copyFileSync(iconBackup, iconDest);
+                }
+              });
+              
+              // 清理备份目录
+              fs.rmSync(backupPath, { recursive: true, force: true });
+            }
+            
             console.log('✓ 所有文件已复制到chrome-extension目录');
           }
         }
