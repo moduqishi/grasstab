@@ -74,9 +74,9 @@ function DesktopApp() {
                 if (Array.isArray(layout) && layout.length > 0) return layout;
             } catch {}
         }
-        // 首次初始化：使用concat比展开运算符更快
+        // 首次初始化：使用spread运算符合并不同类型的数组
         const emptySlots = Array(DOCK_RESERVED_SLOTS - DEFAULT_DOCK.length).fill(null);
-        return DEFAULT_DOCK.concat(emptySlots, DEFAULT_SHORTCUTS);
+        return [...DEFAULT_DOCK, ...emptySlots, ...DEFAULT_SHORTCUTS] as (Shortcut | null)[];
     });
 
     // 从布局中提取Dock项和桌面项
