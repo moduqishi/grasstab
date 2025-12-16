@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "__MSG_extensionDescription__",
   "default_locale": "zh_CN",
   "icons": {
@@ -13,14 +13,7 @@
     "newtab": "index.html"
   },
   "permissions": [
-    "storage",
     "unlimitedStorage"
-  ],
-  "host_permissions": [
-    "https://*/*",
-    "https://suggestqueries.google.com/*",
-    "https://api.bing.com/*",
-    "https://suggestion.baidu.com/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src https://*"

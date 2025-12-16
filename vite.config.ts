@@ -61,7 +61,15 @@ export default defineConfig(({ mode }) => {
           },
           closeBundle() {
             const distPath = path.resolve(__dirname, 'dist');
-            const manifestSrc = path.resolve(__dirname, 'manifest.json');
+            
+            // 读取目标浏览器环境变量
+            const targetBrowser = process.env.VITE_TARGET_BROWSER || 'chrome';
+            console.log(`🎯 Building for: ${targetBrowser}`);
+            
+            // 根据目标浏览器选择manifest文件
+            const manifestSrc = targetBrowser === 'edge'
+              ? path.resolve(__dirname, 'manifest.edge.json')
+              : path.resolve(__dirname, 'manifest.json');
             const manifestDest = path.resolve(distPath, 'manifest.json');
             
             // 复制并修改manifest.json
@@ -72,7 +80,7 @@ export default defineConfig(({ mode }) => {
                 extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src https://*"
               };
               fs.writeFileSync(manifestDest, JSON.stringify(manifest, null, 2));
-              console.log('✓ manifest.json已复制并更新CSP配置');
+              console.log(`✓ manifest.json已复制并更新CSP配置 (${targetBrowser}版本)`);
             }
             
             // 复制_locales目录
@@ -111,16 +119,17 @@ export default defineConfig(({ mode }) => {
             });
             console.log('✓ 图标文件已复制');
             
-            // 复制所有文件到chrome-extension目录
-            const chromeExtPath = path.resolve(__dirname, 'chrome-extension');
+            // 根据目标浏览器选择输出目录
+            const outputDirName = targetBrowser === 'edge' ? 'edge-extension' : 'chrome-extension';
+            const chromeExtPath = path.resolve(__dirname, outputDirName);
             const backupPath = path.resolve(__dirname, '.icon-backup');
             
-            // 删除旧的chrome-extension目录(如果存在)
+            // 删除旧的输出目录(如果存在)
             if (fs.existsSync(chromeExtPath)) {
               fs.rmSync(chromeExtPath, { recursive: true, force: true });
             }
             
-            // 创建新的chrome-extension目录
+            // 创建新的输出目录
             if (!fs.existsSync(chromeExtPath)) {
               fs.mkdirSync(chromeExtPath, { recursive: true });
             }
@@ -159,7 +168,7 @@ export default defineConfig(({ mode }) => {
               fs.rmSync(backupPath, { recursive: true, force: true });
             }
             
-            console.log('✓ 所有文件已复制到chrome-extension目录');
+            console.log(`✓ 所有文件已复制到${outputDirName}目录`);
           }
         },
         // 非扩展模式下复制隐私政策页面到dist目录

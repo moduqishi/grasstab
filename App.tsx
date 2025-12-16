@@ -10,6 +10,7 @@ import { ResponsiveWindow } from './components/Window';
 import { packItems, generateYamlConfig, parseYamlConfig } from './utils';
 import { t } from './i18n';
 import { DialogProvider, useDialog } from './components/Dialog';
+import { FEATURES } from './features';
 
 // Lazy load heavy components
 const CalculatorApp = React.lazy(() => import('./components/apps/Calculator').then(module => ({ default: module.CalculatorApp })));
@@ -123,16 +124,21 @@ function DesktopApp() {
     const [time, setTime] = useState(new Date());
     const [engine, setEngine] = useState<SearchEngineKey>('google');
     const [search, setSearch] = useState('');
+    
+    // 搜索建议相关状态 - 仅Edge版本
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
     
     // Scroll accumulation for smoother page/view transitions
     const scrollAccumulator = useRef(0);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(-1);
 
-    // --- Search Suggestions ---
+    // --- Search Suggestions (Edge版本专属) ---
     useEffect(() => {
+        // 如果不是Edge版本,跳过搜索建议功能
+        if (!FEATURES.SEARCH_SUGGESTIONS) return;
+
         const timer = setTimeout(async () => {
             if (!search.trim()) {
                 setSuggestions([]);
@@ -145,7 +151,6 @@ function DesktopApp() {
 
                 if (engine === 'google') {
                     try {
-                        // Google uses CORS-enabled API
                         const response = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`);
                         const data = await response.json();
                         if (Array.isArray(data) && data[1]) {
@@ -156,7 +161,6 @@ function DesktopApp() {
                     }
                 } else if (engine === 'bing') {
                     try {
-                        // Bing Autosuggest API (需要CORS支持)
                         const response = await fetch(`https://api.bing.com/qsonhs.aspx?q=${q}`);
                         const data = await response.json();
                         if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
@@ -167,7 +171,6 @@ function DesktopApp() {
                     }
                 } else if (engine === 'baidu') {
                     try {
-                        // 百度建议API (可能需要JSONP,暂时禁用)
                         console.warn('Baidu suggestions not supported in Manifest V3');
                         results = [];
                     } catch (err) {
@@ -175,7 +178,6 @@ function DesktopApp() {
                     }
                 } else if (engine === 'duckduckgo') {
                     try {
-                        // DuckDuckGo API
                         const response = await fetch(`https://duckduckgo.com/ac/?q=${q}&type=list`);
                         const data = await response.json();
                         if (Array.isArray(data) && data[1]) {
@@ -198,6 +200,8 @@ function DesktopApp() {
 
         return () => clearTimeout(timer);
     }, [search, engine]);
+
+
 
     const handleSearch = (query: string) => {
         if (!query.trim()) return;
@@ -237,8 +241,6 @@ function DesktopApp() {
             // 否则使用搜索引擎搜索
             window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(trimmedQuery));
         }
-        
-        setShowSuggestions(false);
     };
 
 
@@ -1271,48 +1273,55 @@ function DesktopApp() {
                                 placeholder={`Search ${SEARCH_ENGINES[engine].name}...`}
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
+                                {...(FEATURES.SEARCH_SUGGESTIONS && {
+                                    onFocus: () => { if (suggestions.length > 0) setShowSuggestions(true); },
+                                    onBlur: () => setTimeout(() => setShowSuggestions(false), 200)
+                                })}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter') {
-                                        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+                                        if (FEATURES.SEARCH_SUGGESTIONS && selectedIndex >= 0 && suggestions[selectedIndex]) {
                                             handleSearch(suggestions[selectedIndex]);
                                         } else {
                                             handleSearch(search);
                                         }
-                                    } else if (e.key === 'ArrowDown') {
-                                        e.preventDefault();
-                                        setSelectedIndex(prev => (prev + 1) % suggestions.length);
-                                    } else if (e.key === 'ArrowUp') {
-                                        e.preventDefault();
-                                        setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
-                                    } else if (e.key === 'Escape') {
-                                        setShowSuggestions(false);
+                                    } else if (FEATURES.SEARCH_SUGGESTIONS) {
+                                        if (e.key === 'ArrowDown') {
+                                            e.preventDefault();
+                                            setSelectedIndex(prev => (prev + 1) % suggestions.length);
+                                        } else if (e.key === 'ArrowUp') {
+                                            e.preventDefault();
+                                            setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
+                                        } else if (e.key === 'Escape') {
+                                            setShowSuggestions(false);
+                                        }
                                     }
                                 }}
                             />
                             {search && <button onClick={() => setSearch('')} className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-white/50 hover:text-white rounded-lg hover:bg-white/10 active:bg-white/20" aria-label="Clear search" title="Clear search"><X size={14} className="sm:w-4 sm:h-4" /></button>}
                         </div>
 
-                        {/* Search Suggestions Dropdown */}
-                        <div
-                            className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
-                            style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', willChange: 'transform, opacity, max-height' }}
-                        >
-                            {suggestions.map((s, i) => (
-                                <div
-                                    key={i}
-                                    className={`px-3 sm:px-4 py-3 sm:py-3.5 text-white/90 cursor-pointer flex items-center gap-2 sm:gap-3 transition-colors active:bg-white/25 ${i === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'}`}
-                                    onClick={() => {
-                                        setSearch(s);
-                                        handleSearch(s);
-                                    }}
-                                >
-                                    <Search size={14} className="sm:w-4 sm:h-4 text-white/40 flex-shrink-0" />
-                                    <span className="text-sm sm:text-base font-light truncate">{s}</span>
-                                </div>
-                            ))}
-                        </div>
+                        {/* Search Suggestions Dropdown - Edge版本专属 */}
+                        {FEATURES.SEARCH_SUGGESTIONS && (
+                            <div
+                                className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
+                                style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', willChange: 'transform, opacity, max-height' }}
+                            >
+                                {suggestions.map((s, i) => (
+                                    <div
+                                        key={i}
+                                        className={`px-3 sm:px-4 py-3 sm:py-3.5 text-white/90 cursor-pointer flex items-center gap-2 sm:gap-3 transition-colors active:bg-white/25 ${i === selectedIndex ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                                        onClick={() => {
+                                            setSearch(s);
+                                            handleSearch(s);
+                                        }}
+                                    >
+                                        <Search size={14} className="sm:w-4 sm:h-4 text-white/40 flex-shrink-0" />
+                                        <span className="text-sm sm:text-base font-light truncate">{s}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                     </div>
                 </div>
             )}
