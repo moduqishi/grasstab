@@ -48,7 +48,8 @@ const SAFE_DEFAULTS = {
     rows: 3,
     itemHeight: 120,
     topReserved: 350,
-    bottomReserved: 180
+    bottomReserved: 180,
+    iconSize: 78
 };
 
 export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
@@ -81,100 +82,76 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
 
             const isMobile = w < BREAKPOINTS.mobileLarge;
 
-            // ============ 动态计算顶部预留空间 ============
-            // INSTRUCTION: Use 54% of window height for grid area (Zone 3)
-            // The vertically flexible layout reserves:
-            // 18% Top (Time)
-            // 10% Search
-            // 54% Grid (THIS)
-            // 3% Indicators
-            // 15% Dock
+            // ============ Layout Logic ============
+            // User Request: 
+            // - 27" Large Screen -> 8 cols x 5 rows
+            // - <16" Small Screen (Laptops) -> 6 cols x 4 rows
+            // - Tablet Landscape -> 6 cols x 4 rows
             
-            let availableHeight = h * 0.54;
+            // We use logical CSS pixels to determine "Real Estate".
+            // - 1920px (Full HD Desktop) usually means meaningful desktop space.
+            // - 1728px (16" MacBook Pro) and below fall into "Laptop" category.
+            // Threshold set to 1800px to separate robust desktops from laptops.
 
-            // ============ 动态计算图标高度 ============
-            let itemHeight: number;
-            if (isMobile) {
-                itemHeight = w < BREAKPOINTS.mobileSmall ? 90 : 
-                           interpolate(w, BREAKPOINTS.mobileSmall, BREAKPOINTS.mobileLarge, 90, 100);
-            } else {
-                if (w < BREAKPOINTS.tablet) {
-                    itemHeight = 115;
-                } else if (w < BREAKPOINTS.laptop) {
-                    itemHeight = interpolate(w, BREAKPOINTS.tablet, BREAKPOINTS.laptop, 115, 125);
-                } else if (w < BREAKPOINTS.desktop) {
-                    itemHeight = interpolate(w, BREAKPOINTS.laptop, BREAKPOINTS.desktop, 125, 130);
-                } else {
-                    // 超大屏幕可以稍微增大图标
-                    itemHeight = w < BREAKPOINTS.large ? 130 : 
-                               interpolate(w, BREAKPOINTS.desktop, BREAKPOINTS.large, 130, 140);
-                }
-            }
+            const isLandscape = w > h;
+            const isLargeScreen = w >= 1800; // 27 inch+ zone (1920px / 2560px)
+            const isLaptopOrTablet = w >= 640 && w < 1800; // 13"-16" Laptops & Tablets
 
-            const maxGridWidth = Math.min(w * 0.92, w < BREAKPOINTS.desktop ? 1200 : 1400);
+            let cols = 4;
+            let rows = 4;
 
-            // ============ 动态计算列数 ============
-            let cols: number;
-            if (w < BREAKPOINTS.mobileSmall) {
-                cols = 3;
-            } else if (w < BREAKPOINTS.mobileLarge) {
-                cols = 4;
-            } else if (w < BREAKPOINTS.tablet) {
-                cols = 6;
-            } else if (w < BREAKPOINTS.laptop) {
-                cols = 6;
-            } else if (w < BREAKPOINTS.desktop) {
-                cols = 6;
-            } else if (w < BREAKPOINTS.large) {
+            if (isLargeScreen) {
+                // 27" Large Screen
                 cols = 8;
-            } else {
-                // 超大屏幕可以显示更多列
-                cols = 10;
-            }
-
-            // ============ 动态计算行数 ============
-            let rows = Math.floor(availableHeight / itemHeight);
-
-            // 确保至少显示 3 行
-            const MIN_ROWS = 3;
-            if (rows < MIN_ROWS) {
-                const spacing = 10;
-                itemHeight = Math.floor((availableHeight - spacing * (MIN_ROWS - 1)) / MIN_ROWS);
-                
-                // 确保 itemHeight 不会太小
-                const minItemHeight = isMobile ? 80 : 90;
-                if (itemHeight < minItemHeight) {
-                    itemHeight = minItemHeight;
-                    availableHeight = itemHeight * MIN_ROWS + spacing * (MIN_ROWS - 1);
+                rows = 5;
+            } else if (isLaptopOrTablet) {
+                if (isLandscape) {
+                    // Standard Laptop (13-16") & Tablet Landscape
+                    cols = 6;
+                    rows = 4;
+                } else {
+                    // Tablet Portrait
+                    cols = 5;
+                    rows = 6;
                 }
-                
-                rows = MIN_ROWS;
-            }
-
-            // 最大行数限制（根据屏幕宽度动态调整）
-            let maxRows: number;
-            if (w < BREAKPOINTS.tablet) {
-                maxRows = 4;
-            } else if (w < BREAKPOINTS.desktop) {
-                maxRows = 4;
-            } else if (w < BREAKPOINTS.large) {
-                maxRows = 5;
             } else {
-                maxRows = 6;  // 超大屏幕可以显示更多行
+                // Mobile (< 640px)
+                cols = 4;
+                rows = 4;
             }
-            
-            rows = clamp(rows, MIN_ROWS, maxRows);
 
+            // Available Height (54% of screen)
+            const availableHeight = h * 0.54;
+            
+            // Limit max Grid Width to prevent "stretching" on ultra-wide
+            // Keep it relatively centered
+            const maxGridWidth = Math.min(w * 0.9, 1400); 
+
+            // Calculate Cell Dimensions
             const cellWidth = maxGridWidth / cols;
+            const cellHeight = availableHeight / rows;
+            const minDim = Math.min(cellWidth, cellHeight);
+
+            // Icon Size Calculation
+            // Target Ratio: Icon : Gap ~= 1 : 0.45
+            // Icon + Gap = Cell => Icon + 0.45*Icon = Cell => 1.45*Icon = Cell
+            // Icon = Cell / 1.45 ~= Cell * 0.69
+            let iconSize = minDim * 0.7;
+
+            // Clamp Icon Size
+            // Max 72px (Slightly larger than 67 to allow breathing on big screens)
+            // Min 48px (Touch target)
+            iconSize = Math.max(48, Math.min(iconSize, 78)); 
 
             setLayout({
                 cols,
                 rows,
                 itemsPerPage: cols * rows,
-                isMobile,
+                isMobile: w < 768,
                 cellWidth,
-                cellHeight: itemHeight,
-                gridWidth: maxGridWidth
+                cellHeight,
+                gridWidth: maxGridWidth,
+                iconSize
             });
         };
 

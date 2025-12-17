@@ -12,6 +12,8 @@ import { t } from './i18n';
 import { DialogProvider, useDialog } from './components/Dialog';
 import { FEATURES } from './features';
 
+declare const chrome: any;
+
 // Lazy load heavy components
 const CalculatorApp = React.lazy(() => import('./components/apps/Calculator').then(module => ({ default: module.CalculatorApp })));
 const NotesApp = React.lazy(() => import('./components/apps/Notes').then(module => ({ default: module.NotesApp })));
@@ -92,7 +94,7 @@ function DesktopApp() {
     );
 
     // --- Layout State ---
-    const { cols, rows, itemsPerPage, isMobile, cellWidth, cellHeight, gridWidth } = useGridCalculation(sysSettings.showDock);
+    const { cols, rows, itemsPerPage, isMobile, cellWidth, cellHeight, gridWidth, iconSize } = useGridCalculation(sysSettings.showDock);
     const [page, setPage] = useState(0);
     const [dir, setDir] = useState(0);
 
@@ -1292,7 +1294,7 @@ function DesktopApp() {
                 style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto' }}
             >
                 {sysSettings.showSearchBar && (
-                    <div className="relative w-[95%] sm:w-[90%] max-w-xl">
+                    <div className="relative w-[85%] sm:w-[70%] md:w-[60%] lg:w-[50%] xl:w-[40%] max-w-xl">
                         <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
                             <button onClick={() => setEngine(prev => {
                                 const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
@@ -1399,12 +1401,17 @@ function DesktopApp() {
                             <div
                                 key={item.id}
                                 style={{ position: 'absolute', left, top, width, height, transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)' }}
-                                className="flex justify-center items-center p-2"
+                                className="flex justify-center items-center"
                             >
                                 {isAdd ? (
-                                    <button onClick={(e) => { e.stopPropagation(); openWin('add') }} className="flex flex-col items-center gap-2 group w-[88px] h-full cursor-pointer">
-                                        <div className="w-[68px] h-[68px] rounded-[18px] bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-white/40 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/40 transition-all duration-300"><Plus size={28} strokeWidth={1.5} /></div>
-                                        <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">Add</span>
+                                    <button onClick={(e) => { e.stopPropagation(); openWin('add') }} className="flex flex-col items-center justify-center gap-2 group w-full h-full cursor-pointer">
+                                        <div 
+                                            style={{ width: (iconSize || 78), height: (iconSize || 78) }}
+                                            className="rounded-[22%] bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-white/40 group-hover:bg-white/10 group-hover:text-white group-hover:border-white/40 transition-all duration-300"
+                                        >
+                                            <Plus size={(iconSize || 78) * 0.4} strokeWidth={1.5} />
+                                        </div>
+                                        <span className="text-[13px] text-white/80 font-medium tracking-wide truncate text-center px-1 drop-shadow-md group-hover:text-white transition-colors" style={{ maxWidth: '100%' }}>Add</span>
                                     </button>
                                 ) : (
                                     (() => {
@@ -1412,14 +1419,11 @@ function DesktopApp() {
                                         const isWidget = s.type === 'widget';
 
                                         // Dynamic size classes
-                                        const containerClass = isWidget ? 'w-full h-full' : 'w-[88px] h-full';
-                                        const iconContainerClass = isWidget
-                                            ? 'w-full h-full rounded-[24px]' // Larger rounding for widgets
-                                            : 'w-[68px] h-[68px] rounded-[18px]';
-
+                                        const containerClass = isWidget ? 'w-full h-full' : 'w-full h-full'; // Always fill cell
+                                        
                                         return (
                                             <div
-                                                className={`flex flex-col items-center gap-2 group relative cursor-pointer ${containerClass} ${isEditing ? 'jiggle-mode' : ''}`}
+                                                className={`flex flex-col items-center justify-center gap-2 group relative cursor-pointer ${containerClass} ${isEditing ? 'jiggle-mode' : ''}`}
                                                 onPointerDown={(e) => handlePointerDown(e, originalIndex, 'grid', s)}
                                                 onDragStart={(e) => e.preventDefault()}
                                                 onClick={(e) => {
@@ -1431,55 +1435,68 @@ function DesktopApp() {
                                                     }
                                                 }}
                                             >
-                                {isEditing && (
-                                    <div
-                                        onPointerDown={(e) => { e.stopPropagation(); }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            // 直接从appLayout中删除
-                                            setAppLayout(prev => prev.map(item => item?.id === s.id ? null : item));
-                                        }}
-                                        className="absolute -top-2 -left-2 z-20 w-7 h-7 bg-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
-                                    >
-                                        <Minus size={16} strokeWidth={3} />
-                                    </div>
-                                )}                                                {/* Resize handle for widgets in edit mode */}
-                                                {isEditing && isWidget && (
-                                                    <>
-                                                        {/* Corner arc indicator */}
-                                                        <svg className="absolute -bottom-0.5 -right-0.5 z-20 pointer-events-none" width="32" height="32" viewBox="0 0 32 32">
-                                                            <path d="M 32 32 L 32 20 Q 32 12 24 12 L 12 12" stroke="white" strokeWidth="2" fill="none" opacity="0.3"/>
-                                                        </svg>
-                                                        
-                                                        {/* Resize handle */}
+                                                {/* Icon Wrapper for positioning badges relative to the ICON, not the cell */}
+                                                <div 
+                                                    className="relative"
+                                                    style={{ 
+                                                        width: isWidget ? '100%' : (iconSize || 78), 
+                                                        height: isWidget ? '100%' : (iconSize || 78) 
+                                                    }}
+                                                >
+                                                    {isEditing && (
                                                         <div
-                                                            onPointerDown={(e) => handleResizeStart(e, s)}
-                                                            className="absolute -bottom-1.5 -right-1.5 z-20 w-10 h-10 backdrop-blur-md bg-white/20 border border-white/40 rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] cursor-se-resize hover:bg-white/30 hover:scale-105 transition-all active:scale-95"
-                                                            title="拖动调整大小"
+                                                            onPointerDown={(e) => { e.stopPropagation(); }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                // 直接从appLayout中删除
+                                                                setAppLayout(prev => prev.map(item => item?.id === s.id ? null : item));
+                                                            }}
+                                                            className="absolute -top-2 -left-2 z-20 w-7 h-7 bg-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
                                                         >
-                                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                                                <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.9"/>
-                                                                <circle cx="5" cy="10" r="1.5" fill="white" opacity="0.7"/>
-                                                                <circle cx="10" cy="5" r="1.5" fill="white" opacity="0.7"/>
-                                                            </svg>
+                                                            <Minus size={16} strokeWidth={3} />
                                                         </div>
-                                                        
-                                                        {/* Size indicator when resizing */}
-                                                        {isBeingResized && resizingWidget.newW && resizingWidget.newH && (
-                                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-3 py-1.5 rounded-lg text-sm font-medium pointer-events-none">
-                                                                {resizingWidget.newW} × {resizingWidget.newH}
+                                                    )}
+                                                    
+                                                    {/* Resize handle for widgets in edit mode */}
+                                                    {isEditing && isWidget && (
+                                                        <>
+                                                            {/* Corner arc indicator */}
+                                                            <svg className="absolute -bottom-0.5 -right-0.5 z-20 pointer-events-none" width="32" height="32" viewBox="0 0 32 32">
+                                                                <path d="M 32 32 L 32 20 Q 32 12 24 12 L 12 12" stroke="white" strokeWidth="2" fill="none" opacity="0.3"/>
+                                                            </svg>
+                                                            
+                                                            {/* Resize handle */}
+                                                            <div
+                                                                onPointerDown={(e) => handleResizeStart(e, s)}
+                                                                className="absolute -bottom-1.5 -right-1.5 z-20 w-10 h-10 backdrop-blur-md bg-white/20 border border-white/40 rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] cursor-se-resize hover:bg-white/30 hover:scale-105 transition-all active:scale-95"
+                                                                title="拖动调整大小"
+                                                            >
+                                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                                                    <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.9"/>
+                                                                    <circle cx="5" cy="10" r="1.5" fill="white" opacity="0.7"/>
+                                                                    <circle cx="10" cy="5" r="1.5" fill="white" opacity="0.7"/>
+                                                                </svg>
                                                             </div>
-                                                        )}
-                                                    </>
-                                                )}
+                                                            
+                                                            {/* Size indicator when resizing */}
+                                                            {isBeingResized && resizingWidget.newW && resizingWidget.newH && (
+                                                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-3 py-1.5 rounded-lg text-sm font-medium pointer-events-none">
+                                                                    {resizingWidget.newW} × {resizingWidget.newH}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
 
-                                                <div className={`${iconContainerClass} flex items-center justify-center text-white shadow-lg ${s.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${s.color}`} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden`}>
-                                                    {!isWidget && !s.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
-                                                    <AppIcon 
-                                                        {...s} 
-                                                        onContextMenu={handleAppContextMenu}
-                                                        onIconLoaded={(iconSource) => handleIconLoaded(s.id, iconSource)}
-                                                    />
+                                                    <div 
+                                                        className={`w-full h-full flex items-center justify-center text-white shadow-lg ${s.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${s.color}`} shadow-black/20 ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px] group-hover:shadow-2xl'} transition-all duration-300 ease-out ring-1 ring-white/10 relative overflow-hidden ${isWidget ? 'rounded-[24px]' : 'rounded-[22%]'}`}
+                                                    >
+                                                        {!isWidget && !s.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
+                                                        <AppIcon 
+                                                            {...s} 
+                                                            onContextMenu={handleAppContextMenu}
+                                                            onIconLoaded={(iconSource) => handleIconLoaded(s.id, iconSource)}
+                                                        />
+                                                    </div>
                                                 </div>
 
                                                 {!isWidget && <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{s.title}</span>}
@@ -1548,31 +1565,54 @@ function DesktopApp() {
                     ? 'translate-y-[250%]'
                     : 'translate-y-0'
                 }`}>
-                <div
-                    className="dock-glass h-[80%] max-h-[100px] rounded-[24px] sm:rounded-[30px] md:rounded-[35px] transition-all duration-300 ease-out relative"
-                    ref={dockRef}
-                    style={{ width: dockWidth + 'px' }}
-                >
-                    {/* Render Apps */}
-                    {dockApps.map((item, index) => {
-                        const isDraggingMe = dragState.isDragging && dragState.source === 'dock' && dragState.index === index;
-                        const opacity = isDraggingMe ? 0 : 1;
-                        const leftPos = DOCK_CONTAINER_PADDING + (index * SLOT_WIDTH);
+                {(() => {
+                    // Dynamic Dock Calculation
+                    // Dynamic Dock Calculation (Restored from Git Version)
+                    const dockZoneH = (typeof window !== 'undefined' ? window.innerHeight : 1000) * 0.15;
+                    
+                    // Old Logic: Independent size, target 75% of dock height, Max 88px
+                    const dynamicIconSize = Math.min(78, Math.max(48, dockZoneH * 0.75)); 
+                    
+                    const dynamicGap = dynamicIconSize * 0.25;
+                    const dockPadding = dynamicIconSize * 0.25; // Restored to 0.25 (Git version)
+                    const dynamicSlotWidth = dynamicIconSize + dynamicGap;
+                    
+                    // Calculate Dock Container Dimensions (Content Box)
+                    const dockAppCount = dockApps.length + (sysSettings.showDockEdit ? 1 : 0);
+                    const contentWidth = (dockAppCount * dynamicIconSize) + (Math.max(0, dockAppCount - 1) * dynamicGap);
+                    const dockContainerWidth = contentWidth + (dockPadding * 2);
+                    const dockContainerHeight = dynamicIconSize + (dockPadding * 2);
 
-                        return (
-                            <div
-                                key={item.id}
-                                className="absolute"
-                                style={{
-                                    left: leftPos + 'px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    opacity,
-                                    width: DOCK_ICON_SIZE + 'px',
-                                    height: DOCK_ICON_SIZE + 'px',
-                                    transition: 'left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                                }}
-                            >
+                    return (
+                        <div
+                            className="dock-glass rounded-[24px] sm:rounded-[30px] md:rounded-[35px] transition-all duration-300 ease-out relative flex items-center"
+                            ref={dockRef}
+                            style={{ 
+                                width: dockContainerWidth + 'px',
+                                height: dockContainerHeight + 'px'
+                            }}
+                        >
+                            {/* Render Apps */}
+                            {dockApps.map((item, index) => {
+                                const isDraggingMe = dragState.isDragging && dragState.source === 'dock' && dragState.index === index;
+                                const opacity = isDraggingMe ? 0 : 1;
+                                // Position based on padding + index * (icon + gap)
+                                const leftPos = dockPadding + (index * dynamicSlotWidth);
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="absolute"
+                                        style={{
+                                            left: leftPos + 'px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            opacity,
+                                            width: dynamicIconSize + 'px',
+                                            height: dynamicIconSize + 'px',
+                                            transition: 'left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                                        }}
+                                    >
                                 <div className={`w-full h-full relative group/dockitem ${isEditing ? 'jiggle-mode' : ''}`}>
                                     {isEditing && (
                                         <div
@@ -1582,13 +1622,13 @@ function DesktopApp() {
                                                 // 直接从appLayout中删除
                                                 setAppLayout(prev => prev.map(i => i?.id === item.id ? null : i));
                                             }}
-                                            className="absolute -top-3 -left-3 z-20 w-7 h-7 bg-gray-200 text-gray-900 border border-gray-300 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
+                                            className="absolute -top-2 -left-2 z-20 w-7 h-7 bg-gray-200 text-gray-900 border border-gray-300 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:bg-red-500 hover:text-white transition-colors"
                                         >
                                             <Minus size={16} strokeWidth={3} />
                                         </div>
                                     )}
                                     <div
-                                        className={`w-full h-full rounded-[12px] sm:rounded-[14px] md:rounded-[16px] flex items-center justify-center text-white shadow-lg ${item.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${item.color || 'from-gray-700 to-gray-600'}`} border border-white/10 ring-1 ring-white/5 relative overflow-hidden cursor-pointer ${!isEditing && 'hover:-translate-y-4 hover:scale-110 active:scale-95 transition-all duration-200 ease-out'}`}
+                                        className={`w-full h-full rounded-[22%] flex items-center justify-center text-white shadow-lg ${item.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${item.color || 'from-gray-700 to-gray-600'}`} border border-white/10 ring-1 ring-white/5 relative overflow-hidden cursor-pointer ${!isEditing && 'hover:-translate-y-4 hover:scale-110 active:scale-95 transition-all duration-200 ease-out'}`}
                                         onPointerDown={(e) => handlePointerDown(e, index, 'dock', item)}
                                         onDragStart={(e) => e.preventDefault()}
                                         onClick={() => {
@@ -1608,7 +1648,7 @@ function DesktopApp() {
                                         }}
                                         data-app-icon
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none" style={{ display: item.customIcon ? 'none' : 'block' }}></div>
+                                        {!item.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent opacity-50 pointer-events-none"></div>}
                                         <div className="w-full h-full flex items-center justify-center">
                                             <AppIcon 
                                                 {...item} 
@@ -1621,30 +1661,32 @@ function DesktopApp() {
                                 </div>
                             </div>
                         );
-                    })}
+                            })}
 
-                    {/* Locked Edit Button (Conditional) */}
-                    {sysSettings.showDockEdit && (
-                        <div
-                            className="absolute"
-                            style={{
-                                left: (DOCK_CONTAINER_PADDING + (dockApps.length * SLOT_WIDTH)) + 'px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                width: DOCK_ICON_SIZE + 'px',
-                                height: DOCK_ICON_SIZE + 'px',
-                                transition: 'left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                            }}
-                        >
-                            <button
-                                onClick={() => setIsEditing(!isEditing)}
-                                className={`w-full h-full rounded-[16px] flex items-center justify-center text-white shadow-lg border border-white/10 transition-all duration-300 ${isEditing ? 'bg-blue-600 border-blue-400' : 'bg-white/10 hover:bg-white/20'}`}
-                            >
-                                {isEditing ? <Check size={32} /> : <Edit3 size={28} />}
-                            </button>
+                            {/* Locked Edit Button (Conditional) */}
+                            {sysSettings.showDockEdit && (
+                                <div
+                                    className="absolute"
+                                    style={{
+                                        left: (dockPadding + (dockApps.length * dynamicSlotWidth)) + 'px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        width: dynamicIconSize + 'px',
+                                        height: dynamicIconSize + 'px',
+                                        transition: 'left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                                    }}
+                                >
+                                    <button
+                                        onClick={() => setIsEditing(!isEditing)}
+                                        className={`w-full h-full rounded-[22%] flex items-center justify-center text-white shadow-lg border border-white/10 transition-all duration-300 ${isEditing ? 'bg-blue-600 border-blue-400' : 'bg-white/10 hover:bg-white/20'}`}
+                                    >
+                                        {isEditing ? <Check size={dynamicIconSize * 0.4} /> : <Edit3 size={dynamicIconSize * 0.4} />}
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    );
+                })()}
             </div>
 
             {/* Windows - Conditional Rendering fixes the mount position glitch */}

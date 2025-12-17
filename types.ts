@@ -63,6 +63,7 @@ export interface LayoutConfig {
     cellWidth: number;
     cellHeight: number;
     gridWidth: number;
+    iconSize?: number;
 }
 
 export interface SystemSettings {
