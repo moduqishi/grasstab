@@ -122,10 +122,10 @@ function DesktopApp() {
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
     const [appContextMenu, setAppContextMenu] = useState<{ x: number, y: number, app: Shortcut } | null>(null);
     const [time, setTime] = useState(new Date());
-    const [engine, setEngine] = useState<SearchEngineKey>('google');
+    const [engine, setEngine] = useState<SearchEngineKey>('default');
     const [search, setSearch] = useState('');
     
-    // 搜索建议相关状态 - 仅Edge版本
+    // 搜索建议相关状态 - 仅对自定义搜索引擎生效（非 default）
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -134,9 +134,14 @@ function DesktopApp() {
     const scrollAccumulator = useRef(0);
     const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    // --- Search Suggestions (Edge版本专属) ---
+    // --- Search Suggestions (仅对自定义搜索引擎生效) ---
     useEffect(() => {
-        // 如果不是Edge版本,跳过搜索建议功能
+        // 系统默认引擎无搜索建议
+        if (engine === 'default') {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
         if (!FEATURES.SEARCH_SUGGESTIONS) return;
 
         const timer = setTimeout(async () => {
@@ -238,8 +243,22 @@ function DesktopApp() {
             
             window.location.assign(url);
         } else {
-            // 否则使用搜索引擎搜索
-            window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(trimmedQuery));
+            // 根据当前引擎决定搜索方式
+            if (engine === 'default') {
+                // 使用 Chrome Search API，尊重用户系统默认搜索引擎
+                if (typeof chrome !== 'undefined' && chrome.search?.query) {
+                    chrome.search.query({
+                        text: trimmedQuery,
+                        disposition: 'CURRENT_TAB'
+                    });
+                } else {
+                    // 降级处理：如果 API 不可用（如非扩展环境），使用 Google
+                    window.location.assign(`https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`);
+                }
+            } else {
+                // 使用自定义引擎
+                window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(trimmedQuery));
+            }
         }
     };
 

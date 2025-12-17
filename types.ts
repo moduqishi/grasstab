@@ -53,7 +53,7 @@ export interface DragState {
     my: number;
 }
 
-export type SearchEngineKey = 'google' | 'bing' | 'baidu' | 'duckduckgo';
+export type SearchEngineKey = 'default' | 'google' | 'bing' | 'baidu' | 'duckduckgo';
 
 export interface LayoutConfig {
     cols: number;

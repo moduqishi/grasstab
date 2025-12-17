@@ -62,14 +62,8 @@ export default defineConfig(({ mode }) => {
           closeBundle() {
             const distPath = path.resolve(__dirname, 'dist');
             
-            // 读取目标浏览器环境变量
-            const targetBrowser = process.env.VITE_TARGET_BROWSER || 'chrome';
-            console.log(`🎯 Building for: ${targetBrowser}`);
-            
-            // 根据目标浏览器选择manifest文件
-            const manifestSrc = targetBrowser === 'edge'
-              ? path.resolve(__dirname, 'manifest.edge.json')
-              : path.resolve(__dirname, 'manifest.json');
+            // 统一使用 manifest.json
+            const manifestSrc = path.resolve(__dirname, 'manifest.json');
             const manifestDest = path.resolve(distPath, 'manifest.json');
             
             // 复制并修改manifest.json
@@ -80,7 +74,7 @@ export default defineConfig(({ mode }) => {
                 extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src https://*"
               };
               fs.writeFileSync(manifestDest, JSON.stringify(manifest, null, 2));
-              console.log(`✓ manifest.json已复制并更新CSP配置 (${targetBrowser}版本)`);
+              console.log('✓ manifest.json已复制并更新CSP配置');
             }
             
             // 复制_locales目录
@@ -119,9 +113,8 @@ export default defineConfig(({ mode }) => {
             });
             console.log('✓ 图标文件已复制');
             
-            // 根据目标浏览器选择输出目录
-            const outputDirName = targetBrowser === 'edge' ? 'edge-extension' : 'chrome-extension';
-            const chromeExtPath = path.resolve(__dirname, outputDirName);
+            // 统一输出到 chrome-extension 目录
+            const chromeExtPath = path.resolve(__dirname, 'chrome-extension');
             const backupPath = path.resolve(__dirname, '.icon-backup');
             
             // 删除旧的输出目录(如果存在)
@@ -168,7 +161,7 @@ export default defineConfig(({ mode }) => {
               fs.rmSync(backupPath, { recursive: true, force: true });
             }
             
-            console.log(`✓ 所有文件已复制到${outputDirName}目录`);
+            console.log('✓ 所有文件已复制到chrome-extension目录');
           }
         },
         // 非扩展模式下复制隐私政策页面到dist目录

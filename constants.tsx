@@ -4,6 +4,16 @@ import React from 'react';
 export const DEFAULT_WALLPAPER = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
 
 export const SEARCH_ENGINES: Record<SearchEngineKey, { name: string; url: string; icon: React.ReactNode }> = {
+    default: {
+        name: 'Default',
+        url: '',  // 使用 Chrome Search API，不需要 URL
+        icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width: '100%', height: '100%'}}>
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        )
+    },
     google: {
         name: 'Google',
         url: 'https://www.google.com/search?q=',

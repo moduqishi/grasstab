@@ -13,7 +13,8 @@
     "newtab": "index.html"
   },
   "permissions": [
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "search"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; object-src 'self'; connect-src https://*"
