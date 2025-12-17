@@ -1267,19 +1267,31 @@ function DesktopApp() {
                 />
             )}
 
-            {/* Top Zone - Search Bar (Conditional) */}
-            {sysSettings.showSearchBar && (
-                <div
-                    className={`absolute w-full flex flex-col items-center transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${viewState === 'hero'
-                        ? 'top-[30vh] scale-125'
-                        : 'top-0 pt-[8vh] scale-100'
-                        }`}
-                    style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto', zIndex: 50 }}
-                >
-                    <div className="text-center mb-6 sm:mb-8 drop-shadow-md select-none">
-                        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
-                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mt-1 font-light tracking-widest uppercase">{time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                    </div>
+            {/* Zone 1: Top Header (Time & Date) - 18% */}
+            <div 
+                className={`w-full h-[18%] flex flex-col items-center justify-end pb-4 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) z-50 ${
+                    viewState === 'hero' 
+                        ? 'translate-y-[20vh] scale-125' 
+                        : 'translate-y-0 scale-100'
+                }`}
+                style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: 'none' }}
+            >
+                <div className="text-center drop-shadow-md select-none pointer-events-auto">
+                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-thin tracking-tighter text-white/95">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</h1>
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mt-1 font-light tracking-widest uppercase">{time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                </div>
+            </div>
+
+            {/* Zone 2: Search Bar - 10% */}
+            <div 
+                className={`w-full h-[10%] flex flex-col items-center justify-start relative z-40 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${
+                    viewState === 'hero' 
+                        ? 'translate-y-[27vh] scale-125' 
+                        : 'translate-y-0 scale-100'
+                }`}
+                style={{ opacity: isAnyWindowMaximized ? 0 : 1, pointerEvents: isAnyWindowMaximized ? 'none' : 'auto' }}
+            >
+                {sysSettings.showSearchBar && (
                     <div className="relative w-[95%] sm:w-[90%] max-w-xl">
                         <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
                             <button onClick={() => setEngine(prev => {
@@ -1322,7 +1334,7 @@ function DesktopApp() {
                         {/* Search Suggestions Dropdown - Edge版本专属 */}
                         {FEATURES.SEARCH_SUGGESTIONS && (
                             <div
-                                className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
+                                className={`absolute top-full left-0 w-full bg-white/20 backdrop-blur-md border border-white/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 origin-top z-[100] ${showSuggestions && suggestions.length > 0 ? 'mt-2 sm:mt-4 opacity-100 max-h-[400px] sm:max-h-[500px] translate-y-0' : 'max-h-0 opacity-0 mt-0 -translate-y-4 border-none'}`}
                                 style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)', willChange: 'transform, opacity, max-height' }}
                             >
                                 {suggestions.map((s, i) => (
@@ -1340,18 +1352,17 @@ function DesktopApp() {
                                 ))}
                             </div>
                         )}
-
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
-            {/* Middle Zone - Grid */}
+            {/* Zone 3: Grid Area - 54% */}
             <div
-                className={`absolute top-[250px] sm:top-[320px] md:top-[380px] w-full max-w-[95%] xl:max-w-[1400px] left-1/2 -translate-x-1/2 z-10 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${sysSettings.showDock ? 'bottom-[140px] sm:bottom-[160px] md:bottom-[180px]' : 'bottom-[40px]'
-                    } ${viewState === 'hero'
+                className={`w-full h-[54%] max-w-[95%] xl:max-w-[1400px] mx-auto z-30 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${
+                    viewState === 'hero'
                         ? 'opacity-0 scale-150 pointer-events-none translate-y-[100px]'
                         : 'opacity-100 scale-100 translate-y-0'
-                    }`}
+                }`}
                 // onWheel handled by parent
                 ref={gridRef}
             >
@@ -1522,24 +1533,23 @@ function DesktopApp() {
                 </div>
             )}
 
-            {/* Pagination Indicators (Conditional) */}
+            {/* Zone 4: Pagination Indicators (3%) */}
             {sysSettings.showPagination && (
-                <div className={`absolute w-full flex justify-center gap-1.5 sm:gap-2.5 z-20 pointer-events-none transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${sysSettings.showDock ? 'bottom-[100px] sm:bottom-[140px] md:bottom-[190px]' : 'bottom-[30px] sm:bottom-[50px]'
-                    } ${viewState === 'hero' ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'
-                    }`}>
+                <div className={`w-full h-[3%] flex items-center justify-center gap-1.5 sm:gap-2.5 z-20 pointer-events-none transition-all duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${viewState === 'hero' ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'}`}>
                     {Array.from({ length: totalPages }).map((_, i) => (
                         <div key={i} className={`h-1.5 rounded-full transition-all duration-300 drop-shadow-md ${i === page ? 'w-1.5 bg-white' : 'w-1.5 bg-white/30'}`} />
                     ))}
                 </div>
             )}
 
-            {/* iPadOS Style Dock */}
-            <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-[9999] transition-transform duration-700 cubic-bezier(0.32, 0.72, 0, 1) ${!sysSettings.showDock || isAnyWindowMaximized || viewState === 'hero'
-                ? 'translate-y-[250%]'
-                : 'translate-y-0'
+            {/* Zone 5: Dock (15%) */}
+            <div className={`w-full h-[15%] flex items-center justify-center z-[9999] transition-transform duration-700 cubic-bezier(0.32, 0.72, 0, 1) ${
+                !sysSettings.showDock || isAnyWindowMaximized || viewState === 'hero'
+                    ? 'translate-y-[250%]'
+                    : 'translate-y-0'
                 }`}>
                 <div
-                    className="dock-glass h-[80px] sm:h-[100px] md:h-[120px] rounded-[24px] sm:rounded-[30px] md:rounded-[35px] transition-all duration-300 ease-out relative"
+                    className="dock-glass h-[80%] max-h-[100px] rounded-[24px] sm:rounded-[30px] md:rounded-[35px] transition-all duration-300 ease-out relative"
                     ref={dockRef}
                     style={{ width: dockWidth + 'px' }}
                 >

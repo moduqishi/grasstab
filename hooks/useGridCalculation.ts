@@ -82,52 +82,15 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
             const isMobile = w < BREAKPOINTS.mobileLarge;
 
             // ============ 动态计算顶部预留空间 ============
-            let topReserved: number;
-            if (isMobile) {
-                // 移动端：640px以下250px，640-768px之间插值到320px
-                topReserved = interpolate(w, 0, BREAKPOINTS.mobileSmall, 250, 250);
-                if (w >= BREAKPOINTS.mobileSmall) {
-                    topReserved = interpolate(w, BREAKPOINTS.mobileSmall, BREAKPOINTS.mobileLarge, 250, 320);
-                }
-            } else {
-                // 桌面端：在关键断点间插值
-                if (w < BREAKPOINTS.tablet) {
-                    topReserved = 320;
-                } else if (w < BREAKPOINTS.laptop) {
-                    topReserved = interpolate(w, BREAKPOINTS.tablet, BREAKPOINTS.laptop, 320, 350);
-                } else if (w < BREAKPOINTS.desktop) {
-                    topReserved = interpolate(w, BREAKPOINTS.laptop, BREAKPOINTS.desktop, 350, 380);
-                } else {
-                    topReserved = 380;
-                }
-            }
-
-            // ============ 动态计算底部预留空间 ============
-            let bottomReserved: number;
-            if (isMobile) {
-                if (!showDock) {
-                    bottomReserved = 40;
-                } else {
-                    bottomReserved = w < BREAKPOINTS.mobileSmall ? 140 : 
-                                   interpolate(w, BREAKPOINTS.mobileSmall, BREAKPOINTS.mobileLarge, 140, 160);
-                }
-            } else {
-                if (!showDock) {
-                    bottomReserved = 60;
-                } else {
-                    if (w < BREAKPOINTS.tablet) {
-                        bottomReserved = 160;
-                    } else if (w < BREAKPOINTS.laptop) {
-                        bottomReserved = interpolate(w, BREAKPOINTS.tablet, BREAKPOINTS.laptop, 160, 180);
-                    } else if (w < BREAKPOINTS.desktop) {
-                        bottomReserved = interpolate(w, BREAKPOINTS.laptop, BREAKPOINTS.desktop, 180, 200);
-                    } else {
-                        bottomReserved = 200;
-                    }
-                }
-            }
-
-            let availableHeight = Math.max(100, h - topReserved - bottomReserved);
+            // INSTRUCTION: Use 54% of window height for grid area (Zone 3)
+            // The vertically flexible layout reserves:
+            // 18% Top (Time)
+            // 10% Search
+            // 54% Grid (THIS)
+            // 3% Indicators
+            // 15% Dock
+            
+            let availableHeight = h * 0.54;
 
             // ============ 动态计算图标高度 ============
             let itemHeight: number;
