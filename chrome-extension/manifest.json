@@ -16,6 +16,12 @@
     "unlimitedStorage",
     "search"
   ],
+  "host_permissions": [
+    "https://suggestqueries.google.com/*",
+    "https://api.bing.com/*",
+    "https://suggestion.baidu.com/*",
+    "https://duckduckgo.com/*"
+  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src https://*"
   }
