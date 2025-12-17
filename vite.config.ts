@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
               });
             }
           },
-          closeBundle() {
+          async closeBundle() {
             const distPath = path.resolve(__dirname, 'dist');
             
             // 统一使用 manifest.json
@@ -162,6 +162,25 @@ export default defineConfig(({ mode }) => {
             }
             
             console.log('✓ 所有文件已复制到chrome-extension目录');
+            
+            // 打包为zip文件
+            try {
+              const zipPath = path.resolve(__dirname, 'chrome-extension.zip');
+              // 如果存在则删除旧的zip
+              if (fs.existsSync(zipPath)) {
+                fs.unlinkSync(zipPath);
+              }
+              
+              console.log('正在打包chrome-extension.zip...');
+              // 使用 PowerShell 进行压缩 (Windows)
+              // 注意：Compress-Archive 需要 PowerShell 5.0+
+              const { execSync } = await import('child_process');
+              execSync('powershell -Command "Compress-Archive -Path chrome-extension/* -DestinationPath chrome-extension.zip -Force"', { stdio: 'inherit' });
+              
+              console.log('✓ 已生成 chrome-extension.zip');
+            } catch (error) {
+              console.error('打包zip失败:', error);
+            }
           }
         },
         // 非扩展模式下复制隐私政策页面到dist目录

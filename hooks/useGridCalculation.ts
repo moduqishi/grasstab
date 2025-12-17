@@ -127,21 +127,51 @@ export const useGridCalculation = (showDock: boolean = true): LayoutConfig => {
             // Keep it relatively centered
             const maxGridWidth = Math.min(w * 0.9, 1400); 
 
-            // Calculate Cell Dimensions
+            // ============ Optimization Loop ============
+            // Ensure gaps and no overlaps
+            let optimizationIterations = 0;
+            const MAX_ITERATIONS = 5;
+            let iconSize = 64; // Default safe value
+            
+            while (optimizationIterations < MAX_ITERATIONS) {
+                // Calculate Cell Dimensions
+                const cellWidth = maxGridWidth / cols;
+                const cellHeight = availableHeight / rows;
+                const minDim = Math.min(cellWidth, cellHeight);
+
+                // Icon Size Calculation (0.7 factor)
+                let tempIconSize = minDim * 0.7;
+                // Clamp Icon Size
+                tempIconSize = Math.max(48, Math.min(tempIconSize, 78)); 
+
+                // 1. Horizontal Constraint: Gap : Icon >= 0.4 : 1
+                const gapX = cellWidth - tempIconSize;
+                const ratioX = gapX / tempIconSize;
+
+                if (ratioX < 0.4 && cols > 3) {
+                    cols--; // Reduce columns to increase gap
+                    optimizationIterations++;
+                    continue;
+                }
+
+                // 2. Vertical Constraint: No overlap
+                // Space needed = Icon + Text (approx 20px) + Padding (approx 10px)
+                const requiredHeight = tempIconSize + 30;
+                
+                if (cellHeight < requiredHeight && rows > 3) {
+                    rows--; // Reduce rows to gain vertical space
+                    optimizationIterations++;
+                    continue;
+                }
+
+                // If checks pass, set final values and break
+                iconSize = tempIconSize;
+                break;
+            }
+
+            // Recalculate finals after loop (if changed)
             const cellWidth = maxGridWidth / cols;
-            const cellHeight = availableHeight / rows;
-            const minDim = Math.min(cellWidth, cellHeight);
-
-            // Icon Size Calculation
-            // Target Ratio: Icon : Gap ~= 1 : 0.45
-            // Icon + Gap = Cell => Icon + 0.45*Icon = Cell => 1.45*Icon = Cell
-            // Icon = Cell / 1.45 ~= Cell * 0.69
-            let iconSize = minDim * 0.7;
-
-            // Clamp Icon Size
-            // Max 72px (Slightly larger than 67 to allow breathing on big screens)
-            // Min 48px (Touch target)
-            iconSize = Math.max(48, Math.min(iconSize, 78)); 
+            const cellHeight = availableHeight / rows; 
 
             setLayout({
                 cols,
