@@ -65,7 +65,7 @@ const variants = {
     }
 } as const;
 
-export const DesktopGrid = forwardRef<HTMLDivElement, DesktopGridProps>(({
+export const DesktopGrid = React.memo(forwardRef<HTMLDivElement, DesktopGridProps>(({
     viewState,
     isMobile,
     page,
@@ -276,4 +276,4 @@ export const DesktopGrid = forwardRef<HTMLDivElement, DesktopGridProps>(({
             </div>
         </div>
     );
-});
+}));

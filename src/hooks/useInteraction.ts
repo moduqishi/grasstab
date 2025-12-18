@@ -63,11 +63,12 @@ export function useInteraction({
     }, [page, totalPages, appLayout, cols, rows, cellWidth, cellHeight, layoutItems, DOCK_RESERVED_SLOTS, dockApps.length, desktopApps.length]);
 
     // --- Interaction Handlers ---
-    const handlePointerDown = (e: React.PointerEvent, index: number, source: 'grid' | 'dock', item: any) => {
+    const handlePointerDown = useCallback((e: React.PointerEvent, index: number, source: 'grid' | 'dock', item: any) => {
         if (item.id === 'edit' || item.id === 'dock-edit-btn') return;
         if (index === -1) return;
 
         e.preventDefault();
+
 
         if (!isEditing) {
             longPressTimer.current = setTimeout(() => { setIsEditing(true); }, 800);
@@ -86,7 +87,7 @@ export function useInteraction({
             mx: e.clientX,
             my: e.clientY
         });
-    };
+    }, [isEditing, gridWidth]);
 
     const handleDragLogic = useCallback((clientX: number, clientY: number) => {
         // --- Edge Detection for Auto-Page Flip (Outside Grid Box) ---

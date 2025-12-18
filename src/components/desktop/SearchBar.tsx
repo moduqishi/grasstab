@@ -19,7 +19,7 @@ interface SearchBarProps {
     isAnyWindowMaximized: boolean;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({
+export const SearchBar = React.memo<SearchBarProps>(({
     showSearchBar,
     engine,
     currentEngine,
@@ -121,4 +121,4 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </div>
         </div>
     );
-};
+});

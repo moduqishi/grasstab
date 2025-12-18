@@ -41,7 +41,7 @@ export function useApps(dialog: any) {
         if (JSON.stringify(newDesktop) !== JSON.stringify(desktopApps)) updateShortcuts(newDesktop);
     };
 
-    const handleDeleteApp = async (app: Shortcut) => {
+    const handleDeleteApp = useCallback(async (app: Shortcut) => {
         const appName = app.title || app.displayName || '此应用';
         const confirmMessage = `确定要删除 "${appName}" 吗？`;
             
@@ -54,15 +54,15 @@ export function useApps(dialog: any) {
                  updateShortcuts(desktopApps.filter(a => a.id !== app.id));
             }
         }
-    };
+    }, [dialog, dockApps, desktopApps, updateDock, updateShortcuts]);
 
-    const handleRestoreSystemApp = (appId: string) => {
+    const handleRestoreSystemApp = useCallback((appId: string) => {
         const systemApp = SYSTEM_APPS.find(app => app.id === appId);
         if (systemApp) {
              // Default restore to desktop
              updateShortcuts([...desktopApps, systemApp]);
         }
-    };
+    }, [desktopApps, updateShortcuts]);
 
     // --- Optimized Icon Loading Logic ---
     const pendingUpdatesRef = useRef<Map<string|number, string>>(new Map());
@@ -132,14 +132,14 @@ export function useApps(dialog: any) {
         }, 1000); // Debounce duration
     }, []); // Purely stable
 
-    const updateApp = (updated: Shortcut) => {
+    const updateApp = useCallback((updated: Shortcut) => {
          const inDock = dockApps.some(a => a.id === updated.id);
          if (inDock) {
              updateDock(dockApps.map(a => a.id === updated.id ? updated : a));
          } else {
              updateShortcuts(desktopApps.map(a => a.id === updated.id ? updated : a));
          }
-    };
+    }, [dockApps, desktopApps, updateDock, updateShortcuts]);
 
     return {
         appLayout,

@@ -7,7 +7,7 @@ interface PaginationProps {
     viewState: 'hero' | 'desktop';
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
+export const Pagination = React.memo<PaginationProps>(({
     showPagination,
     totalPages,
     page,
@@ -22,4 +22,4 @@ export const Pagination: React.FC<PaginationProps> = ({
             ))}
         </div>
     );
-};
+});

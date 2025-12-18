@@ -21,7 +21,7 @@ interface DockProps {
     openWin: (id: string, extra?: any) => void;
 }
 
-export const Dock = forwardRef<HTMLDivElement, DockProps>(({
+export const Dock = React.memo(forwardRef<HTMLDivElement, DockProps>(({
     showDock,
     dockApps,
     viewState,
@@ -162,4 +162,4 @@ export const Dock = forwardRef<HTMLDivElement, DockProps>(({
             </motion.div>
         </div>
     );
-});
+}));
