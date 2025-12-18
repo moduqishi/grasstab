@@ -1,4 +1,4 @@
-import{r as m}from"./monaco-CqVq4Dxl.js";var ne={exports:{}},wt={};/**
+import{r as m}from"./monaco-CGVEBn5q.js";var ne={exports:{}},wt={};/**
  * @license React
  * react-jsx-runtime.production.js
  *

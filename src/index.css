@@ -108,8 +108,8 @@ body {
 }
 
 /* 安全区域适配（iPhone刘海屏等） */
-    padding-bottom: max(0px, env(safe-area-inset-bottom));
-  }
+body {
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
 }
 
 /* Animations & Custom Components extracted from App.tsx */
