@@ -27,7 +27,7 @@ interface AppIconProps extends Shortcut {
     onIconLoaded?: (iconSource: string) => void; // 图标加载成功后的回调
 }
 
-export const AppIcon: React.FC<AppIconProps> = (props) => {
+export const AppIcon = React.memo((props: AppIconProps) => {
     const { type, title, url, iconType, widgetType, widgetContent, size, customIcon, onContextMenu, onIconLoaded } = props;
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
     const [iconSources, setIconSources] = useState<Array<{source: string, url: string, name: string}>>([]);
@@ -99,6 +99,7 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
                 <img 
                     src={customIcon} 
                     alt={title} 
+                    loading="lazy"
                     className="w-full h-full object-cover select-none pointer-events-none" 
                     onError={(e) => {
                         // If custom icon fails to load, fall through to other methods
@@ -174,6 +175,7 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
                 <img 
                     src={currentSource.url} 
                     alt={title} 
+                    loading="lazy"
                     className="w-full h-full object-cover select-none pointer-events-none" 
                     onLoad={handleLoad}
                     onError={handleError} 
@@ -184,4 +186,6 @@ export const AppIcon: React.FC<AppIconProps> = (props) => {
     
     // 4. Fallback Text Icon
     return renderVector(<span className="text-3xl font-bold truncate px-1 select-none">{title ? title.substring(0, 1).toUpperCase() : '?'}</span>);
-};
+});
+
+AppIcon.displayName = 'AppIcon';

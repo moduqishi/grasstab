@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef, useEffect } from 'react';
 import { Shortcut } from '../types';
 import { useConfig } from '../config/ConfigContext';
 import { SYSTEM_APPS } from '../constants';
@@ -64,19 +64,73 @@ export function useApps(dialog: any) {
         }
     };
 
+    // --- Optimized Icon Loading Logic ---
+    const pendingUpdatesRef = useRef<Map<string|number, string>>(new Map());
+    const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const configRef = useRef(config);
+    const handlersRef = useRef({ updateDock, updateShortcuts });
+
+    // Keep refs in sync with latest props/state
+    useEffect(() => {
+        configRef.current = config;
+        handlersRef.current = { updateDock, updateShortcuts };
+    }, [config, updateDock, updateShortcuts]);
+
+    // Stable callback for child components
     const handleIconLoaded = useCallback((appId: string | number, iconSource: string) => {
-        // Need to check both lists
-        const inDock = config.content.dock.find(a => a.id === appId);
-        if (inDock && inDock.iconType !== iconSource) {
-             updateDock(config.content.dock.map(a => a.id === appId ? { ...a, iconType: iconSource } : a));
-             return;
+        const currentConfig = configRef.current;
+        
+        // Fast check to potentially avoid queueing
+        const inDock = currentConfig.content.dock.find(a => a.id === appId);
+        const inDesktop = currentConfig.content.desktop.find(a => a.id === appId);
+        
+        // If already matches, ignore
+        if (inDock && inDock.iconType === iconSource) return;
+        if (inDesktop && inDesktop.iconType === iconSource) return;
+        if (!inDock && !inDesktop) return; // App deleted?
+
+        // Add to pending updates
+        pendingUpdatesRef.current.set(appId, iconSource);
+
+        // Schedule flush
+        if (flushTimeoutRef.current) {
+            clearTimeout(flushTimeoutRef.current);
         }
 
-        const inDesktop = config.content.desktop.find(a => a.id === appId);
-        if (inDesktop && inDesktop.iconType !== iconSource) {
-            updateShortcuts(config.content.desktop.map(a => a.id === appId ? { ...a, iconType: iconSource } : a));
-        }
-    }, [config.content.dock, config.content.desktop, updateDock, updateShortcuts]);
+        flushTimeoutRef.current = setTimeout(() => {
+            const updates = pendingUpdatesRef.current;
+            if (updates.size === 0) return;
+
+            const latestConfig = configRef.current;
+            const handlers = handlersRef.current;
+            
+            const newDock = [...latestConfig.content.dock];
+            const newDesktop = [...latestConfig.content.desktop];
+            let hasDockUpdates = false;
+            let hasDesktopUpdates = false;
+
+            updates.forEach((source, id) => {
+                const dockIdx = newDock.findIndex(a => a.id === id);
+                if (dockIdx !== -1 && newDock[dockIdx].iconType !== source) {
+                    newDock[dockIdx] = { ...newDock[dockIdx], iconType: source };
+                    hasDockUpdates = true;
+                }
+
+                const deskIdx = newDesktop.findIndex(a => a.id === id);
+                if (deskIdx !== -1 && newDesktop[deskIdx].iconType !== source) {
+                    // console.log(`[IconUpdate] Updating desktop app ${id} to ${source}`);
+                    newDesktop[deskIdx] = { ...newDesktop[deskIdx], iconType: source };
+                    hasDesktopUpdates = true;
+                }
+            });
+
+            if (hasDockUpdates) handlers.updateDock(newDock);
+            if (hasDesktopUpdates) handlers.updateShortcuts(newDesktop);
+
+            pendingUpdatesRef.current.clear();
+            flushTimeoutRef.current = null;
+        }, 1000); // Debounce duration
+    }, []); // Purely stable
 
     const updateApp = (updated: Shortcut) => {
          const inDock = dockApps.some(a => a.id === updated.id);
