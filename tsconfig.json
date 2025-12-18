@@ -13,7 +13,11 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "chrome",
+      "react",
+      "react-dom",
+      "js-yaml"
     ],
     "typeRoots": [
       "./node_modules/@types",
@@ -26,7 +30,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     },
     "allowImportingTsExtensions": true,

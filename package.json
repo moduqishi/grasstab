@@ -23,7 +23,11 @@
     "react-syntax-highlighter": "^16.1.0"
   },
   "devDependencies": {
+    "@types/chrome": "^0.1.32",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.22",
     "cross-env": "^10.1.0",
