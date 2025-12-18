@@ -177,9 +177,9 @@ export function DesktopApp() {
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(() => { scrollAccumulator.current = 0; }, 150);
         
-        const heroToDesktopThreshold = 100;
-        const desktopToHeroThreshold = 100;
-        const pageChangeThreshold = 100;
+        const heroToDesktopThreshold = 250;
+        const desktopToHeroThreshold = 250;
+        const pageChangeThreshold = 200;
         
         if (viewState === 'hero') {
             if (scrollAccumulator.current > heroToDesktopThreshold) {
