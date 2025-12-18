@@ -1,76 +1,90 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Shortcut, DockItem } from '../types';
-import { DEFAULT_DOCK, DEFAULT_SHORTCUTS, SYSTEM_APPS } from '../constants';
+import { useMemo, useCallback } from 'react';
+import { Shortcut } from '../types';
+import { useConfig } from '../config/ConfigContext';
+import { SYSTEM_APPS } from '../constants';
 
 const DOCK_RESERVED_SLOTS = 10;
 
-export function useApps(dialog: any) { // Inject dialog for confirm actions
-    // --- Data State ---
-    const [appLayout, setAppLayout] = useState<(Shortcut | null)[]>(() => {
-        const saved = localStorage.getItem('os-app-layout');
-        if (saved) {
-            try {
-                const layout = JSON.parse(saved);
-                if (Array.isArray(layout) && layout.length > 0) return layout;
-            } catch {}
-        }
-        // 首次初始化：使用spread运算符合并不同类型的数组
-        const emptySlots = Array(DOCK_RESERVED_SLOTS - DEFAULT_DOCK.length).fill(null);
-        return [...DEFAULT_DOCK, ...emptySlots, ...DEFAULT_SHORTCUTS] as (Shortcut | null)[];
-    });
-
-    // Persistence
-    useEffect(() => {
-        localStorage.setItem('os-app-layout', JSON.stringify(appLayout));
-    }, [appLayout]);
-
-    // Derived State
-    const dockApps = useMemo(() => 
-        appLayout.slice(0, DOCK_RESERVED_SLOTS).filter(item => item !== null && item !== undefined),
-        [appLayout]
-    );
+export function useApps(dialog: any) { 
+    const { config, updateShortcuts, updateDock } = useConfig();
     
-    const desktopApps = useMemo(() => 
-        appLayout.slice(DOCK_RESERVED_SLOTS).filter(item => item !== null && item !== undefined),
-        [appLayout]
-    );
+    // --- Derived State for Compatibility ---
+    // The UI (DesktopGrid) expects a single flat array where the first N items are Dock items (or nulls)
+    const appLayout = useMemo(() => {
+        const dockSlots = Array(DOCK_RESERVED_SLOTS).fill(null);
+        config.content.dock.forEach((item, i) => {
+            if (i < DOCK_RESERVED_SLOTS) dockSlots[i] = item;
+        });
+        return [...dockSlots, ...config.content.desktop] as (Shortcut | null)[];
+    }, [config.content.dock, config.content.desktop]);
 
-    // Handlers
+    const dockApps = config.content.dock;
+    const desktopApps = config.content.desktop;
+
+    // --- Actions ---
+    
+    // Since we are bridging a flat "appLayout" back to separated structures (Dock vs Desktop),
+    // we need a setter that understands how to split them back up.
+    const setAppLayout = (newLayoutOrFn: (Shortcut | null)[] | ((prev: (Shortcut | null)[]) => (Shortcut | null)[])) => {
+        let newLayout: (Shortcut | null)[];
+        if (typeof newLayoutOrFn === 'function') {
+            newLayout = newLayoutOrFn(appLayout);
+        } else {
+            newLayout = newLayoutOrFn;
+        }
+
+        const newDock = newLayout.slice(0, DOCK_RESERVED_SLOTS).filter(Boolean) as Shortcut[];
+        const newDesktop = newLayout.slice(DOCK_RESERVED_SLOTS).filter(Boolean) as Shortcut[];
+        
+        // Optimistically update both
+        if (JSON.stringify(newDock) !== JSON.stringify(dockApps)) updateDock(newDock);
+        if (JSON.stringify(newDesktop) !== JSON.stringify(desktopApps)) updateShortcuts(newDesktop);
+    };
+
     const handleDeleteApp = async (app: Shortcut) => {
         const appName = app.title || app.displayName || '此应用';
         const confirmMessage = `确定要删除 "${appName}" 吗？`;
             
         if (await dialog.showConfirm(confirmMessage)) {
-            setAppLayout(prev => {
-                const index = prev.findIndex(item => item?.id === app.id);
-                if (index === -1) return prev;
-                
-                const newLayout = [...prev];
-                newLayout[index] = null;
-                return newLayout;
-            });
+            // Check if it's in dock or desktop
+            const inDock = dockApps.some(a => a.id === app.id);
+            if (inDock) {
+                 updateDock(dockApps.filter(a => a.id !== app.id));
+            } else {
+                 updateShortcuts(desktopApps.filter(a => a.id !== app.id));
+            }
         }
     };
 
     const handleRestoreSystemApp = (appId: string) => {
         const systemApp = SYSTEM_APPS.find(app => app.id === appId);
         if (systemApp) {
-            setAppLayout(prev => [...prev, systemApp]);
+             // Default restore to desktop
+             updateShortcuts([...desktopApps, systemApp]);
         }
     };
 
     const handleIconLoaded = useCallback((appId: string | number, iconSource: string) => {
-        setAppLayout(prev => prev.map(item => {
-            if (item && item.id === appId && item.iconType !== iconSource) {
-                return { ...item, iconType: iconSource };
-            }
-            return item;
-        }));
-    }, []);
+        // Need to check both lists
+        const inDock = config.content.dock.find(a => a.id === appId);
+        if (inDock && inDock.iconType !== iconSource) {
+             updateDock(config.content.dock.map(a => a.id === appId ? { ...a, iconType: iconSource } : a));
+             return;
+        }
 
-    // Helper to update a specific app (used for edit/save)
+        const inDesktop = config.content.desktop.find(a => a.id === appId);
+        if (inDesktop && inDesktop.iconType !== iconSource) {
+            updateShortcuts(config.content.desktop.map(a => a.id === appId ? { ...a, iconType: iconSource } : a));
+        }
+    }, [config.content.dock, config.content.desktop, updateDock, updateShortcuts]);
+
     const updateApp = (updated: Shortcut) => {
-        setAppLayout(prev => prev.map(item => item?.id === updated.id ? updated : item));
+         const inDock = dockApps.some(a => a.id === updated.id);
+         if (inDock) {
+             updateDock(dockApps.map(a => a.id === updated.id ? updated : a));
+         } else {
+             updateShortcuts(desktopApps.map(a => a.id === updated.id ? updated : a));
+         }
     };
 
     return {

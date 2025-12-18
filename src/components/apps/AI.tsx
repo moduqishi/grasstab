@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useConfig } from '../../config/ConfigContext';
 import { useDialog } from '../Dialog';
 import { ArrowRight, Loader2, AlertCircle, Trash2, Copy, Check, ChevronDown, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -172,43 +173,35 @@ const CodeBlock = ({ language, value }: { language: string; value: string }) => 
 
 export const AIApp = () => {
     const dialog = useDialog();
+    const { config, updateAI } = useConfig();
+    const { providers, activeProviderId, activeModel } = config.integrations.ai;
+
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [providers, setProviders] = useState<AIProvider[]>(() => {
-        try {
-            const saved = localStorage.getItem('ai-providers');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    });
-    const [currentProviderId, setCurrentProviderId] = useState<string>(() => {
-        const saved = localStorage.getItem('ai-current-provider');
-        return saved || (providers.length > 0 ? providers[0].id : '');
-    });
-    const [currentModel, setCurrentModel] = useState<string>(() => {
-        const saved = localStorage.getItem('ai-current-model');
-        if (saved) return saved;
-        const currentProvider = providers.find(p => p.id === currentProviderId);
-        return currentProvider?.customModels?.[0] || '';
-    });
+    
+    // Derived state from config
+    const currentProviderId = activeProviderId;
+    const currentModel = activeModel;
+    const currentProvider = providers.find(p => p.id === activeProviderId);
+    
     const [streamingContent, setStreamingContent] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
     const endRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
-    const abortControllerRef = useRef<AbortController | null>(null);
-    const shouldAutoScrollRef = useRef(true); // 智能滚动控制
+    const shouldAutoScrollRef = useRef(true); 
+    // portRef declared later or already exists, causing conflict. checking...
+    // Actually, looking at the previous view_file, portRef is declared at line 191 AND line 306 in the file content I saw?
+    // Wait, the previous replace inserted it. 
+    // I will remove this one and ensure it's declared once at the top level of the component.
+    const portRef = useRef<chrome.runtime.Port | null>(null);
 
-    const currentProvider = providers.find(p => p.id === currentProviderId);
-
-    // 智能滚动处理
+    // Auto-scroll logic...
     const handleScroll = () => {
         if (!scrollContainerRef.current) return;
         const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-        // 增加阈值到 100px，提高容错率
         const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
         shouldAutoScrollRef.current = isNearBottom;
     };
@@ -221,25 +214,13 @@ export const AIApp = () => {
         }
     };
 
+    // Remove local storage effects (handled by ConfigContext)
+    
     useEffect(() => {
-        localStorage.setItem('ai-providers', JSON.stringify(providers));
-    }, [providers]);
-
-    useEffect(() => {
-        localStorage.setItem('ai-current-provider', currentProviderId);
-    }, [currentProviderId]);
-
-    useEffect(() => {
-        localStorage.setItem('ai-current-model', currentModel);
-    }, [currentModel]);
-
-    useEffect(() => {
-        // 消息列表变化时，强制滚动到底部
         scrollToBottom(true);
     }, [messages]);
 
     useEffect(() => {
-        // 流式传输内容变化时，根据用户位置决定是否滚动
         scrollToBottom();
     }, [streamingContent]);
 
@@ -251,6 +232,7 @@ export const AIApp = () => {
     }, [input]);
 
     const fetchModels = async (provider: AIProvider) => {
+        // ... existing logic ...
         try {
             // 智能构建 models 端点 URL
             let modelsUrl = provider.apiUrl;
@@ -275,9 +257,6 @@ export const AIApp = () => {
                         reject(new Error(msg.error));
                         port.disconnect();
                     } else if (msg.type === 'chunk') {
-                         // 将 number[] 转回字符串 (简单的 ASCII/UTF8 处理)
-                         // 注意：对于非流式的大 JSON，这样拼接可能有效。
-                         // 更严谨的做法是拼接 Uint8Array 然后一次性 decode。
                          responseBody += new TextDecoder().decode(new Uint8Array(msg.value), { stream: true });
                     } else if (msg.type === 'end') {
                         try {
@@ -286,8 +265,8 @@ export const AIApp = () => {
                             resolve(modelIds.filter((id: string) => 
                                 id.includes('gpt') || 
                                 id.includes('claude') || 
-                                id.includes('llama') ||
-                                id.includes('gemini') ||
+                                id.includes('llama') || 
+                                id.includes('gemini') || 
                                 !id.includes('whisper') && !id.includes('tts') && !id.includes('dall-e')
                             ));
                         } catch (e) {
@@ -313,18 +292,21 @@ export const AIApp = () => {
     };
 
     const handleProviderChange = (providerId: string) => {
-        setCurrentProviderId(providerId);
         const provider = providers.find(p => p.id === providerId);
+        // Optimistically set model
+        let newModel = '';
         if (provider) {
-            const firstModel = provider.customModels?.[0];
-            if (firstModel) {
-                setCurrentModel(firstModel);
-            }
+             newModel = provider.customModels?.[0] || '';
         }
+        updateAI({ activeProviderId: providerId, activeModel: newModel });
+    };
+    
+    // Wrapper to update active model
+    const setCurrentModel = (model: string) => {
+        updateAI({ activeModel: model });
     };
 
     // 引用 Port 以便中止
-    const portRef = useRef<chrome.runtime.Port | null>(null);
 
     const sendMessage = async () => {
         if (!input.trim() || isLoading || isStreaming) return;

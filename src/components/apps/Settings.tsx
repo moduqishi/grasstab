@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useDialog } from '../Dialog';
+import { useConfig } from '../../config/ConfigContext';
 import { DEFAULT_WALLPAPER, SYSTEM_APPS } from '../../constants.tsx';
 import { SystemSettings, Shortcut } from '../../types';
 import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages, FileEdit, ChevronRight, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MessageSquare, Key, Cpu, Thermometer, Hash, Plus, X, Check, Loader2, AppWindow, LayoutGrid, RefreshCw } from 'lucide-react';
@@ -112,14 +113,10 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
     const [showAppManager, setShowAppManager] = useState(false);
     const [showWidgetManager, setShowWidgetManager] = useState(false);
     const [customWallpaperUrl, setCustomWallpaperUrl] = useState('');
-    const [aiProviders, setAiProviders] = useState<AIProvider[]>(() => {
-        try {
-            const saved = localStorage.getItem('ai-providers');
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    });
+    const { config, updateAI } = useConfig();
+    const aiProviders = config.integrations.ai.providers;
+    
+    // Removed local aiProviders state and localStorage logic
     const [editingProvider, setEditingProvider] = useState<AIProvider | null>(null);
     const [isAddingProvider, setIsAddingProvider] = useState(false);
     const [isFetchingModels, setIsFetchingModels] = useState(false);
@@ -182,8 +179,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
     };
 
     const saveProviders = (providers: AIProvider[]) => {
-        setAiProviders(providers);
-        localStorage.setItem('ai-providers', JSON.stringify(providers));
+        updateAI({ providers });
     };
 
     const addProvider = () => {

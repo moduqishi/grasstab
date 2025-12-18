@@ -1,4 +1,5 @@
 import React, { useRef, useMemo } from 'react';
+import { ConfigProvider, useConfig } from './config/ConfigContext';
 import { DialogProvider, useDialog } from './components/Dialog';
 
 // Hooks
@@ -63,6 +64,13 @@ function DesktopApp() {
     } = useWindows(sysSettings.language);
 
     const { 
+        config,
+        exportConfig, 
+        importConfig, 
+        resetConfig 
+    } = useConfig();
+
+    const { 
         engine, setEngine, 
         search, setSearch, 
         suggestions, showSuggestions, setShowSuggestions, 
@@ -99,40 +107,7 @@ function DesktopApp() {
     
     const handleExportConfig = async () => {
         try {
-            // 获取 AI 配置
-            let aiSettings = undefined;
-            try {
-                const aiProvidersStr = localStorage.getItem('ai-providers');
-                const currentProviderId = localStorage.getItem('ai-current-provider');
-                const currentModel = localStorage.getItem('ai-current-model');
-                
-                if (aiProvidersStr) {
-                    const providers = JSON.parse(aiProvidersStr);
-                    aiSettings = { providers, currentProviderId: currentProviderId || undefined, currentModel: currentModel || undefined };
-                }
-            } catch (e) {
-                console.warn('Failed to export AI settings:', e);
-            }
-
-            const notes = localStorage.getItem('os-note') || undefined;
-            
-            if (dockApps.length === 0 && desktopApps.length === 0) {
-                dialog.showAlert('无法导出配置', '当前没有任何应用或小组件需要导出。');
-                return;
-            }
-
-            const config: GlobalConfig = {
-                version: '1.0',
-                createdAt: new Date().toISOString(),
-                settings: sysSettings,
-                wallpaper,
-                shortcuts: desktopApps,
-                dockItems: dockApps as DockItem[],
-                aiSettings,
-                notes
-            };
-
-            const yamlStr = generateYamlConfig(config);
+            const yamlStr = exportConfig();
             if (!yamlStr || yamlStr.trim() === '') throw new Error('生成的配置文件为空');
 
             const blob = new Blob([yamlStr], { type: 'text/yaml;charset=utf-8' });
@@ -146,8 +121,9 @@ function DesktopApp() {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            const aiInfo = aiSettings ? `\n• AI 提供商: ${aiSettings.providers.length} 个` : '';
-            const notesInfo = notes ? `\n• 便签: 已保存 (${notes.length} 字符)` : '';
+            const aiProviders = config.integrations.ai.providers;
+            const aiInfo = aiProviders.length > 0 ? `\n• AI 提供商: ${aiProviders.length} 个` : '';
+            const notesInfo = config.data.notes ? `\n• 便签: 已保存` : '';
             dialog.showAlert('✓ 配置导出成功', `文件名: grasstab-config-${timestamp}.yaml\n\n• Dock 应用: ${dockApps.length} 个\n• 桌面应用: ${desktopApps.length} 个\n• 系统设置: 已保存${aiInfo}${notesInfo}`);
         } catch (e) {
             console.error('Export failed:', e);
@@ -162,10 +138,6 @@ function DesktopApp() {
                 dialog.showAlert('文件格式不支持', `请选择有效的配置文件格式:\n• YAML (.yaml, .yml)\n• JSON (.json)`);
                 return;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                dialog.showAlert('文件过大', `配置文件不应超过 10MB`);
-                return;
-            }
 
             const text = await file.text();
             if (!text || text.trim() === '') {
@@ -173,49 +145,17 @@ function DesktopApp() {
                 return;
             }
 
-            let config: GlobalConfig | null;
-            try {
-                config = parseYamlConfig(text);
-            } catch (e) {
-                dialog.showAlert('❌ 配置文件解析失败', `错误: ${e instanceof Error ? e.message : '未知解析错误'}`);
-                return;
-            }
-
-            if (!config) {
-                dialog.showAlert('配置文件无效', '无法解析配置文件，请检查文件格式。');
-                return;
-            }
-
-            const confirmMsg = `即将导入配置 (版本: ${config.version || '未知'})，此操作无法撤销！`;
+            const confirmMsg = `即将导入配置，此操作无法撤销！`;
             if (await dialog.showConfirm('确认导入配置？', confirmMsg)) {
-                // Clear existing
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('os-') || key.startsWith('ai-')) localStorage.removeItem(key);
-                });
-
-                // Apply new
-                setSysSettings(config.settings);
-                setWallpaper(config.wallpaper);
-                
-                // Reconstruct App Layout
-                const newDockApps = config.dockItems || [];
-                const newDesktopApps = config.shortcuts || [];
-                const dockLayout = Array(DOCK_RESERVED_SLOTS).fill(null);
-                newDockApps.forEach((app, index) => {
-                    if (index < DOCK_RESERVED_SLOTS) dockLayout[index] = app;
-                });
-                setAppLayout([...dockLayout, ...newDesktopApps]);
-
-                // Apply Others
-                if (config.aiSettings) {
-                    localStorage.setItem('ai-providers', JSON.stringify(config.aiSettings.providers));
-                    if (config.aiSettings.currentProviderId) localStorage.setItem('ai-current-provider', config.aiSettings.currentProviderId);
-                    if (config.aiSettings.currentModel) localStorage.setItem('ai-current-model', config.aiSettings.currentModel);
+                const success = await importConfig(text);
+                if (success) {
+                    setPage(0);
+                    dialog.showAlert('✓ 配置导入成功', '配置已生效！');
+                    // Optional: reload if needed to reset deep state, but Context should handle it
+                    // window.location.reload(); 
+                } else {
+                    dialog.showAlert('❌ 导入失败', '配置文件解析失败，请检查格式');
                 }
-                if (config.notes !== undefined) localStorage.setItem('os-note', config.notes);
-
-                setPage(0);
-                setTimeout(() => dialog.showAlert('✓ 配置导入成功', '配置已生效！'), 100);
             }
         } catch (e) {
             console.error('Import error:', e);
@@ -224,12 +164,10 @@ function DesktopApp() {
     };
 
     const handleReset = async () => {
-         if (await dialog.showConfirm('⚠️ RESET ALL DATA', 'This will permanently delete everything and reload.')) {
-            if (await dialog.showConfirm('Are you absolutely sure?', 'Last chance.')) {
-                 Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('os-') || key.startsWith('ai-')) localStorage.removeItem(key);
-                });
-                window.location.reload();
+         if (await dialog.showConfirm('⚠️ 恢复默认设置', '此操作将清除所有自定义数据并恢复到初始状态。')) {
+            if (await dialog.showConfirm('确定要执行吗？', '最后一次确认。')) {
+                 resetConfig();
+                 location.reload();
             }
          }
     };
@@ -482,9 +420,17 @@ function DesktopApp() {
                                 onClose={() => closeWin('edit')} 
                             />}
                             {w.type === 'configEditor' && <CodeEditor 
-                                value={JSON.stringify({ settings: sysSettings, shortcuts: appLayout.filter(s => s !== null), wallpaper }, null, 2)}
-                                language="json"
-                                onSave={(v) => { try { const data = JSON.parse(v); if(data.settings) setSysSettings(data.settings); if(data.wallpaper) setWallpaper(data.wallpaper); /* import data.shortcuts? */ } catch(e) { } closeWin('configEditor'); }}
+                                value={exportConfig()}
+                                language="yaml"
+                                onSave={async (v) => { 
+                                    const success = await importConfig(v);
+                                    if (success) {
+                                        closeWin('configEditor');
+                                        dialog.showAlert('配置已更新');
+                                    } else {
+                                        dialog.showAlert('配置更新失败，请检查 YAML 格式');
+                                    }
+                                }}
                                 onClose={() => closeWin('configEditor')}
                             />}
                             {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
@@ -498,8 +444,10 @@ function DesktopApp() {
 
 export default function App() {
     return (
-        <DialogProvider>
-            <DesktopApp />
-        </DialogProvider>
+        <ConfigProvider>
+            <DialogProvider>
+                <DesktopApp />
+            </DialogProvider>
+        </ConfigProvider>
     );
 }
