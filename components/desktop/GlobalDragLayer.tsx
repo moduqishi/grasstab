@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DragState } from '../../types';
 import { AppIcon } from '../AppIcon';
 
@@ -7,18 +7,47 @@ interface GlobalDragLayerProps {
 }
 
 export const GlobalDragLayer: React.FC<GlobalDragLayerProps> = ({ dragState }) => {
+    const layerRef = useRef<HTMLDivElement>(null);
+
+    // Direct DOM manipulation for performance
+    useEffect(() => {
+        if (!dragState.isDragging) return;
+
+        const handleMove = (e: PointerEvent) => {
+            if (layerRef.current) {
+                layerRef.current.style.left = `${e.clientX}px`;
+                layerRef.current.style.top = `${e.clientY}px`;
+            }
+        };
+
+        // Attach global listener
+        window.addEventListener('pointermove', handleMove, { passive: true });
+        
+        // Sync initial position if needed (though initial render sets it)
+        if (layerRef.current) {
+             layerRef.current.style.left = `${dragState.mx}px`;
+             layerRef.current.style.top = `${dragState.my}px`;
+        }
+
+        return () => {
+            window.removeEventListener('pointermove', handleMove);
+        };
+    }, [dragState.isDragging]); // Only re-attach if dragging state changes
+
     if (!dragState.isDragging || !dragState.item) return null;
 
     return (
         <div
+            ref={layerRef}
             style={{
                 position: 'fixed',
-                left: dragState.mx,
+                left: dragState.mx, // Initial position from state
                 top: dragState.my,
                 transform: 'translate(-50%, -50%) scale(1.1)',
                 zIndex: 10000,
                 pointerEvents: 'none',
-                transition: 'transform 0.15s ease-out'
+                // transition: 'transform 0.1s linear', // Removed transition for instant tracking
+                willChange: 'left, top'
             }}
         >
             {/* iOS-style dragging icon - maintains aspect ratio */}

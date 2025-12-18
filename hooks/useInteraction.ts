@@ -69,7 +69,8 @@ export function useInteraction({
 
     const handlePointerMove = useCallback((e: PointerEvent) => {
         if (!dragState.isDragging || !dragState.item) return;
-        setDragState(prev => ({ ...prev, mx: e.clientX, my: e.clientY }));
+        // Optimization: Do NOT update state for mx/my on every frame. GlobalDragLayer handles visual tracking.
+        // setDragState(prev => ({ ...prev, mx: e.clientX, my: e.clientY }));
 
         // --- Edge Detection for Auto-Page Flip ---
         const EDGE_THRESHOLD = 80;
