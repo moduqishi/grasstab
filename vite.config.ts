@@ -146,6 +146,9 @@ export default defineConfig(({ mode }) => {
             
             // 打包为zip文件
             try {
+              // 等待文件句柄释放
+              await new Promise(resolve => setTimeout(resolve, 2000));
+
               const zipPath = path.resolve(__dirname, 'chrome-extension.zip');
               // 如果存在则删除旧的zip
               if (fs.existsSync(zipPath)) {

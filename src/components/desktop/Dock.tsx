@@ -83,7 +83,7 @@ export const Dock = forwardRef<HTMLDivElement, DockProps>(({
                                     animate={{ scale: 1, opacity: opacity }}
                                     exit={{ scale: 0, opacity: 0, transition: { duration: 0.15 } }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                                    className={`relative flex items-center justify-center group ${isEditing ? 'jiggle-mode' : ''}`}
+                                    className={`relative flex items-center justify-center group touch-none ${isEditing ? 'jiggle-mode' : ''}`}
                                     style={{ 
                                         width: dynamicIconSize + 'px', 
                                         height: dynamicIconSize + 'px',

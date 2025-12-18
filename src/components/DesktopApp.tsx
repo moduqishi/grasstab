@@ -229,13 +229,34 @@ export function DesktopApp() {
         if (isEditing) setIsEditing(false);
     }, [isEditing, setIsEditing]);
 
+    // Swipe Handling
+    const touchStartX = useRef<number | null>(null);
+    
+    const onTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const onTouchEnd = (e: React.TouchEvent) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        
+        // Threshold for swipe
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) changePage(1); // Swipe Left -> Next Page
+            else changePage(-1);         // Swipe Right -> Prev Page
+        }
+        touchStartX.current = null;
+    };
+
     return (
         <div
-            className="relative w-full h-screen overflow-hidden font-sans select-none flex flex-col bg-black text-white cursor-default"
+            className="relative w-full h-screen overflow-hidden font-sans select-none flex flex-col bg-black text-white cursor-default touch-none"
             onContextMenu={handleGlobalContextMenu}
             onClick={handleCloseContextMenu}
             onPointerUp={handlePointerUp}
             onWheel={handleWheel}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
         >
             <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-105" style={{ backgroundImage: `url(${wallpaper})` }} />
             <div className="absolute inset-0 bg-black/20" />
