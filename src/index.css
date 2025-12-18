@@ -113,12 +113,10 @@ body {
 }
 
 /* Animations & Custom Components extracted from App.tsx */
-@keyframes slide-r { 0% { transform: translateX(40px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-@keyframes slide-l { 0% { transform: translateX(-40px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+
 @keyframes jiggle { 0% { transform: rotate(0deg); } 25% { transform: rotate(-1.5deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(1.5deg); } 100% { transform: rotate(0deg); } }
 
-.anim-next { animation: slide-r 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.anim-prev { animation: slide-l 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
 
 .dock-glass { 
   background: rgba(40, 40, 45, 0.45); 

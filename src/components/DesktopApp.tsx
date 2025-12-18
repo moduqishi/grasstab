@@ -97,7 +97,8 @@ export function DesktopApp() {
         setDir,
         gridRef, dockRef,
         DOCK_RESERVED_SLOTS,
-        iconSize
+        iconSize,
+        gridWidth
     });
 
     // --- Config Export/Import Handling ---

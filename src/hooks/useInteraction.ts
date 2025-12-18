@@ -19,6 +19,7 @@ interface InteractionProps {
     dockRef: React.RefObject<HTMLDivElement | null>;
     DOCK_RESERVED_SLOTS: number;
     iconSize?: number;
+    gridWidth: number;
 }
 
 export function useInteraction({
@@ -30,7 +31,8 @@ export function useInteraction({
     setDir,
     gridRef, dockRef,
     DOCK_RESERVED_SLOTS,
-    iconSize = 78
+    iconSize = 78,
+    gridWidth
 }: InteractionProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [dragState, setDragState] = useState<DragState>({ isDragging: false, source: null, index: -1, item: null, mx: 0, my: 0 });
@@ -72,12 +74,17 @@ export function useInteraction({
         // Optimization: Do NOT update state for mx/my on every frame. GlobalDragLayer handles visual tracking.
         // setDragState(prev => ({ ...prev, mx: e.clientX, my: e.clientY }));
 
-        // --- Edge Detection for Auto-Page Flip ---
-        const EDGE_THRESHOLD = 80;
+        // --- Edge Detection for Auto-Page Flip (Outside Grid Box) ---
         const screenWidth = window.innerWidth;
+        const gridLeft = (screenWidth - gridWidth) / 2;
+        const gridRight = gridLeft + gridWidth;
+        
+        // Define trigger zones: Outside the grid box
+        // Use a small buffer (e.g., 20px) so you don't have to go ALL the way to the edge of the screen, just outside the box.
+        const TRIGGER_BUFFER = 20; 
 
-        if (e.clientX < EDGE_THRESHOLD) {
-            // Left Edge
+        if (e.clientX < gridLeft - TRIGGER_BUFFER) {
+            // Left of Grid
             if (!flipInterval.current) {
                 flipInterval.current = setInterval(() => {
                     const { page } = stateRef.current;
@@ -87,8 +94,8 @@ export function useInteraction({
                     }
                 }, 600);
             }
-        } else if (e.clientX > screenWidth - EDGE_THRESHOLD) {
-            // Right Edge
+        } else if (e.clientX > gridRight + TRIGGER_BUFFER) {
+            // Right of Grid
             if (!flipInterval.current) {
                 flipInterval.current = setInterval(() => {
                     const { page, totalPages } = stateRef.current;
@@ -99,7 +106,7 @@ export function useInteraction({
                 }, 600);
             }
         } else {
-            // Not near edge
+            // Inside Grid or near margin (Safety Zone)
             if (flipInterval.current) {
                 clearInterval(flipInterval.current);
                 flipInterval.current = null;
