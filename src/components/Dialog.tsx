@@ -182,15 +182,10 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             {state.isOpen && state.config && (
                 <div className="fixed inset-0 z-[9999] pointer-events-none">
                     <div
-                        className="absolute flex flex-col overflow-hidden pointer-events-auto transition-none"
+                        className="absolute flex flex-col overflow-hidden pointer-events-auto transition-none bg-surface/85 backdrop-blur-3xl rounded-2xl shadow-2xl border border-white/10"
                         style={{
                             left: `${state.position.x}px`,
                             top: `${state.position.y}px`,
-                            backgroundColor: 'rgba(30, 30, 35, 0.85)',
-                            backdropFilter: 'blur(60px)',
-                            WebkitBackdropFilter: 'blur(60px)',
-                            boxShadow: '0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                            borderRadius: '16px',
                             width: '420px',
                             maxWidth: '90vw',
                             cursor: state.isDragging ? 'grabbing' : 'default'
@@ -198,11 +193,7 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                     >
                         {/* Window Header - 可拖动标题栏 */}
                         <div 
-                            className="h-[52px] flex items-center justify-between px-5 select-none shrink-0 relative cursor-grab active:cursor-grabbing"
-                            style={{
-                                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                                borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)'
-                            }}
+                            className="h-[52px] flex items-center justify-between px-5 select-none shrink-0 relative cursor-grab active:cursor-grabbing bg-gradient-to-b from-white/8 to-white/2 border-b border-white/10"
                             onMouseDown={handleMouseDown}
                         >
                             {/* 左侧红色关闭按钮 */}
@@ -231,13 +222,13 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                         <div className="flex-1 bg-transparent px-6 py-6 overflow-auto">
                             <div className="text-center space-y-3">
                                 {/* 消息 */}
-                                <p className="text-[15px] leading-relaxed font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                                <p className="text-[15px] leading-relaxed font-medium text-white/90">
                                     {state.config.message}
                                 </p>
                                 
                                 {/* 详细信息 */}
                                 {state.config.detail && (
-                                    <p className="text-[13px] leading-relaxed whitespace-pre-line" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                                <p className="text-[13px] leading-relaxed whitespace-pre-line text-white/60">
                                         {state.config.detail}
                                     </p>
                                 )}
@@ -246,12 +237,7 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                                 {state.config.type === 'prompt' && (
                                     <input
                                         type="text"
-                                        className="mt-4 w-full px-4 py-3 rounded-lg outline-none transition-all text-[14px]"
-                                        style={{
-                                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                                            color: 'rgba(255, 255, 255, 0.9)'
-                                        }}
+                                        className="mt-4 w-full px-4 py-3 rounded-lg outline-none transition-all text-[14px] bg-white/10 border border-white/15 text-white/90 focus:bg-white/15"
                                         value={state.inputValue}
                                         onChange={(e) => setState(prev => ({ ...prev, inputValue: e.target.value }))}
                                         onKeyDown={(e) => {
@@ -273,20 +259,7 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                             {state.config.showCancel && (
                                 <button
                                     onClick={handleCancel}
-                                    className="px-6 py-2.5 rounded-lg font-medium text-[14px] transition-all min-w-[80px]"
-                                    style={{
-                                        color: 'rgba(255, 255, 255, 0.7)',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                                    }}
+                                    className="px-6 py-2.5 rounded-lg font-medium text-[14px] transition-all min-w-[80px] text-white/70 bg-white/10 border border-white/10 hover:bg-white/15 hover:border-white/15"
                                 >
                                     取消
                                 </button>
@@ -296,40 +269,13 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                                     <button
                                         key={index}
                                         onClick={() => handleButtonClick(button)}
-                                        className="px-6 py-2.5 rounded-lg font-semibold text-[14px] transition-all min-w-[80px]"
-                                        style={{
-                                            color: button.variant === 'danger' 
-                                                ? '#ffffff'
+                                        className={`px-6 py-2.5 rounded-lg font-semibold text-[14px] transition-all min-w-[80px] ${
+                                            button.variant === 'danger'
+                                                ? 'bg-red-500 hover:bg-red-400 text-white'
                                                 : button.variant === 'secondary'
-                                                ? 'rgba(255, 255, 255, 0.7)'
-                                                : '#ffffff',
-                                            backgroundColor: button.variant === 'danger'
-                                                ? '#ff453a'
-                                                : button.variant === 'secondary'
-                                                ? 'rgba(255, 255, 255, 0.08)'
-                                                : '#0a84ff',
-                                            border: button.variant === 'secondary' 
-                                                ? '1px solid rgba(255, 255, 255, 0.1)'
-                                                : 'none'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (button.variant === 'danger') {
-                                                e.currentTarget.style.backgroundColor = '#ff5247';
-                                            } else if (button.variant === 'secondary') {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                                            } else {
-                                                e.currentTarget.style.backgroundColor = '#0f8fff';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (button.variant === 'danger') {
-                                                e.currentTarget.style.backgroundColor = '#ff453a';
-                                            } else if (button.variant === 'secondary') {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                                            } else {
-                                                e.currentTarget.style.backgroundColor = '#0a84ff';
-                                            }
-                                        }}
+                                                ? 'bg-white/10 hover:bg-white/15 text-white/70 border border-white/10'
+                                                : 'bg-primary hover:bg-[#3d9bff] text-white'
+                                        }`}
                                     >
                                         {button.label}
                                     </button>
@@ -337,17 +283,7 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                             ) : (
                                 <button
                                     onClick={handleConfirm}
-                                    className="px-6 py-2.5 rounded-lg font-semibold text-[14px] transition-all min-w-[80px]"
-                                    style={{
-                                        color: '#ffffff',
-                                        backgroundColor: '#0a84ff'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#0f8fff';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#0a84ff';
-                                    }}
+                                    className="px-6 py-2.5 rounded-lg font-semibold text-[14px] transition-all min-w-[80px] bg-primary hover:bg-[#3d9bff] text-white"
                                 >
                                     确定
                                 </button>

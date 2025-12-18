@@ -14,8 +14,13 @@ export default defineConfig(({ mode }) => {
       build: {
         outDir: 'dist',
         assetsDir: 'assets',
-        rollupOptions: {
+          rollupOptions: {
+          input: {
+            main: path.resolve(__dirname, 'index.html'),
+            background: path.resolve(__dirname, 'src/background.ts')
+          },
           output: {
+            entryFileNames: '[name].js',
             manualChunks: undefined,
           }
         },
@@ -61,13 +66,7 @@ export default defineConfig(({ mode }) => {
               console.log('✓ manifest.json已复制并更新CSP配置');
             }
             
-            // 复制 rules.json
-            const rulesSrc = path.resolve(__dirname, 'rules.json');
-            const rulesDest = path.resolve(distPath, 'rules.json');
-            if (fs.existsSync(rulesSrc)) {
-              fs.copyFileSync(rulesSrc, rulesDest);
-              console.log('✓ rules.json已复制');
-            }
+
             
             // 复制_locales目录
             const localesSrc = path.resolve(__dirname, '_locales');

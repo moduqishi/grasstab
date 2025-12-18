@@ -58,28 +58,22 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:bg-white/10"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:bg-white/10 bg-white/5"
             >
-                <Sparkles size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                <span className="text-xs font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                <Sparkles size={14} className="text-white/60" />
+                <span className="text-xs font-medium text-white/90">
                     {currentProvider.name} · {currentModel}
                 </span>
-                <ChevronDown size={14} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                <ChevronDown size={14} className="text-white/60" />
             </button>
 
             {isOpen && (
                 <div
-                    className="absolute top-full left-0 mt-2 w-72 rounded-xl shadow-2xl overflow-hidden z-50"
-                    style={{
-                        backgroundColor: 'rgba(30, 30, 35, 0.98)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(20px)'
-                    }}
+                    className="absolute top-full left-0 mt-2 w-72 rounded-xl shadow-2xl overflow-hidden z-50 bg-surface/98 border border-white/10 backdrop-blur-xl"
                 >
                     {/* Provider Selection */}
-                    <div className="p-3" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                        <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                    <div className="p-3 border-b border-white/10">
+                        <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-white/50">
                             API 提供商
                         </div>
                         <div className="space-y-1">
@@ -93,21 +87,11 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
                                             onModelChange(firstModel);
                                         }
                                     }}
-                                    className="w-full text-left px-3 py-2 rounded-lg transition-all text-sm"
-                                    style={{
-                                        backgroundColor: provider.id === currentProviderId ? 'rgba(10, 132, 255, 0.2)' : 'transparent',
-                                        color: provider.id === currentProviderId ? '#0A84FF' : 'rgba(255, 255, 255, 0.8)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (provider.id !== currentProviderId) {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (provider.id !== currentProviderId) {
-                                            e.currentTarget.style.backgroundColor = 'transparent';
-                                        }
-                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
+                                        provider.id === currentProviderId 
+                                            ? 'bg-primary/20 text-primary' 
+                                            : 'text-white/80 hover:bg-white/5'
+                                    }`}
                                 >
                                     {provider.name}
                                 </button>
@@ -115,9 +99,8 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
                         </div>
                     </div>
 
-                    {/* Model Selection */}
                     <div className="p-3">
-                        <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                        <div className="text-xs font-semibold uppercase tracking-wider mb-2 text-white/50">
                             模型
                         </div>
                         <div className="space-y-1 max-h-64 overflow-y-auto">
@@ -129,27 +112,17 @@ const ModelSelect: React.FC<ModelSelectProps> = ({
                                             onModelChange(model);
                                             setIsOpen(false);
                                         }}
-                                        className="w-full text-left px-3 py-2 rounded-lg transition-all text-sm"
-                                        style={{
-                                            backgroundColor: model === currentModel ? 'rgba(10, 132, 255, 0.2)' : 'transparent',
-                                            color: model === currentModel ? '#0A84FF' : 'rgba(255, 255, 255, 0.8)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (model !== currentModel) {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (model !== currentModel) {
-                                                e.currentTarget.style.backgroundColor = 'transparent';
-                                            }
-                                        }}
+                                        className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
+                                            model === currentModel 
+                                                ? 'bg-primary/20 text-primary' 
+                                                : 'text-white/80 hover:bg-white/5'
+                                        }`}
                                     >
                                         {model}
                                     </button>
                                 ))
                             ) : (
-                                <div className="text-xs text-center py-4" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                <div className="text-xs text-center py-4 text-white/50">
                                     暂无可用模型
                                 </div>
                             )}
@@ -224,10 +197,29 @@ export const AIApp = () => {
     const [streamingContent, setStreamingContent] = useState('');
     const [isStreaming, setIsStreaming] = useState(false);
     const endRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    const shouldAutoScrollRef = useRef(true); // 智能滚动控制
 
     const currentProvider = providers.find(p => p.id === currentProviderId);
+
+    // 智能滚动处理
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        // 增加阈值到 100px，提高容错率
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        shouldAutoScrollRef.current = isNearBottom;
+    };
+
+    const scrollToBottom = (force: boolean = false) => {
+        if (shouldAutoScrollRef.current || force) {
+            requestAnimationFrame(() => {
+                endRef.current?.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem('ai-providers', JSON.stringify(providers));
@@ -242,8 +234,14 @@ export const AIApp = () => {
     }, [currentModel]);
 
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // 消息列表变化时，强制滚动到底部
+        scrollToBottom(true);
     }, [messages]);
+
+    useEffect(() => {
+        // 流式传输内容变化时，根据用户位置决定是否滚动
+        scrollToBottom();
+    }, [streamingContent]);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -268,27 +266,46 @@ export const AIApp = () => {
                 modelsUrl = modelsUrl.replace(/\/+$/, '') + '/v1/models';
             }
             
-            const response = await fetch(modelsUrl, {
-                headers: {
-                    'Authorization': `Bearer ${provider.apiKey}`,
-                    'X-GrassTab-AI-Request': 'true'
-                }
+            return new Promise<string[]>((resolve, reject) => {
+                const port = chrome.runtime.connect({ name: 'stream-fetch' });
+                let responseBody = '';
+
+                port.onMessage.addListener((msg) => {
+                    if (msg.type === 'error') {
+                        reject(new Error(msg.error));
+                        port.disconnect();
+                    } else if (msg.type === 'chunk') {
+                         // 将 number[] 转回字符串 (简单的 ASCII/UTF8 处理)
+                         // 注意：对于非流式的大 JSON，这样拼接可能有效。
+                         // 更严谨的做法是拼接 Uint8Array 然后一次性 decode。
+                         responseBody += new TextDecoder().decode(new Uint8Array(msg.value), { stream: true });
+                    } else if (msg.type === 'end') {
+                        try {
+                            const data = JSON.parse(responseBody);
+                            const modelIds = data.data?.map((m: any) => m.id) || [];
+                            resolve(modelIds.filter((id: string) => 
+                                id.includes('gpt') || 
+                                id.includes('claude') || 
+                                id.includes('llama') ||
+                                id.includes('gemini') ||
+                                !id.includes('whisper') && !id.includes('tts') && !id.includes('dall-e')
+                            ));
+                        } catch (e) {
+                            reject(e);
+                        }
+                        port.disconnect();
+                    }
+                });
+
+                port.postMessage({
+                    url: modelsUrl,
+                    options: {
+                        headers: {
+                            'Authorization': `Bearer ${provider.apiKey}`
+                        }
+                    }
+                });
             });
-
-            if (!response.ok) {
-                throw new Error('无法获取模型列表');
-            }
-
-            const data = await response.json();
-            const modelIds = data.data?.map((m: any) => m.id) || [];
-            
-            return modelIds.filter((id: string) => 
-                id.includes('gpt') || 
-                id.includes('claude') || 
-                id.includes('llama') ||
-                id.includes('gemini') ||
-                !id.includes('whisper') && !id.includes('tts') && !id.includes('dall-e')
-            );
         } catch (err) {
             console.error('Failed to fetch models:', err);
             return [];
@@ -305,6 +322,9 @@ export const AIApp = () => {
             }
         }
     };
+
+    // 引用 Port 以便中止
+    const portRef = useRef<chrome.runtime.Port | null>(null);
 
     const sendMessage = async () => {
         if (!input.trim() || isLoading || isStreaming) return;
@@ -326,45 +346,40 @@ export const AIApp = () => {
         setIsStreaming(true);
         setStreamingContent('');
         setError('');
+        shouldAutoScrollRef.current = true;
 
-        // 创建中止控制器
-        abortControllerRef.current = new AbortController();
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 10);
 
         try {
-            const response = await fetch(currentProvider.apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${currentProvider.apiKey}`,
-                    'X-GrassTab-AI-Request': 'true'
-                },
-                body: JSON.stringify({
-                    model: currentModel,
-                    messages: [...messages, userMessage],
-                    temperature: currentProvider.temperature,
-                    max_tokens: currentProvider.maxTokens,
-                    stream: true
-                }),
-                signal: abortControllerRef.current.signal
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error?.message || `API 错误: ${response.status}`);
-            }
-
-            const reader = response.body?.getReader();
+            const port = chrome.runtime.connect({ name: 'stream-fetch' });
+            portRef.current = port;
+            
             const decoder = new TextDecoder();
             let fullContent = '';
 
-            if (reader) {
-                setIsLoading(false);
-                
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value, { stream: true });
+            port.onMessage.addListener((msg) => {
+                if (msg.type === 'error') {
+                     // 错误处理
+                     if (msg.error !== 'AbortError') {
+                         setError(msg.error || '发送失败，请检查网络连接和 API 配置');
+                         // 移除最后一条（如果还没生成任何内容）
+                         if (!fullContent) setMessages(prev => prev.slice(0, -1));
+                     }
+                     setIsLoading(false);
+                     setIsStreaming(false);
+                     port.disconnect();
+                     portRef.current = null;
+                } else if (msg.type === 'response') {
+                    if (msg.status !== 200) {
+                        // 此时还没有 body error，等待 error 消息
+                    } else {
+                        setIsLoading(false);
+                    }
+                } else if (msg.type === 'chunk') {
+                    // 处理流式数据
+                    const chunk = decoder.decode(new Uint8Array(msg.value), { stream: true });
                     const lines = chunk.split('\n').filter(line => line.trim() !== '');
 
                     for (const line of lines) {
@@ -379,38 +394,61 @@ export const AIApp = () => {
                                     fullContent += content;
                                     setStreamingContent(fullContent);
                                 }
-                            } catch (e) {
-                                // 忽略解析错误
-                            }
+                            } catch (e) { }
                         }
                     }
+                } else if (msg.type === 'end') {
+                    // 完成
+                    const assistantMessage: Message = {
+                        role: 'assistant',
+                        content: fullContent || '抱歉，我没有收到有效的回复。'
+                    };
+                    setMessages(prev => [...prev, assistantMessage]);
+                    
+                    setIsLoading(false);
+                    setIsStreaming(false);
+                    setStreamingContent('');
+                    port.disconnect();
+                    portRef.current = null;
+                    
+                    setTimeout(() => {
+                        inputRef.current?.focus();
+                    }, 10);
                 }
+            });
 
-                // 流式传输完成，添加完整消息
-                const assistantMessage: Message = {
-                    role: 'assistant',
-                    content: fullContent || '抱歉，我没有收到有效的回复。'
-                };
-                setMessages(prev => [...prev, assistantMessage]);
-            }
+            port.postMessage({
+                url: currentProvider.apiUrl,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentProvider.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: currentModel,
+                        messages: [...messages, userMessage],
+                        temperature: currentProvider.temperature,
+                        max_tokens: currentProvider.maxTokens,
+                        stream: true
+                    })
+                }
+            });
+
         } catch (err: any) {
-            if (err.name === 'AbortError') {
-                setError('请求已取消');
-            } else {
-                setError(err.message || '发送失败，请检查网络连接和 API 配置');
-            }
-            setMessages(prev => prev.slice(0, -1));
-        } finally {
+            setError(err.message || '发送失败');
             setIsLoading(false);
             setIsStreaming(false);
-            setStreamingContent('');
-            abortControllerRef.current = null;
         }
     };
 
     const stopGeneration = () => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
+        if (portRef.current) {
+            portRef.current.disconnect();
+            portRef.current = null;
+            setIsLoading(false);
+            setIsStreaming(false);
+            setError('请求已人为停止');
         }
     };
 
@@ -432,8 +470,7 @@ export const AIApp = () => {
         <div className="flex flex-col h-full" onWheel={(e) => e.stopPropagation()}>
             {/* Header */}
             <div 
-                className="flex items-center justify-between px-4 py-3"
-                style={{ borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)' }}
+                className="flex items-center justify-between px-4 py-3 border-b border-white/10"
             >
                 <div className="flex items-center gap-3">
                     {providers.length > 0 && currentProvider ? (
@@ -448,7 +485,7 @@ export const AIApp = () => {
                             />
                         </>
                     ) : (
-                        <span className="text-xs font-medium" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                        <span className="text-xs font-medium text-white/50">
                             请在设置中添加 API 提供商
                         </span>
                     )}
@@ -459,18 +496,22 @@ export const AIApp = () => {
                         className="p-2 rounded-lg hover:bg-white/10 transition-all"
                         title="清空对话"
                     >
-                        <Trash2 size={16} style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
+                        <Trash2 size={16} className="text-white/60" />
                     </button>
                 )}
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div 
+                className="flex-1 overflow-y-auto p-4 space-y-4"
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+            >
                 {messages.length === 0 && (
                     <div className="h-full flex items-center justify-center">
                         <div className="text-center space-y-3">
                             <div className="text-4xl">💬</div>
-                            <div className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                            <div className="text-sm text-white/50">
                                 {providers.length > 0 && currentProvider?.apiKey ? '开始对话吧' : '请先在设置中添加 API 提供商'}
                             </div>
                         </div>
@@ -486,12 +527,8 @@ export const AIApp = () => {
                             className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                                 msg.role === 'user'
                                     ? 'bg-[#0A84FF] text-white'
-                                    : 'text-white'
+                                    : 'text-white bg-white/8 border border-white/10'
                             }`}
-                            style={msg.role === 'assistant' ? {
-                                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)'
-                            } : {}}
                         >
                             {msg.role === 'user' ? (
                                 <div className="text-sm leading-6 whitespace-pre-wrap break-words">
@@ -510,8 +547,7 @@ export const AIApp = () => {
                                                     />
                                                 ) : (
                                                     <code
-                                                        className="px-1.5 py-0.5 rounded text-xs font-mono"
-                                                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+                                                        className="px-1.5 py-0.5 rounded text-xs font-mono bg-white/15"
                                                         {...props}
                                                     >
                                                         {children}
@@ -539,8 +575,7 @@ export const AIApp = () => {
                                             blockquote({ children }) {
                                                 return (
                                                     <blockquote 
-                                                        className="border-l-4 pl-4 my-3 italic"
-                                                        style={{ borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                                                        className="border-l-4 pl-4 my-3 italic border-white/30"
                                                     >
                                                         {children}
                                                     </blockquote>
@@ -572,11 +607,7 @@ export const AIApp = () => {
                 {isStreaming && streamingContent && (
                     <div className="flex justify-start">
                         <div
-                            className="max-w-[85%] rounded-2xl px-4 py-3 text-white"
-                            style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}
+                            className="max-w-[85%] rounded-2xl px-4 py-3 text-white bg-white/8 border border-white/10"
                         >
                             <div className="prose prose-invert prose-sm max-w-none">
                                 <ReactMarkdown
@@ -640,9 +671,8 @@ export const AIApp = () => {
                                         }
                                     }}
                                 >
-                                    {streamingContent}
+                                    {streamingContent + (isStreaming ? ' ▍' : '')}
                                 </ReactMarkdown>
-                                <span className="inline-block w-1.5 h-4 bg-blue-400 animate-pulse ml-0.5" />
                             </div>
                         </div>
                     </div>
@@ -651,14 +681,10 @@ export const AIApp = () => {
                 {isLoading && !isStreaming && (
                     <div className="flex justify-start">
                         <div
-                            className="max-w-[85%] rounded-2xl px-4 py-3 flex items-center gap-2"
-                            style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}
+                            className="max-w-[85%] rounded-2xl px-4 py-3 flex items-center gap-2 bg-white/8 border border-white/10"
                         >
-                            <Loader2 size={16} className="animate-spin" style={{ color: 'rgba(255, 255, 255, 0.6)' }} />
-                            <span className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>思考中...</span>
+                            <Loader2 size={16} className="animate-spin text-white/60" />
+                            <span className="text-sm text-white/60">思考中...</span>
                         </div>
                     </div>
                 )}
@@ -666,11 +692,7 @@ export const AIApp = () => {
                 {error && (
                     <div className="flex justify-center">
                         <div
-                            className="max-w-[85%] rounded-2xl px-4 py-3 flex items-start gap-2"
-                            style={{
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid rgba(239, 68, 68, 0.3)'
-                            }}
+                            className="max-w-[85%] rounded-2xl px-4 py-3 flex items-start gap-2 bg-red-500/10 border border-red-500/30"
                         >
                             <AlertCircle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
                             <span className="text-sm text-red-300">{error}</span>
@@ -683,32 +705,24 @@ export const AIApp = () => {
 
             {/* Input Area */}
             <div
-                className="p-4"
-                style={{
-                    borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-                    background: 'linear-gradient(to top, rgba(30, 30, 35, 0.95) 0%, rgba(30, 30, 35, 0.85) 100%)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)'
-                }}
+                className="p-4 border-t border-white/10 backdrop-blur-xl bg-gradient-to-t from-surface/95 to-surface/85"
             >
                 <div className="flex gap-2 items-end">
                     <textarea
                         ref={inputRef}
-                        className="flex-1 rounded-2xl px-4 py-3 outline-none text-white text-sm resize-none leading-6"
-                        style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                            minHeight: '44px',
-                            maxHeight: '120px'
-                        }}
+                        className="flex-1 rounded-2xl px-4 py-3 outline-none text-white text-sm resize-none leading-6 bg-white/10 min-h-[44px] max-h-[120px]"
                         placeholder={currentProvider?.apiKey && currentModel ? "输入消息... (Shift+Enter 换行)" : "请先在设置中添加 API 提供商并选择模型"}
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        disabled={!currentProvider?.apiKey || isLoading || !currentModel}
+                        // 移除 isLoading 禁用，允许用户在生成时输入
+                        disabled={!currentProvider?.apiKey || !currentModel}
                         rows={1}
+                        autoFocus
                     />
                     <button
                         onClick={isStreaming ? stopGeneration : sendMessage}
+                        // 禁用发送按钮的逻辑：无输入且非流式，或正在加载但非流式（普通请求），或无配置
                         disabled={(!input.trim() && !isStreaming) || (isLoading && !isStreaming) || !currentProvider?.apiKey || !currentModel}
                         className={`p-3 rounded-full text-white hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
                             isStreaming ? 'bg-red-500' : 'bg-[#0A84FF]'
