@@ -108,10 +108,26 @@ body {
 }
 
 /* 安全区域适配（iPhone刘海屏等） */
-@supports (padding: max(0px)) {
-  body {
-    padding-left: max(0px, env(safe-area-inset-left));
-    padding-right: max(0px, env(safe-area-inset-right));
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
 }
+
+/* Animations & Custom Components extracted from App.tsx */
+@keyframes slide-r { 0% { transform: translateX(40px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes slide-l { 0% { transform: translateX(-40px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+@keyframes jiggle { 0% { transform: rotate(0deg); } 25% { transform: rotate(-1.5deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(1.5deg); } 100% { transform: rotate(0deg); } }
+
+.anim-next { animation: slide-r 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.anim-prev { animation: slide-l 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+.dock-glass { 
+  background: rgba(40, 40, 45, 0.45); 
+  backdrop-filter: blur(50px); 
+  -webkit-backdrop-filter: blur(50px); 
+  border: 1px solid rgba(255, 255, 255, 0.12); 
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); 
+}
+
+.jiggle-mode { animation: jiggle 0.25s infinite linear; }
+.jiggle-mode:nth-child(2n) { animation-delay: 0.1s; }
+.jiggle-mode:nth-child(3n) { animation-delay: -0.15s; }
