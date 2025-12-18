@@ -128,7 +128,7 @@ export const DesktopGrid = forwardRef<HTMLDivElement, DesktopGridProps>(({
                                         >
                                             {/* Icon Wrapper for positioning badges relative to the ICON, not the cell */}
                                             <div 
-                                                className="relative pointer-events-auto"
+                                                className={`relative ${viewState === 'hero' ? 'pointer-events-none' : 'pointer-events-auto'}`}
                                                 style={{ 
                                                     width: isWidget ? '100%' : (iconSize || 78), 
                                                     height: isWidget ? '100%' : (iconSize || 78) 
