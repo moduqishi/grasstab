@@ -8,10 +8,11 @@ import { IconSelector } from '../IconSelector';
 interface EditAppProps {
     app: Shortcut;
     onSave: (updated: Shortcut) => void;
+    onClose?: () => void;
     language?: Language;
 }
 
-export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }) => {
+export const EditApp: React.FC<EditAppProps> = ({ app, onSave, onClose, language = 'zh' }) => {
     const dialog = useDialog();
     const isWidget = app.type === 'widget';
     const lang = language;
@@ -78,6 +79,7 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, language = 'zh' }
         }
 
         onSave(updated);
+        if (onClose) onClose();
     };
 
     return (
