@@ -153,7 +153,7 @@ const Hero = () => {
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border border-white/60 text-slate-600 text-xs font-bold uppercase tracking-widest mb-6 backdrop-blur-sm shadow-sm"
         >
           <Sparkles className="w-3 h-3 text-yellow-500" />
-          <span>v1.0 震撼发布</span>
+          <span>v1.1.0 震撼发布</span>
         </motion.div>
 
         <motion.h1 
@@ -169,7 +169,7 @@ const Hero = () => {
           className="text-lg md:text-2xl text-slate-500 max-w-2xl mx-auto mb-10 font-medium leading-relaxed"
         >
           GrassTab 不仅仅是一个新标签页。<br/>
-          它是基于 <strong>React</strong> 构建的窗口化操作系统，集成了 <strong>AI 助手</strong> 与 <strong>极速网格引擎</strong>。
+          它是基于 <strong>React</strong> 构建的窗口化操作系统，集成了 <strong>AI 助手</strong>、<strong>可配置搜索</strong> 与 <strong>极速网格引擎</strong>。
         </motion.p>
 
         <motion.div 

@@ -22,6 +22,7 @@ GrassTab 是一个功能强大且美观的新标签页扩展，为您提供高�
 🎨 主要功能
 
 • 自定义应用快捷方式 - 添加常用网站，自动获取精美图标
+• 可配置搜索 - 支持自定义搜索引擎 URL 和搜索建议
 • Dock 栏管理 - 类 macOS 的 Dock 栏，快速访问常用应用
 • 多种小组件 - 时钟、日历、天气、自定义 HTML、网页嵌入
 • 精美壁纸 - 内置多种高质量壁纸，支持自定义图片
@@ -67,6 +68,7 @@ GrassTab is a powerful and beautiful new tab extension that provides a highly cu
 🎨 Key Features
 
 • Custom App Shortcuts - Add favorite websites with auto-fetched beautiful icons
+• Configurable Search - Support custom search engine URLs and suggestions
 • Dock Bar Management - macOS-style Dock bar for quick access to apps
 • Multiple Widgets - Clock, calendar, weather, custom HTML, webpage embed
 • Beautiful Wallpapers - Built-in high-quality wallpapers, support custom images
