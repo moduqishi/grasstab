@@ -231,21 +231,49 @@ export function DesktopApp() {
 
     // Swipe Handling
     const touchStartX = useRef<number | null>(null);
+    const touchStartY = useRef<number | null>(null);
     
     const onTouchStart = (e: React.TouchEvent) => {
         touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
     };
 
     const onTouchEnd = (e: React.TouchEvent) => {
-        if (touchStartX.current === null) return;
-        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (touchStartX.current === null || touchStartY.current === null) return;
         
-        // Threshold for swipe
-        if (Math.abs(diff) > 50) {
-            if (diff > 0) changePage(1); // Swipe Left -> Next Page
-            else changePage(-1);         // Swipe Right -> Prev Page
+        const diffX = touchStartX.current - e.changedTouches[0].clientX;
+        const diffY = touchStartY.current - e.changedTouches[0].clientY;
+        
+        // Determine dominant axis
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // Horizontal Swipe
+            if (Math.abs(diffX) > 50) {
+                 // Prevent page switching in Hero view? Configurable, but usually Hero is a cover.
+                 // If we match scroll logic, Hero doesn't support changing pages horizontally.
+                 if (viewState === 'desktop') {
+                    if (diffX > 0) changePage(1); // Swipe Left -> Next Page
+                    else changePage(-1);          // Swipe Right -> Prev Page
+                 }
+            }
+        } else {
+            // Vertical Swipe
+            if (Math.abs(diffY) > 50) {
+                if (diffY > 0) {
+                    // Swipe Up (Finger moves UP) -> Enter Desktop
+                    if (viewState === 'hero') setViewState('desktop');
+                } else {
+                    // Swipe Down (Finger moves DOWN) -> Return to Hero
+                    if (viewState === 'desktop' && page === 0 && !isAnyWindowMaximized) {
+                         // Only go back to hero if on first page and no windows maximized (to avoid conflict with window scrolling? 
+                         // Though checking isAnyWindowMaximized is good safety)
+                         setViewState('hero');
+                    }
+                }
+            }
         }
+        
         touchStartX.current = null;
+        touchStartY.current = null;
     };
 
     return (
