@@ -30,6 +30,16 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem(CONFIG_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        
+        // Check for version update (e.g. 1.0 -> 1.1)
+        // If version mismatches, we force a reset of search engines configuration
+        // to ensure any deleted engines are removed from the user's config
+        if (parsed?.meta?.version !== DEFAULT_CONFIG.meta.version) {
+            delete parsed.searchEngines;
+            if (parsed.meta) {
+              parsed.meta.version = DEFAULT_CONFIG.meta.version;
+            }
+        }
         // Simple merge with default to ensure new fields exists
         // Note: For deep merge in prod, use lodash.merge. Here specific top-level merges.
         const merged = { ...DEFAULT_CONFIG, ...parsed };
@@ -38,6 +48,11 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
         if (!merged.integrations?.ai) merged.integrations.ai = DEFAULT_CONFIG.integrations.ai;
         if (!merged.content?.dock) merged.content.dock = DEFAULT_CONFIG.content.dock;
         if (!merged.content?.desktop) merged.content.desktop = DEFAULT_CONFIG.content.desktop;
+        
+        // Ensure searchEngines exists
+        if (!merged.searchEngines) {
+          merged.searchEngines = DEFAULT_CONFIG.searchEngines;
+        }
         
         return merged;
       }
@@ -151,7 +166,12 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
         updatedAt: new Date().toISOString()
       }
     };
-    return yaml.dump(exportData, { indent: 2, lineWidth: -1 });
+    
+    // Sanitize data to remove any potential runtime functions or undefined values
+    // that might prevent clean YAML dump (fixes "unacceptable kind of an object to dump [object Function]")
+    const cleanData = JSON.parse(JSON.stringify(exportData));
+    
+    return yaml.dump(cleanData, { indent: 2, lineWidth: -1 });
   };
 
   const resetConfig = () => {

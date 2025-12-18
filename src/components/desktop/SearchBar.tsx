@@ -1,12 +1,13 @@
 import React, { useRef } from 'react';
 import { Search, X } from 'lucide-react';
-import { SearchEngineKey } from '../../types';
+import { SearchEngineKey, SearchEngineItem } from '../../types';
 import { SEARCH_ENGINES } from '../../constants';
 import { FEATURES } from '../../features';
 
 interface SearchBarProps {
     showSearchBar: boolean;
-    engine: SearchEngineKey;
+    engine: string; // Changed from SearchEngineKey to string
+    currentEngine: SearchEngineItem;
     search: string;
     setSearch: (s: string) => void;
     nextEngine: () => void;
@@ -21,6 +22,7 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
     showSearchBar,
     engine,
+    currentEngine,
     search,
     setSearch,
     nextEngine,
@@ -35,6 +37,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
     if (!showSearchBar) return null;
 
+    // Helper to get icon
+    const renderIcon = () => {
+        // 1. Try to find in constants (built-in icons)
+        if (currentEngine.icon && currentEngine.icon in SEARCH_ENGINES) {
+            return SEARCH_ENGINES[currentEngine.icon as SearchEngineKey].icon;
+        }
+        // 2. If it's a URL
+        if (currentEngine.icon && currentEngine.icon.startsWith('http')) {
+             return <img src={currentEngine.icon} alt={currentEngine.name} className="w-full h-full object-contain" />;
+        }
+        // 3. Fallback
+        return SEARCH_ENGINES['default'].icon;
+    };
+
     return (
         <div 
             className={`w-full h-[10%] flex flex-col items-center justify-start relative z-40 transition-all duration-700 cubic-bezier(0.2, 0.8, 0.2, 1) ${
@@ -47,11 +63,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             <div className="relative w-[85%] sm:w-[70%] md:w-[60%] lg:w-[50%] xl:w-[40%] max-w-xl">
                 <div className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-1.5 shadow-2xl transition-all duration-300 hover:bg-white/15 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] focus-within:bg-white/20 focus-within:scale-105 focus-within:shadow-[0_0_50px_rgba(255,255,255,0.25)]" onClick={e => e.stopPropagation()}>
                     <button onClick={nextEngine} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors text-white font-bold text-sm sm:text-base">
-                        <span className="w-[75%] h-[75%] flex items-center justify-center">{SEARCH_ENGINES[engine].icon}</span>
+                        <span className="w-[75%] h-[75%] flex items-center justify-center">{renderIcon()}</span>
                     </button>
                     <input
                         className="flex-1 bg-transparent border-none outline-none text-white px-2 sm:px-3 text-base sm:text-lg placeholder-white/40 font-light h-8 sm:h-10"
-                        placeholder={`Search ${SEARCH_ENGINES[engine].name}...`}
+                        placeholder={`Search ${currentEngine?.name || '...'}`}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         {...(FEATURES.SEARCH_SUGGESTIONS && {

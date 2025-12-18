@@ -67,13 +67,21 @@ export interface LayoutConfig {
     iconSize?: number;
 }
 
+export interface SearchEngineItem {
+    id: string;
+    name: string;
+    searchUrl: string; // URL with %s or {query}
+    suggestionUrl?: string; // URL for suggestions
+    icon: string; // Key for built-in icon ('google') or URL for image
+}
+
 export interface SystemSettings {
     showDockEdit: boolean;
     showSearchBar: boolean;
     showPagination: boolean;
     showDock: boolean;
     language: 'zh' | 'en';
-    searchEngine?: SearchEngineKey;
+    searchEngine?: string; // Changed from SearchEngineKey to string to support dynamic IDs
     gridCols?: number;
     gridRows?: number;
     hiddenSystemApps?: string[]; // 隐藏的系统应用ID列表

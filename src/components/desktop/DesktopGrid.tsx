@@ -143,6 +143,14 @@ export const DesktopGrid = forwardRef<HTMLDivElement, DesktopGridProps>(({
                                                         else window.location.href = s.url!;
                                                     }
                                                 }}
+                                                onAuxClick={(e) => {
+                                                    if (e.button === 1) { // Middle click
+                                                        e.stopPropagation();
+                                                        if (!isEditing && !s.isApp && !s.type.includes('widget') && s.url) {
+                                                            window.open(s.url, '_blank');
+                                                        }
+                                                    }
+                                                }}
                                             >
                                                 {isEditing && (
                                                     <div

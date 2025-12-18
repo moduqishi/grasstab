@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
       build: {
         outDir: 'dist',
         assetsDir: 'assets',
+          chunkSizeWarningLimit: 1000,
           rollupOptions: {
           input: {
             main: path.resolve(__dirname, 'index.html'),
@@ -21,7 +22,11 @@ export default defineConfig(({ mode }) => {
           },
           output: {
             entryFileNames: '[name].js',
-            manualChunks: undefined,
+            manualChunks: {
+                'vendor': ['react', 'react-dom'],
+                'monaco': ['monaco-editor', '@monaco-editor/react'],
+                'ui': ['lucide-react', 'framer-motion']
+            },
           }
         },
         modulePreload: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Edit3, Wallpaper, RefreshCw, Settings, Download, Upload, Info, Grid3x3, Monitor, Search, PanelBottom } from 'lucide-react';
+import { Check, Edit3, Wallpaper, RefreshCw, Settings, Info, Grid3x3, Monitor, Search, PanelBottom } from 'lucide-react';
 
 interface ContextMenuProps {
     x: number;
@@ -7,10 +7,7 @@ interface ContextMenuProps {
     onClose: () => void;
     onEdit: () => void;
     onChangeWallpaper: () => void;
-    onReset: () => void;
     onOpenSettings: () => void;
-    onExportConfig: () => void;
-    onImportConfig: () => void;
     onToggleSearchBar: () => void;
     onTogglePagination: () => void;
     onToggleDock: () => void;
@@ -21,8 +18,8 @@ interface ContextMenuProps {
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({ 
-    x, y, onClose, onEdit, onChangeWallpaper, onReset, onOpenSettings,
-    onExportConfig, onImportConfig, onToggleSearchBar, onTogglePagination, onToggleDock,
+    x, y, onClose, onEdit, onChangeWallpaper, onOpenSettings,
+    onToggleSearchBar, onTogglePagination, onToggleDock,
     isEditing, showSearchBar, showPagination, showDock
 }) => {
     // Adjust position to keep menu on screen
@@ -102,34 +99,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 />
             </div>
 
-            <Divider />
 
-            {/* Configuration */}
-            <div className="py-1">
-                <MenuLabel>Configuration</MenuLabel>
-                <MenuItem 
-                    icon={Download}
-                    label="Export Config"
-                    onClick={() => { onExportConfig(); onClose(); }}
-                />
-                <MenuItem 
-                    icon={Upload}
-                    label="Import Config"
-                    onClick={() => { onImportConfig(); onClose(); }}
-                />
-            </div>
-
-            <Divider />
-
-            {/* Danger Zone */}
-            <div className="py-1">
-                <MenuItem 
-                    icon={RefreshCw}
-                    label="Reset Layout"
-                    onClick={() => { onReset(); onClose(); }}
-                    variant="danger"
-                />
-            </div>
 
             {/* Footer */}
             <div className="px-4 py-2.5 flex items-center gap-2 text-xs" style={{ color: 'rgba(255, 255, 255, 0.3)', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>

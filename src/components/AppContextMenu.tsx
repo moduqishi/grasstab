@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, ExternalLink, ArrowUpRight } from 'lucide-react';
 
 interface AppContextMenuProps {
     x: number;
@@ -7,9 +7,11 @@ interface AppContextMenuProps {
     onClose: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    onOpen: () => void;
+    onOpenNewTab: () => void;
 }
 
-export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, onEdit, onDelete }) => {
+export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, onEdit, onDelete, onOpen, onOpenNewTab }) => {
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -24,7 +26,7 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
 
     // Auto-positioning to prevent off-screen rendering
     const menuWidth = 220;
-    const menuHeight = 120;
+    const menuHeight = 200;
     const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
     const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
 
@@ -42,6 +44,23 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
             }}
             onClick={(e) => e.stopPropagation()}
         >
+            <button
+                onClick={() => { onOpen(); onClose(); }}
+                className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"
+            >
+                <ExternalLink size={16} className="text-white/70" />
+                <span className="font-medium">打开</span>
+            </button>
+
+            <button
+                onClick={() => { onOpenNewTab(); onClose(); }}
+                className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"
+            >
+                <ArrowUpRight size={16} className="text-white/70" />
+                <span className="font-medium">在新标签页打开</span>
+            </button>
+
+            <div style={{ height: '0.5px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
             <button
                 onClick={() => { onEdit(); onClose(); }}
                 className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"

@@ -1,26 +1,41 @@
 import { useState, useEffect } from 'react';
 import { SearchEngineKey } from '../types';
 import { SEARCH_ENGINES } from '../constants';
-import { FEATURES } from '../features';
-
-declare const chrome: any;
+import { useConfig } from '../config/ConfigContext';
 
 export function useSearch() {
-    const [engine, setEngine] = useState<SearchEngineKey>('default');
+    const { config } = useConfig();
+    const [engineId, setEngineId] = useState<string>(() => {
+        return config.searchEngines.length > 0 ? config.searchEngines[0].id : 'default';
+    });
     const [search, setSearch] = useState('');
+
+    // Get current engine config
+    const currentEngine = config.searchEngines.find(e => e.id === engineId) || config.searchEngines[0];
+
+    // Ensure engineId is valid when config changes or on mount
+    useEffect(() => {
+        if (!config.searchEngines.find(e => e.id === engineId)) {
+            if (config.searchEngines.length > 0) {
+                setEngineId(config.searchEngines[0].id);
+            }
+        }
+    }, [config.searchEngines, engineId]);
     
-    // 搜索建议相关状态 - 仅对自定义搜索引擎生效（非 default）
+    // 搜索建议相关状态
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     
     // Suggestion fetching
     useEffect(() => {
-        if (engine === 'default') {
+        // If engine is 'default' (Chrome search), we usually don't have suggestions unless a custom URL is hacked in, 
+        // but for now let's assume 'default' delegates to browser and has no suggestions in-page.
+        // Or if suggestionUrl is missing.
+        if (!currentEngine || !currentEngine.suggestionUrl) {
             setSuggestions([]);
             setShowSuggestions(false);
             return;
         }
-        if (!FEATURES.SEARCH_SUGGESTIONS) return;
 
         const timer = setTimeout(async () => {
             if (!search.trim()) {
@@ -31,40 +46,27 @@ export function useSearch() {
             try {
                 let results: string[] = [];
                 const q = encodeURIComponent(search);
+                const url = currentEngine.suggestionUrl!.replace('%s', q).replace('{query}', q);
 
-                if (engine === 'google') {
-                    try {
-                        const response = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${q}`);
-                        const data = await response.json();
-                        if (Array.isArray(data) && data[1]) {
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    // Handle various suggestion formats
+                    if (Array.isArray(data)) {
+                        if (Array.isArray(data[1])) {
+                            // Standard OpenSearch: [query, [suggestions...]]
                             results = data[1];
+                        } else {
+                            // Simple array: ["sugg1", "sugg2"]
+                            results = data.filter(item => typeof item === 'string');
                         }
-                    } catch (err) {
-                        console.warn('Google suggestions unavailable:', err);
+                    } else if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
+                        // Bing format
+                        results = data.AS.Results[0].Suggests.map((s: any) => s.Txt);
                     }
-                } else if (engine === 'bing') {
-                    try {
-                        const response = await fetch(`https://api.bing.com/qsonhs.aspx?q=${q}`);
-                        const data = await response.json();
-                        if (data && data.AS && data.AS.Results && data.AS.Results[0] && data.AS.Results[0].Suggests) {
-                            results = data.AS.Results[0].Suggests.map((s: any) => s.Txt);
-                        }
-                    } catch (err) {
-                        console.warn('Bing suggestions unavailable:', err);
-                    }
-                } else if (engine === 'baidu') {
-                    console.warn('Baidu suggestions not supported in Manifest V3');
-                    results = [];
-                } else if (engine === 'duckduckgo') {
-                    try {
-                        const response = await fetch(`https://duckduckgo.com/ac/?q=${q}&type=list`);
-                        const data = await response.json();
-                        if (Array.isArray(data) && data[1]) {
-                            results = data[1];
-                        }
-                    } catch (err) {
-                        console.warn('DuckDuckGo suggestions unavailable:', err);
-                    }
+                } catch (err) {
+                    console.warn(`Suggestions failed for ${currentEngine.name}:`, err);
                 }
 
                 setSuggestions(results.slice(0, 8));
@@ -78,7 +80,7 @@ export function useSearch() {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [search, engine]);
+    }, [search, engineId, config.searchEngines]);
 
     const handleSearch = (query: string) => {
         if (!query.trim()) return;
@@ -108,32 +110,39 @@ export function useSearch() {
             }
             window.location.assign(url);
         } else {
-            if (engine === 'default') {
+            // Use current engine
+            if (currentEngine.id === 'default' && !currentEngine.searchUrl) {
+                // Use Chrome API if available
                 if (typeof chrome !== 'undefined' && chrome.search?.query) {
                     chrome.search.query({
                         text: trimmedQuery,
                         disposition: 'CURRENT_TAB'
                     });
                 } else {
+                    // Fallback if no chrome.search (e.g. dev env)
                     window.location.assign(`https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`);
                 }
             } else {
-                window.location.assign(SEARCH_ENGINES[engine].url + encodeURIComponent(trimmedQuery));
+                const searchUrl = currentEngine.searchUrl || 'https://www.google.com/search?q=%s';
+                const url = searchUrl.replace('%s', encodeURIComponent(trimmedQuery)).replace('{query}', encodeURIComponent(trimmedQuery));
+                window.location.assign(url);
             }
         }
     };
 
     const nextEngine = () => {
-        setEngine(prev => {
-            const keys = Object.keys(SEARCH_ENGINES) as SearchEngineKey[];
-            const nextIdx = (keys.indexOf(prev) + 1) % keys.length;
-            return keys[nextIdx];
+        setEngineId(prev => {
+            const engines = config.searchEngines;
+            const currentIndex = engines.findIndex(e => e.id === prev);
+            const nextIndex = (currentIndex + 1) % engines.length;
+            return engines[nextIndex].id;
         });
     };
 
     return {
-        engine,
-        setEngine,
+        engine: engineId, // Expose ID as 'engine' for compatibility
+        currentEngine,    // Expose full object
+        setEngine: setEngineId,
         search,
         setSearch,
         suggestions,

@@ -3,9 +3,10 @@ import { GrassTabConfig } from './types';
 // 基于用户提供的 YAML 配置生成的默认配置
 export const DEFAULT_CONFIG: GrassTabConfig = {
   meta: {
-    version: '1.0',
+    version: '1.3',
     updatedAt: new Date().toISOString(),
   },
+
   preferences: {
     general: {
       language: 'zh',
@@ -39,6 +40,41 @@ export const DEFAULT_CONFIG: GrassTabConfig = {
       activeModel: 'mimo-v2-flash',
     },
   },
+  searchEngines: [
+    {
+        id: 'default',
+        name: 'Default',
+        searchUrl: '',
+        icon: 'default'
+    },
+    {
+        id: 'google',
+        name: 'Google',
+        searchUrl: 'https://www.google.com/search?q=%s',
+        suggestionUrl: 'https://suggestqueries.google.com/complete/search?client=firefox&q=%s',
+        icon: 'google'
+    },
+    {
+        id: 'bing',
+        name: 'Bing',
+        searchUrl: 'https://www.bing.com/search?q=%s',
+        suggestionUrl: 'https://api.bing.com/qsonhs.aspx?q=%s',
+        icon: 'bing'
+    },
+    {
+        id: 'baidu',
+        name: '百度',
+        searchUrl: 'https://www.baidu.com/s?wd=%s',
+        icon: 'baidu'
+    },
+    {
+        id: 'duckduckgo',
+        name: 'DuckDuckGo',
+        searchUrl: 'https://duckduckgo.com/?q=%s',
+        suggestionUrl: 'https://duckduckgo.com/ac/?q=%s&type=list',
+        icon: 'duckduckgo'
+    }
+  ],
   content: {
     dock: [
       { id: 'ai', title: 'AI助手', url: '', type: 'sys', iconType: 'message-circle', isApp: true, color: '' },

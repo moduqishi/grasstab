@@ -72,6 +72,7 @@ function DesktopApp() {
 
     const { 
         engine, setEngine, 
+        currentEngine,
         search, setSearch, 
         suggestions, showSuggestions, setShowSuggestions, 
         handleSearch, nextEngine 
@@ -260,19 +261,7 @@ function DesktopApp() {
                     onClose={() => setContextMenu(null)}
                     onEdit={() => setIsEditing(!isEditing)}
                     onChangeWallpaper={() => openWin('settings')}
-                    onReset={handleReset}
                     onOpenSettings={() => openWin('settings')}
-                    onExportConfig={handleExportConfig}
-                    onImportConfig={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = '.yaml,.yml,.json';
-                        input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement).files?.[0];
-                            if (file) handleImportConfig(file);
-                        };
-                        input.click();
-                    }}
                     onToggleSearchBar={() => setSysSettings(prev => ({ ...prev, showSearchBar: !prev.showSearchBar }))}
                     onTogglePagination={() => setSysSettings(prev => ({ ...prev, showPagination: !prev.showPagination }))}
                     onToggleDock={() => setSysSettings(prev => ({ ...prev, showDock: !prev.showDock }))}
@@ -296,6 +285,17 @@ function DesktopApp() {
                         handleDeleteApp(appContextMenu.app);
                         setAppContextMenu(null);
                     }}
+                    onOpen={() => {
+                        const s = appContextMenu.app;
+                        if (s.isApp) openWin(s.id.toString(), s);
+                        else if (s.type !== 'widget' && s.url) window.location.href = s.url;
+                        setAppContextMenu(null);
+                    }}
+                    onOpenNewTab={() => {
+                        const s = appContextMenu.app;
+                        if (s.url) window.open(s.url, '_blank');
+                        setAppContextMenu(null);
+                    }}
                 />
             )}
 
@@ -305,6 +305,7 @@ function DesktopApp() {
             <SearchBar 
                 showSearchBar={sysSettings.showSearchBar}
                 engine={engine}
+                currentEngine={currentEngine} // Pass the full engine object
                 search={search}
                 setSearch={setSearch}
                 nextEngine={nextEngine}
@@ -407,10 +408,14 @@ function DesktopApp() {
                             />}
                             {w.type === 'add' && <AddShortcutApp 
                                 onAdd={(app) => { 
-                                    if (app.id) {
-                                        setAppLayout(prev => [...prev, app as import('./types').Shortcut]); 
-                                        closeWin('add'); 
-                                    }
+                                    const newApp = {
+                                        ...app,
+                                        id: app.id || Date.now(),
+                                        color: app.color || 'from-blue-500 to-cyan-500' // Default color if missing
+                                    } as import('./types').Shortcut;
+                                    
+                                    setAppLayout(prev => [...prev, newApp]); 
+                                    closeWin('add'); 
                                 }} 
                                 onClose={() => closeWin('add')}
                             />}

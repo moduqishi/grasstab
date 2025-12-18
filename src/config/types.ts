@@ -1,4 +1,4 @@
-import { Shortcut, AIProvider } from '../types';
+import { Shortcut, AIProvider, SearchEngineItem } from '../types';
 
 export interface GrassTabConfig {
   meta: {
@@ -29,6 +29,8 @@ export interface GrassTabConfig {
       activeModel: string;
     };
   };
+
+  searchEngines: SearchEngineItem[]; // Customize search engines
 
   content: {
     dock: Shortcut[];
