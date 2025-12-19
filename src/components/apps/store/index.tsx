@@ -11,10 +11,11 @@ import { StoreApp, StoreWidget, ViewMode } from './types';
 
 interface AppStoreProps {
     onInstall: (item: Shortcut) => void;
+    onOpen: (item: Shortcut) => void;
     installedApps: Shortcut[];
 }
 
-export function AppStore({ onInstall, installedApps }: AppStoreProps) {
+export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
     const { apps, widgets, homeData, loading, error } = useStoreData();
     
     // View State
@@ -117,6 +118,22 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
         setInstalling(null);
     }, [onInstall]);
 
+    const handleOpen = React.useCallback((item: StoreApp | StoreWidget) => {
+         // Construct a temporary shortcut object to match the interface expected by onOpen
+         // or find the installed app to ensure we have the correct URL/ID
+         const installed = installedApps.find(app => app.url === item.shortcut.url);
+         if (installed) {
+             onOpen(installed);
+         } else {
+             // Fallback if not technically "installed" but we have data (shouldn't happen if button is active)
+             onOpen({
+                 ...item.shortcut,
+                 id: Date.now(), // Placeholder ID
+                 title: item.shortcut.title || item.name
+             });
+         }
+    }, [installedApps, onOpen]);
+
     // Close detail view on Escape
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -156,6 +173,7 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
                         onClose={() => setSelectedItem(null)}
                         isInstalled={isInstalled(selectedItem)}
                         onInstall={handleInstall}
+                        onOpen={handleOpen}
                         installing={installing === selectedItem.id.toString()}
                     />
                 )}

@@ -487,6 +487,10 @@ export function DesktopApp() {
                                     setAppLayout(prev => [...prev, newApp]);
                                     dialog.showAlert('安装成功', `应用 "${app.title}" 已添加到桌面`);
                                 }}
+                                onOpen={(app) => {
+                                    if (app.isApp) openWin(app.id.toString(), app);
+                                    else if (app.type !== 'widget' && app.url) window.open(app.url, '_blank');
+                                }}
                             />}
                             {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
                          </React.Suspense>

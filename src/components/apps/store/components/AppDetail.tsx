@@ -8,10 +8,11 @@ interface AppDetailProps {
     onClose: () => void;
     isInstalled: boolean;
     onInstall: (item: StoreApp | StoreWidget) => void;
+    onOpen: (item: StoreApp | StoreWidget) => void;
     installing: boolean;
 }
 
-export const AppDetail = ({ item, onClose, isInstalled, onInstall, installing }: AppDetailProps) => {
+export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, installing }: AppDetailProps) => {
     return (
         <motion.div 
             initial={{ opacity: 0, y: 50 }}
@@ -53,12 +54,12 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, installing }:
 
                         <div className="flex items-center justify-center md:justify-start gap-4">
                             <button
-                                onClick={() => onInstall(item)}
-                                disabled={installing || isInstalled}
+                                onClick={() => isInstalled ? onOpen(item) : onInstall(item)}
+                                disabled={installing}
                                 className={`
                                     px-8 py-2.5 rounded-full font-bold text-sm tracking-wide transition-all duration-200 transform active:scale-95
                                     ${isInstalled 
-                                        ? 'bg-white/10 text-gray-400 cursor-default' 
+                                        ? 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-500/20' 
                                         : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'
                                     }
                                 `}
