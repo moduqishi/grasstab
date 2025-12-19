@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StoreApp, StoreWidget, HomeData } from './types';
 
-const STORE_BASE_URL = 'https://cdn.jsdelivr.net/gh/moduqishi/GrassTab-Store@main';
+const STORE_BASE_URL = 'https://raw.githubusercontent.com/moduqishi/GrassTab-Store/main';
 
 export function useStoreData() {
     const [apps, setApps] = useState<StoreApp[]>([]);
@@ -15,8 +15,6 @@ export function useStoreData() {
             setLoading(true);
             setError(null);
             try {
-                // Check cache first (Simple in-memory or localStorage could be added here)
-                // For now, always fetch to ensure fresh data
                 const timestamp = Date.now();
                 const [appsRes, widgetsRes, homeRes] = await Promise.all([
                     fetch(`${STORE_BASE_URL}/apps.json?t=${timestamp}`),

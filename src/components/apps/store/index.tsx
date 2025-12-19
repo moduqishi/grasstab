@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, AlertCircle, ChevronRight } from 'lucide-react';
 import { Shortcut } from '../../../types';
@@ -21,24 +21,45 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
     const [viewMode, setViewMode] = useState<ViewMode>('discover');
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [selectedItem, setSelectedItem] = useState<(StoreApp | StoreWidget) | null>(null);
     const [installing, setInstalling] = useState<string | null>(null);
     const [visibleCount, setVisibleCount] = useState(40); // Initial items to show
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     // Derived State
     const appCategories = useMemo(() => Array.from(new Set(apps.map(a => a.category))), [apps]);
     const widgetCategories = useMemo(() => Array.from(new Set(widgets.map(w => w.category))), [widgets]);
 
+    const categoryCounts = useMemo(() => {
+        const counts: Record<string, number> = {
+            all_apps: apps.length,
+            all_widgets: widgets.length
+        };
+        [...apps, ...widgets].forEach(item => {
+            counts[item.category] = (counts[item.category] || 0) + 1;
+        });
+        return counts;
+    }, [apps, widgets]);
+
     // Reset visible count when view or search changes
     useEffect(() => {
         setVisibleCount(40);
-    }, [viewMode, activeCategory, searchQuery]);
+    }, [viewMode, activeCategory, debouncedSearchQuery]);
 
     // Filtering Logic
     const filteredItems = useMemo(() => {
         let items: (StoreApp | StoreWidget)[] = [];
         
-        if (searchQuery.trim()) {
+        if (debouncedSearchQuery.trim()) {
             items = [...apps, ...widgets];
         } else {
             if (viewMode === 'apps') items = apps;
@@ -47,17 +68,32 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
         }
 
         return items.filter(item => {
-            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                 item.description.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = item.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) || 
+                                 item.description.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
             
-            if (searchQuery.trim()) return matchesSearch;
+            if (debouncedSearchQuery.trim()) return matchesSearch;
             
             const matchesCategory = !activeCategory || item.category === activeCategory;
             return matchesCategory;
         });
-    }, [viewMode, activeCategory, searchQuery, apps, widgets]);
+    }, [viewMode, activeCategory, debouncedSearchQuery, apps, widgets]);
 
     const displayedItems = useMemo(() => filteredItems.slice(0, visibleCount), [filteredItems, visibleCount]);
+
+    // Infinite Scroll Observer
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && filteredItems.length > visibleCount) {
+                setVisibleCount(prev => prev + 40);
+            }
+        }, { threshold: 0.1, rootMargin: '100px' });
+
+        if (loadMoreRef.current) {
+            observer.observe(loadMoreRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [filteredItems.length, visibleCount]);
 
     // Handlers
     const isInstalled = React.useCallback((item: StoreApp | StoreWidget) => {
@@ -130,10 +166,11 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
                 setViewMode={setViewMode}
                 activeCategory={activeCategory}
                 setActiveCategory={setActiveCategory}
-                searchQuery={searchQuery}
+                searchQuery={debouncedSearchQuery}
                 setSearchQuery={setSearchQuery}
                 appCategories={appCategories}
                 widgetCategories={widgetCategories}
+                categoryCounts={categoryCounts}
             />
 
             {/* --- Main Content Area --- */}
@@ -241,17 +278,16 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
                                 )}
                             </div>
 
-                            {/* Load More Button */}
-                            {filteredItems.length > visibleCount && (
-                                <div className="flex justify-center pb-12">
-                                    <button 
-                                        onClick={() => setVisibleCount(prev => prev + 40)}
-                                        className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-sm font-medium transition-all"
-                                    >
-                                        Load More
-                                    </button>
-                                </div>
-                            )}
+                            {/* Infinite Scroll Sentinel */}
+                            <div ref={loadMoreRef} className="h-20 w-full flex items-center justify-center">
+                                {filteredItems.length > visibleCount && (
+                                    <div className="flex space-x-2">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                                    </div>
+                                )}
+                            </div>
                         </motion.div>
                     )}
                 </div>

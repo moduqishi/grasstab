@@ -15,24 +15,27 @@ interface SidebarProps {
     setSearchQuery: (query: string) => void;
     appCategories: string[];
     widgetCategories: string[];
+    categoryCounts: Record<string, number>;
 }
 
 const SidebarItem = ({ 
     active, 
     icon: Icon, 
     label, 
+    count,
     onClick, 
     level = 0 
 }: { 
     active: boolean; 
     icon?: React.ElementType; 
     label: string; 
+    count?: number;
     onClick: () => void; 
     level?: number;
 }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 mb-1 text-left
+        className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 mb-1 text-left group
             ${active 
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
                 : 'text-gray-400 hover:bg-white/5 hover:text-white'
@@ -40,8 +43,13 @@ const SidebarItem = ({
             ${level > 0 ? 'pl-8 text-xs' : ''}
         `}
     >
-        {Icon && <Icon size={18} className={`mr-3 flex-shrink-0 ${active ? 'text-white' : 'text-gray-500'}`} />}
-        <span className="truncate">{label}</span>
+        {Icon && <Icon size={18} className={`mr-3 flex-shrink-0 ${active ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`} />}
+        <span className="truncate flex-1">{label}</span>
+        {count !== undefined && (
+            <span className={`text-[10px] ml-2 px-1.5 py-0.5 rounded-full ${active ? 'bg-white/20 text-white' : 'bg-white/10 text-gray-500'}`}>
+                {count}
+            </span>
+        )}
     </button>
 );
 
@@ -85,7 +93,8 @@ export function Sidebar({
     viewMode, setViewMode, 
     activeCategory, setActiveCategory, 
     searchQuery, setSearchQuery,
-    appCategories, widgetCategories 
+    appCategories, widgetCategories,
+    categoryCounts 
 }: SidebarProps) {
     return (
         <div className="w-60 flex-shrink-0 flex flex-col h-full border-r border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-20 overflow-hidden">
@@ -114,6 +123,7 @@ export function Sidebar({
                         active={viewMode === 'apps' && activeCategory === null && !searchQuery} 
                         icon={Box} 
                         label="All Apps" 
+                        count={categoryCounts['all_apps']}
                         onClick={() => { setViewMode('apps'); setActiveCategory(null); setSearchQuery(''); }} 
                     />
                     {appCategories.map(cat => (
@@ -121,6 +131,7 @@ export function Sidebar({
                             key={cat}
                             active={viewMode === 'apps' && activeCategory === cat && !searchQuery} 
                             label={cat} 
+                            count={categoryCounts[cat]}
                             icon={getIconForCategory(cat)}
                             level={1}
                             onClick={() => { setViewMode('apps'); setActiveCategory(cat); setSearchQuery(''); }} 
@@ -132,6 +143,7 @@ export function Sidebar({
                         active={viewMode === 'widgets' && activeCategory === null && !searchQuery} 
                         icon={Layers} 
                         label="All Widgets" 
+                        count={categoryCounts['all_widgets']}
                         onClick={() => { setViewMode('widgets'); setActiveCategory(null); setSearchQuery(''); }} 
                     />
                      {widgetCategories.map(cat => (
@@ -139,6 +151,7 @@ export function Sidebar({
                             key={cat}
                             active={viewMode === 'widgets' && activeCategory === cat && !searchQuery} 
                             label={cat} 
+                            count={categoryCounts[cat]}
                             icon={getIconForCategory(cat)}
                             level={1}
                             onClick={() => { setViewMode('widgets'); setActiveCategory(cat); setSearchQuery(''); }} 
