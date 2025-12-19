@@ -30,6 +30,7 @@ export const translations = {
         calculator: '计算器',
         notes: '便签',
         ai: 'AI 助手',
+        appStore: '应用商店',
         addShortcut: '添加应用',
         editApp: '编辑应用',
         
@@ -122,6 +123,7 @@ export const translations = {
         calculator: 'Calculator',
         notes: 'Notes',
         ai: 'AI Assistant',
+        appStore: 'App Store',
         addShortcut: 'Add Shortcut',
         editApp: 'Edit App',
         

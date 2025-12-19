@@ -66,9 +66,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
     { id: 1765198343668, title: '网易云音乐', url: 'https://music.163.com/', type: 'auto', color: 'from-red-500 to-red-700', iconType: 'clearbit', customIcon: 'https://unavatar.io/music.163.com?fallback=false' },
     { id: 1765198362240, title: '喜马拉雅', url: 'https://www.ximalaya.com/', type: 'auto', color: 'from-orange-500 to-orange-700', iconType: 'unavatar' },
     
-    // === 小组件 (Widgets) ===
-    { id: 1765198534088, title: 'Calendar', url: '', type: 'widget', color: 'from-white to-gray-100', size: { w: 2, h: 2 }, widgetType: 'calendar', widgetContent: '' },
-    
+
     // === AI & 技术 (AI & Tech) ===
     { id: 1765194325676, title: 'Hugging Face', url: 'https://huggingface.co/', type: 'auto', color: 'from-yellow-400 to-yellow-600', customIcon: 'https://img.logo.dev/huggingface.co?token=pk_dwKHjzWUSauY_R0n8QQmKQ' },
     { id: 1765197985565, title: '腾讯文档', url: 'https://docs.qq.com/', type: 'auto', color: 'from-blue-500 to-blue-700', iconType: 'unavatar', customIcon: 'https://pp.myapp.com/ma_icon/0/icon_52666442_1764918437/256' },
@@ -146,6 +144,15 @@ export const SYSTEM_APPS: Shortcut[] = [
         type: 'sys' as const,
         color: '', // Transparent
         iconColor: '#3B82F6' // Blue
+    },
+    {
+        id: 'store',
+        iconType: 'shopping-bag',
+        title: '应用商店',
+        isApp: true,
+        type: 'sys' as const,
+        color: '', // Transparent
+        iconColor: '#EC4899' // Pink
     },
     {
         id: 'notes',
@@ -227,6 +234,19 @@ export const DEFAULT_DOCK: DockItem[] = [
         type: 'sys',
         color: '', 
         iconColor: '#9CA3AF',
+        size: { w: 1, h: 1 }
+    },
+    {
+        id: 'store',
+        iconType: 'shopping-bag',
+        name: 'Store',
+        displayName: '商店',
+        title: '应用商店',
+        url: '',
+        isApp: true,
+        type: 'sys',
+        color: '', 
+        iconColor: '#EC4899',
         size: { w: 1, h: 1 }
     }
 ];

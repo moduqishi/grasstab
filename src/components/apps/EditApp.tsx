@@ -25,7 +25,7 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, onClose, language
     const [isWindowMode, setIsWindowMode] = useState(app.isApp || false);
     
     // Widget-specific states
-    const [widgetType, setWidgetType] = useState<WidgetType>(app.widgetType || 'clock');
+    const [widgetType, setWidgetType] = useState<WidgetType>(app.widgetType || 'iframe');
     const [widgetWidth, setWidgetWidth] = useState(app.size?.w || 2);
     const [widgetHeight, setWidgetHeight] = useState(app.size?.h || 2);
     const [widgetContent, setWidgetContent] = useState(app.widgetContent || '');
@@ -103,8 +103,8 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, onClose, language
                         />
                     </div>
 
-                    {/* URL (only for apps and iframe widgets) */}
-                    {(!isWidget || widgetType === 'iframe') && (
+                    {/* URL (only for apps) */}
+                    {!isWidget && (
                         <div>
                             <label className="block text-sm font-medium mb-2" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                 {isWidget ? t(lang, 'embedLink') : t(lang, 'linkAddress')}
@@ -193,11 +193,8 @@ export const EditApp: React.FC<EditAppProps> = ({ app, onSave, onClose, language
                                 title="选择小组件类型"
                                 aria-label="小组件类型选择器"
                             >
-                                <option value="clock" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>时钟</option>
-                                <option value="calendar" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>日历</option>
-                                <option value="weather" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>天气</option>
-                                <option value="custom" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>自定义 HTML</option>
                                 <option value="iframe" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>嵌入网页</option>
+                                <option value="custom" style={{ backgroundColor: '#2a2a2a', color: '#fff', padding: '8px' }}>自定义 HTML</option>
                             </select>
                         </div>
                     )}

@@ -1,6 +1,6 @@
 meta:
   version: '1.3'
-  updatedAt: '2025-12-18T10:37:50.652Z'
+  updatedAt: '2025-12-19T12:28:53.158Z'
 preferences:
   general:
     language: zh
@@ -66,6 +66,16 @@ content:
       iconType: sticky-note
       isApp: true
       color: ''
+    - id: store
+      iconType: shopping-bag
+      title: 应用商店
+      isApp: true
+      type: sys
+      color: ''
+      iconColor: '#EC4899'
+      size:
+        w: 1
+        h: 1
     - id: calc
       title: 计算器
       url: ''
@@ -158,24 +168,31 @@ content:
       url: https://music.163.com/
       type: auto
       iconType: clearbit
-      customIcon: https://unavatar.io/music.163.com?fallback=false
+      customIcon: https://img.logo.dev/music.163.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ
       color: ''
+      x: 3
+      'y': 1
+      page: 0
+      size:
+        w: 1
+        h: 1
+      isApp: false
     - id: 1765198362240
       title: 喜马拉雅
       url: https://www.ximalaya.com/
       type: auto
       iconType: unavatar
       color: from-orange-500 to-orange-700
-    - id: 1765198534088
-      title: Calendar
-      url: ''
+    - title: Calendar
       type: widget
-      color: from-white to-gray-100
+      widgetType: iframe
+      widgetContent: https://moduqishi.github.io/GrassTab-Store/widgets/calendar.html
       size:
         w: 2
         h: 2
-      widgetType: calendar
-      widgetContent: ''
+      color: from-white to-gray-100
+      isApp: false
+      id: 1766147162859
     - id: 1765194325676
       title: Hugging Face
       url: https://huggingface.co/
@@ -193,15 +210,8 @@ content:
       title: 菜鸟教程
       url: https://runoob.com
       type: auto
-      customIcon: https://unavatar.io/runoob.com?fallback=false
+      customIcon: https://icon.horse/icon/runoob.com
       color: ''
-      x: 1
-      'y': 2
-      page: 0
-      size:
-        w: 1
-        h: 1
-      isApp: false
     - id: 1765195159657
       title: 学习通
       url: https://i.chaoxing.com/base
@@ -351,6 +361,14 @@ content:
       type: auto
       iconType: unavatar
       color: from-gray-700 to-gray-900
+      x: 7
+      'y': 4
+      page: 0
+      size:
+        w: 1
+        h: 1
+      customIcon: https://img.logo.dev/unsplash.com?token=pk_dwKHjzWUSauY_R0n8QQmKQ
+      isApp: false
     - id: 1765197786241
       title: 123云盘
       url: https://www.123pan.com/
@@ -409,5 +427,13 @@ content:
       type: auto
       iconType: unavatar
       color: from-purple-500 to-pink-600
+    - title: VS Code
+      url: https://vscode.dev
+      type: custom
+      isApp: true
+      color: from-blue-500 to-blue-600
+      iconType: unavatar
+      customIcon: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/2048px-Visual_Studio_Code_1.35_icon.svg.png
+      id: 1766147106940
 data:
   notes: ''

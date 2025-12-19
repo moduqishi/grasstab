@@ -11,11 +11,8 @@ interface AddShortcutProps {
 }
 
 const WIDGET_TYPES: { type: WidgetType, label: string, icon: any, desc: string }[] = [
-    { type: 'clock', label: '时钟', icon: Clock, desc: '精美的模拟时钟' },
-    { type: 'calendar', label: '日历', icon: Calendar, desc: '当前日期显示' },
-    { type: 'weather', label: '天气', icon: CloudSun, desc: '天气信息卡片' },
-    { type: 'custom', label: '自定义 HTML', icon: Code, desc: '嵌入自定义代码' },
     { type: 'iframe', label: '网页嵌入', icon: Monitor, desc: '嵌入外部网页' },
+    { type: 'custom', label: '自定义 HTML', icon: Code, desc: '嵌入自定义代码' },
 ];
 
 export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) => {
@@ -33,7 +30,7 @@ export const AddShortcutApp: React.FC<AddShortcutProps> = ({ onAdd, onClose }) =
     const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
     // Widget State
-    const [wType, setWType] = useState<WidgetType>('clock');
+    const [wType, setWType] = useState<WidgetType>('iframe');
     const [wWidth, setWWidth] = useState(2);
     const [wHeight, setWHeight] = useState(2);
     const [wContent, setWContent] = useState('');

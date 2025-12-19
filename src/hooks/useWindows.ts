@@ -11,6 +11,7 @@ export function useWindows(lang: Language = 'zh') {
         { id: 'add', type: 'add', title: 'Add Shortcut', isOpen: false, isMaximized: false, z: 100, w: 400, h: 480 },
         { id: 'edit', type: 'edit', title: 'Edit App', isOpen: false, isMaximized: false, z: 100, w: 500, h: 600 },
         { id: 'configEditor', type: 'configEditor', title: 'Config Editor', isOpen: false, isMaximized: false, z: 100, w: 900, h: 650 },
+        { id: 'store', type: 'store', title: 'App Store', isOpen: false, isMaximized: false, z: 100, w: 1000, h: 700 }, // App Store Window
     ]);
     const [maxZ, setMaxZ] = useState(100);
 
@@ -120,6 +121,7 @@ export function useWindows(lang: Language = 'zh') {
             case 'add': return t(lang, 'addShortcut');
             case 'edit': return w.editData?.type === 'widget' ? t(lang, 'editApp') : t(lang, 'editApp');
             case 'configEditor': return t(lang, 'editConfig');
+            case 'store': return t(lang, 'appStore') || '应用商店';
             case 'web': return w.title;
             default: return w.title;
         }

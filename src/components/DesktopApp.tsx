@@ -33,6 +33,7 @@ const AddShortcutApp = React.lazy(() => import('./apps/AddShortcut').then(module
 const EditApp = React.lazy(() => import('./apps/EditApp').then(module => ({ default: module.EditApp })));
 const WebView = React.lazy(() => import('./apps/WebView').then(module => ({ default: module.WebView })));
 const CodeEditor = React.lazy(() => import('./CodeEditor').then(module => ({ default: module.CodeEditor })));
+const AppStore = React.lazy(() => import('./apps/AppStore').then(module => ({ default: module.AppStore })));
 
 export function DesktopApp() {
     const dialog = useDialog();
@@ -436,7 +437,7 @@ export function DesktopApp() {
                                 onImport={handleImportConfig}
                                 onReset={handleReset}
                                 onEditConfig={() => openWin('configEditor')}
-                                shortcuts={appLayout.filter((s): s is Shortcut => s !== null && !s.isApp && s.type !== 'widget')}
+                                shortcuts={appLayout.filter((s): s is Shortcut => s !== null && !s.isApp)}
                                 onShortcutUpdate={() => {}} 
                                 onEditShortcut={handleEditApp}
                                 onDeleteApp={handleDeleteApp}
@@ -474,6 +475,18 @@ export function DesktopApp() {
                                     }
                                 }}
                                 onClose={() => closeWin('configEditor')}
+                            />}
+                            {w.type === 'store' && <AppStore 
+                                installedApps={desktopApps}
+                                onInstall={(app) => {
+                                    const newApp = {
+                                        ...app,
+                                        id: Date.now(),
+                                        color: app.color || 'from-blue-500 to-indigo-500' // Default color if missing
+                                    } as Shortcut;
+                                    setAppLayout(prev => [...prev, newApp]);
+                                    dialog.showAlert('安装成功', `应用 "${app.title}" 已添加到桌面`);
+                                }}
                             />}
                             {w.type === 'web' && <WebView url={w.url || ''} title={w.title} />}
                          </React.Suspense>

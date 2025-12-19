@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Cpu, StickyNote, Calculator, Settings, Check, Edit3, AppWindow, Youtube, Github, Twitter, Sparkles, Mail, Code, LayoutGrid, MessageCircle } from 'lucide-react';
+import { Cpu, StickyNote, Calculator, Settings, Check, Edit3, AppWindow, Youtube, Github, Twitter, Sparkles, Mail, Code, LayoutGrid, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getDomain, getAllIconUrls } from '../utils';
 import { Shortcut } from '../types';
-import { ClockWidget, CalendarWidget, WeatherWidget, CustomHTMLWidget, IFrameWidget } from './widgets/SystemWidgets';
+import { CustomHTMLWidget, IFrameWidget } from './widgets/Widgets';
 import { AppContextMenu } from './AppContextMenu';
 
 export const getDockIcon = (type: string, isEditing: boolean = false, color?: string) => {
     const iconSize = 48; // Increased size for transparent apps
     const strokeWidth = 2;
-    const props = { size: iconSize, strokeWidth, color: color || 'currentColor' };
+    
+    const systemColors: Record<string, string> = {
+        'ai-chat': '#3B82F6',
+        'message-circle': '#3B82F6',
+        'sticky-note': '#FACC15',
+        'calculator': '#F97316',
+        'settings': '#9CA3AF',
+        'shopping-bag': '#EC4899'
+    };
+
+    const finalColor = color || systemColors[type] || 'currentColor';
+    const props = { size: iconSize, strokeWidth, color: finalColor };
     
     switch (type) {
         case 'cpu': return <Cpu {...props} />; // Keep old for fallback
@@ -17,6 +28,7 @@ export const getDockIcon = (type: string, isEditing: boolean = false, color?: st
         case 'sticky-note': return <StickyNote {...props} />;
         case 'calculator': return <Calculator {...props} />;
         case 'settings': return <Settings {...props} />;
+        case 'shopping-bag': return <ShoppingBag {...props} />;
         case 'edit': return isEditing ? <Check size={40} strokeWidth={2.5} /> : <Edit3 size={40} strokeWidth={strokeWidth} />;
         default: return <AppWindow {...props} />;
     }
@@ -71,9 +83,6 @@ export const AppIcon = React.memo((props: AppIconProps) => {
             >
                 {/* Widget content with pointer-events-none for iframe to prevent capturing events */}
                 <div className={widgetType === 'iframe' ? 'pointer-events-none w-full h-full' : 'w-full h-full'}>
-                    {widgetType === 'clock' && <ClockWidget w={w} h={h} />}
-                    {widgetType === 'calendar' && <CalendarWidget w={w} h={h} />}
-                    {widgetType === 'weather' && <WeatherWidget w={w} h={h} />}
                     {widgetType === 'custom' && <CustomHTMLWidget w={w} h={h} content={widgetContent} />}
                     {widgetType === 'iframe' && <IFrameWidget w={w} h={h} content={widgetContent} />}
                     {/* Fallback for unknown widget */}
@@ -112,7 +121,7 @@ export const AppIcon = React.memo((props: AppIconProps) => {
 
     // 1. System/Vector Icons (Dock specific or Apps)
     // 只有系统应用的 iconType（cpu, sticky-note, calculator 等）才走这里
-    const systemIconTypes = ['cpu', 'sticky-note', 'calculator', 'settings', 'edit', 'message-circle', 'ai-chat'];
+    const systemIconTypes = ['cpu', 'sticky-note', 'calculator', 'settings', 'edit', 'message-circle', 'ai-chat', 'shopping-bag'];
     if (iconType && systemIconTypes.includes(iconType)) {
         return (
             <div 

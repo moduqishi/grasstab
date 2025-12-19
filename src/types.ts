@@ -5,7 +5,7 @@ export interface Shortcut {
     title?: string;
     displayName?: string; // 显示名称
     url?: string;
-    type: 'github' | 'bilibili' | 'youtube' | 'chatgpt' | 'code' | 'twitter' | 'gmail' | 'sys' | 'auto' | 'widget';
+    type: 'github' | 'bilibili' | 'youtube' | 'chatgpt' | 'code' | 'twitter' | 'gmail' | 'sys' | 'auto' | 'widget' | 'custom';
     color: string;
     isApp?: boolean;
     isAdd?: boolean; // UI helper
@@ -14,6 +14,11 @@ export interface Shortcut {
     iconColor?: string; // Icon color for transparent background
     hidden?: boolean; // 是否隐藏（用于系统应用）
     
+    // Position props (optional for storage)
+    x?: number;
+    y?: number;
+    page?: number;
+
     // Widget Properties
     size?: { w: number, h: number };
     widgetType?: WidgetType;
@@ -34,7 +39,7 @@ export interface DockItem extends Shortcut {
 
 export interface WindowState {
     id: string;
-    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web' | 'edit' | 'configEditor';
+    type: 'calc' | 'notes' | 'ai' | 'settings' | 'add' | 'web' | 'edit' | 'configEditor' | 'store';
     title: string;
     isOpen: boolean;
     isMaximized?: boolean; // Lifted state

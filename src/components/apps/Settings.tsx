@@ -4,6 +4,7 @@ import { useConfig } from '../../config/ConfigContext';
 import { DEFAULT_WALLPAPER, SYSTEM_APPS } from '../../constants.tsx';
 import { SystemSettings, Shortcut } from '../../types';
 import { Monitor, Wallpaper, Search, MoreHorizontal, Database, Trash2, Edit3, Download, Upload, FileJson, Languages, FileEdit, ChevronRight, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MessageSquare, Key, Cpu, Thermometer, Hash, Plus, X, Check, Loader2, AppWindow, LayoutGrid, RefreshCw } from 'lucide-react';
+import { getDockIcon } from '../AppIcon';
 import { t } from '../../i18n';
 import { AIProvider } from './AI.tsx';
 
@@ -130,6 +131,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
 
         // 按标题分组（处理重名）
         const grouped = new Map<string, Shortcut[]>();
+        console.log('SortAndGroup Debug:', { type, totalItems: items.length, filteredCount: filtered.length, filteredItems: filtered });
         filtered.forEach(item => {
             const title = item.title || '';
             if (!grouped.has(title)) {
@@ -958,11 +960,13 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({ setWp, settings, onUpd
                                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)'}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${app.color}`}>
-                                                {app.id === 'ai' && <Cpu size={18} className="text-white" />}
-                                                {app.id === 'notes' && <FileEdit size={18} className="text-white" />}
-                                                {app.id === 'calc' && <Hash size={18} className="text-white" />}
-                                                {app.id === 'settings' && <Monitor size={18} className="text-white" />}
+                                            <div 
+                                                className={`w-8 h-8 rounded-lg flex items-center justify-center ${app.color ? `bg-gradient-to-br ${app.color}` : 'bg-white/10'}`}
+                                            >
+                                                {/* Use getDockIcon for consistent system app icons */}
+                                                <div className="scale-50 flex items-center justify-center">
+                                                    {getDockIcon(app.iconType || 'app-window', false, app.color ? '#fff' : app.iconColor)}
+                                                </div>
                                             </div>
                                             <span className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
                                                 {app.displayName || app.title}
