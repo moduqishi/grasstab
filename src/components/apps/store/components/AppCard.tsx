@@ -11,14 +11,13 @@ interface AppCardProps {
     onClick: () => void;
 }
 
-export const AppCard = ({ item, isInstalled, onInstall, installing, onClick }: AppCardProps) => {
+export const AppCard = React.memo(({ item, isInstalled, onInstall, installing, onClick }: AppCardProps) => {
     // Basic heuristic same as index.tsx to decide icon
     const isWidget = ['Clock', 'Weather', 'Utility', 'Widget'].includes(item.category);
     const TypeIcon = isWidget ? Layers : Box;
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ scale: 1.05 }}
@@ -29,7 +28,12 @@ export const AppCard = ({ item, isInstalled, onInstall, installing, onClick }: A
             <div className="relative w-20 h-20 mb-3 transition-transform duration-300 group-hover:scale-105">
                  <div className="w-full h-full rounded-[22%] overflow-hidden bg-[#1c1c1e] shadow-xl group-hover:shadow-2xl transition-all border border-white/5 flex items-center justify-center">
                     {item.icon.startsWith('http') || item.icon.startsWith('data:') ? (
-                        <img src={item.icon} alt={item.name} className="w-full h-full object-cover" />
+                        <img 
+                            src={item.icon} 
+                            alt={item.name} 
+                            loading="lazy"
+                            className="w-full h-full object-cover" 
+                        />
                     ) : (
                         <div className="text-3xl text-gray-500">
                              {item.category === 'Game' ? '🎮' : item.category === 'Weather' ? '🌤️' : '📦'}
@@ -51,4 +55,4 @@ export const AppCard = ({ item, isInstalled, onInstall, installing, onClick }: A
             </div>
         </motion.div>
     );
-};
+});

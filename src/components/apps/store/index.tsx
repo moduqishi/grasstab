@@ -23,13 +23,19 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedItem, setSelectedItem] = useState<(StoreApp | StoreWidget) | null>(null);
     const [installing, setInstalling] = useState<string | null>(null);
+    const [visibleCount, setVisibleCount] = useState(40); // Initial items to show
 
     // Derived State
     const appCategories = useMemo(() => Array.from(new Set(apps.map(a => a.category))), [apps]);
     const widgetCategories = useMemo(() => Array.from(new Set(widgets.map(w => w.category))), [widgets]);
 
+    // Reset visible count when view or search changes
+    useEffect(() => {
+        setVisibleCount(40);
+    }, [viewMode, activeCategory, searchQuery]);
+
     // Filtering Logic
-    const displayedItems = useMemo(() => {
+    const filteredItems = useMemo(() => {
         let items: (StoreApp | StoreWidget)[] = [];
         
         if (searchQuery.trim()) {
@@ -42,7 +48,7 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
 
         return items.filter(item => {
             const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                item.description.toLowerCase().includes(searchQuery.toLowerCase());
+                                 item.description.toLowerCase().includes(searchQuery.toLowerCase());
             
             if (searchQuery.trim()) return matchesSearch;
             
@@ -51,15 +57,17 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
         });
     }, [viewMode, activeCategory, searchQuery, apps, widgets]);
 
+    const displayedItems = useMemo(() => filteredItems.slice(0, visibleCount), [filteredItems, visibleCount]);
+
     // Handlers
-    const isInstalled = (item: StoreApp | StoreWidget) => {
+    const isInstalled = React.useCallback((item: StoreApp | StoreWidget) => {
         if ('url' in item.shortcut && item.shortcut.url) {
             return installedApps.some(app => app.url === item.shortcut.url);
         }
         return false;
-    };
+    }, [installedApps]);
 
-    const handleInstall = async (item: StoreApp | StoreWidget) => {
+    const handleInstall = React.useCallback(async (item: StoreApp | StoreWidget) => {
         setInstalling(item.id.toString());
         await new Promise(resolve => setTimeout(resolve, 800)); // Simulation delay
         
@@ -71,7 +79,7 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
 
         onInstall(shortcutToAdd);
         setInstalling(null);
-    };
+    }, [onInstall]);
 
     // Close detail view on Escape
     useEffect(() => {
@@ -208,32 +216,42 @@ export function AppStore({ onInstall, installedApps }: AppStoreProps) {
                                 </h1>
                                 <p className="text-gray-400">
                                     {searchQuery 
-                                        ? `Found ${displayedItems.length} items for "${searchQuery}"` 
+                                        ? `Found ${filteredItems.length} items for "${searchQuery}"` 
                                         : `Browse ${activeCategory ? activeCategory.toLowerCase() : 'all'} items`
                                     }
                                 </p>
                             </div>
                             
                             <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-6 gap-y-10 pb-10">
-                                <AnimatePresence>
-                                    {displayedItems.map((item) => (
-                                        <div key={item.id} className="relative">
-                                            <AppCard 
-                                                item={item} 
-                                                isInstalled={isInstalled(item)} 
-                                                onInstall={handleInstall} 
-                                                installing={installing === item.id.toString()} 
-                                                onClick={() => setSelectedItem(item)}
-                                            />
-                                        </div>
-                                    ))}
-                                </AnimatePresence>
-                                {displayedItems.length === 0 && (
+                                {displayedItems.map((item) => (
+                                    <div key={item.id} className="relative">
+                                        <AppCard 
+                                            item={item} 
+                                            isInstalled={isInstalled(item)} 
+                                            onInstall={handleInstall} 
+                                            installing={installing === item.id.toString()} 
+                                            onClick={() => setSelectedItem(item)}
+                                        />
+                                    </div>
+                                ))}
+                                {filteredItems.length === 0 && (
                                     <div className="col-span-full h-40 flex items-center justify-center text-gray-500">
                                         No items found matching your search.
                                     </div>
                                 )}
                             </div>
+
+                            {/* Load More Button */}
+                            {filteredItems.length > visibleCount && (
+                                <div className="flex justify-center pb-12">
+                                    <button 
+                                        onClick={() => setVisibleCount(prev => prev + 40)}
+                                        className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-sm font-medium transition-all"
+                                    >
+                                        Load More
+                                    </button>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </div>
