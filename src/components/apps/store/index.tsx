@@ -1,0 +1,243 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, AlertCircle, ChevronRight } from 'lucide-react';
+import { Shortcut } from '../../../types';
+import { useStoreData } from './useStoreData';
+import { Sidebar } from './components/Sidebar';
+import { HeroSection } from './components/HeroSection';
+import { AppCard } from './components/AppCard';
+import { AppDetail } from './components/AppDetail';
+import { StoreApp, StoreWidget, ViewMode } from './types';
+
+interface AppStoreProps {
+    onInstall: (item: Shortcut) => void;
+    installedApps: Shortcut[];
+}
+
+export function AppStore({ onInstall, installedApps }: AppStoreProps) {
+    const { apps, widgets, homeData, loading, error } = useStoreData();
+    
+    // View State
+    const [viewMode, setViewMode] = useState<ViewMode>('discover');
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedItem, setSelectedItem] = useState<(StoreApp | StoreWidget) | null>(null);
+    const [installing, setInstalling] = useState<string | null>(null);
+
+    // Derived State
+    const appCategories = useMemo(() => Array.from(new Set(apps.map(a => a.category))), [apps]);
+    const widgetCategories = useMemo(() => Array.from(new Set(widgets.map(w => w.category))), [widgets]);
+
+    // Filtering Logic
+    const displayedItems = useMemo(() => {
+        let items: (StoreApp | StoreWidget)[] = [];
+        
+        if (searchQuery.trim()) {
+            items = [...apps, ...widgets];
+        } else {
+            if (viewMode === 'apps') items = apps;
+            else if (viewMode === 'widgets') items = widgets;
+            else return []; 
+        }
+
+        return items.filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                item.description.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            if (searchQuery.trim()) return matchesSearch;
+            
+            const matchesCategory = !activeCategory || item.category === activeCategory;
+            return matchesCategory;
+        });
+    }, [viewMode, activeCategory, searchQuery, apps, widgets]);
+
+    // Handlers
+    const isInstalled = (item: StoreApp | StoreWidget) => {
+        if ('url' in item.shortcut && item.shortcut.url) {
+            return installedApps.some(app => app.url === item.shortcut.url);
+        }
+        return false;
+    };
+
+    const handleInstall = async (item: StoreApp | StoreWidget) => {
+        setInstalling(item.id.toString());
+        await new Promise(resolve => setTimeout(resolve, 800)); // Simulation delay
+        
+        const shortcutToAdd = {
+            ...item.shortcut,
+            id: Date.now(),
+            title: item.shortcut.title || item.name,
+        };
+
+        onInstall(shortcutToAdd);
+        setInstalling(null);
+    };
+
+    // Close detail view on Escape
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setSelectedItem(null);
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-[#0d0d12]">
+                <RefreshCw className="animate-spin mb-4 text-blue-500" size={32} />
+                <p>Loading Store...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-[#0d0d12]">
+                <AlertCircle size={48} className="text-red-400 mb-4" />
+                <p className="text-lg font-medium text-white mb-2">Something went wrong</p>
+                <p className="mb-6">{error}</p>
+                <button onClick={() => window.location.reload()} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">Retry</button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex h-full w-full bg-[#0d0d12] text-white font-sans overflow-hidden relative">
+            {/* --- App Detail Overlay --- */}
+            <AnimatePresence>
+                {selectedItem && (
+                    <AppDetail 
+                        item={selectedItem} 
+                        onClose={() => setSelectedItem(null)}
+                        isInstalled={isInstalled(selectedItem)}
+                        onInstall={handleInstall}
+                        installing={installing === selectedItem.id.toString()}
+                    />
+                )}
+            </AnimatePresence>
+
+            <Sidebar 
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                activeCategory={activeCategory}
+                setActiveCategory={setActiveCategory}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                appCategories={appCategories}
+                widgetCategories={widgetCategories}
+            />
+
+            {/* --- Main Content Area --- */}
+            <div className="flex-1 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                <div className="p-8 w-full min-h-full max-w-[1920px] mx-auto">
+                     {/* --- Discover View --- */}
+                     {viewMode === 'discover' && !searchQuery && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
+                            {homeData?.hero && homeData.hero.length > 0 && (
+                                <HeroSection hero={homeData.hero[0]} />
+                            )}
+
+                            {/* Featured Apps Section */}
+                            <section>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">Featured Apps</h2>
+                                    <button 
+                                        onClick={() => setViewMode('apps')}
+                                        className="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center transition-colors"
+                                    >
+                                        See All <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-x-4 gap-y-8">
+                                    {homeData?.featuredApps.map(id => {
+                                        const app = apps.find(a => a.id === id || a.id === parseInt(id));
+                                        return app ? (
+                                            <AppCard 
+                                                key={app.id} 
+                                                item={app} 
+                                                isInstalled={isInstalled(app)} 
+                                                onInstall={handleInstall} 
+                                                installing={installing === app.id.toString()}
+                                                onClick={() => setSelectedItem(app)}
+                                            />
+                                        ) : null;
+                                    })}
+                                </div>
+                            </section>
+                             
+                            {/* Featured Widgets Section */}
+                            <section>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">Must-Have Widgets</h2>
+                                     <button 
+                                        onClick={() => setViewMode('widgets')}
+                                        className="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center transition-colors"
+                                    >
+                                        See All <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-x-4 gap-y-8">
+                                    {homeData?.featuredWidgets.map(id => {
+                                        const widget = widgets.find(w => w.id === id);
+                                        return widget ? (
+                                            <AppCard 
+                                                key={widget.id} 
+                                                item={widget} 
+                                                isInstalled={isInstalled(widget)} 
+                                                onInstall={handleInstall} 
+                                                installing={installing === widget.id.toString()}
+                                                onClick={() => setSelectedItem(widget)}
+                                            />
+                                        ) : null;
+                                    })}
+                                </div>
+                            </section>
+                        </motion.div>
+                    )}
+
+                    {/* --- Grid View (Apps / Widgets / Search Results) --- */}
+                    {(viewMode === 'apps' || viewMode === 'widgets' || searchQuery) && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                            <div className="mb-8">
+                                <h1 className="text-3xl font-bold text-white mb-2">
+                                    {searchQuery 
+                                        ? 'Search Results' 
+                                        : (activeCategory || (viewMode === 'apps' ? 'All Apps' : 'All Widgets'))
+                                    }
+                                </h1>
+                                <p className="text-gray-400">
+                                    {searchQuery 
+                                        ? `Found ${displayedItems.length} items for "${searchQuery}"` 
+                                        : `Browse ${activeCategory ? activeCategory.toLowerCase() : 'all'} items`
+                                    }
+                                </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-x-6 gap-y-10 pb-10">
+                                <AnimatePresence>
+                                    {displayedItems.map((item) => (
+                                        <div key={item.id} className="relative">
+                                            <AppCard 
+                                                item={item} 
+                                                isInstalled={isInstalled(item)} 
+                                                onInstall={handleInstall} 
+                                                installing={installing === item.id.toString()} 
+                                                onClick={() => setSelectedItem(item)}
+                                            />
+                                        </div>
+                                    ))}
+                                </AnimatePresence>
+                                {displayedItems.length === 0 && (
+                                    <div className="col-span-full h-40 flex items-center justify-center text-gray-500">
+                                        No items found matching your search.
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
