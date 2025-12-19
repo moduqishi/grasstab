@@ -137,7 +137,10 @@ export const ResponsiveWindow: React.FC<ResponsiveWindowProps> = ({
             </div>
             
             {/* Content Area */}
-            <div className="flex-1 bg-transparent relative overflow-hidden no-drag flex flex-col">
+            <div 
+                className="flex-1 bg-transparent relative overflow-hidden no-drag flex flex-col"
+                onContextMenu={(e) => e.stopPropagation()}
+            >
                 {children}
             </div>
 

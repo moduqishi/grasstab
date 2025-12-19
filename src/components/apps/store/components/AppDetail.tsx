@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Share } from 'lucide-react';
 import { StoreApp, StoreWidget } from '../types';
+import { t, Language } from '../../../../i18n';
 
 interface AppDetailProps {
     item: StoreApp | StoreWidget;
@@ -10,9 +11,10 @@ interface AppDetailProps {
     onInstall: (item: StoreApp | StoreWidget) => void;
     onOpen: (item: StoreApp | StoreWidget) => void;
     installing: boolean;
+    lang: Language;
 }
 
-export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, installing }: AppDetailProps) => {
+export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, installing, lang }: AppDetailProps) => {
     return (
         <motion.div 
             initial={{ opacity: 0, y: 50 }}
@@ -27,7 +29,7 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, insta
                     className="absolute top-6 left-6 md:left-0 p-2 text-blue-400 hover:bg-white/5 rounded-full transition-colors flex items-center gap-1 text-sm font-medium"
                 >
                     <ArrowLeft size={20} />
-                    <span>Back</span>
+                    <span>{t(lang, 'back')}</span>
                 </button>
 
                 {/* Header Section */}
@@ -64,7 +66,7 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, insta
                                     }
                                 `}
                             >
-                                {installing ? 'INSTALLING...' : isInstalled ? 'OPEN' : 'GET'}
+                                {installing ? t(lang, 'installing') : isInstalled ? t(lang, 'open') : t(lang, 'get')}
                             </button>
                             <button className="p-2.5 rounded-full bg-white/5 hover:bg-blue-500/10 text-blue-400 transition-colors">
                                 <Share size={20} />
@@ -78,7 +80,7 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, insta
                 {/* Screenshots Gallery */}
                 {item.screenshots && item.screenshots.length > 0 && (
                     <div className="mb-12">
-                        <h2 className="text-xl font-bold text-white mb-6">Preview</h2>
+                        <h2 className="text-xl font-bold text-white mb-6">{t(lang, 'preview')}</h2>
                         <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-white/10 snap-x snap-mandatory">
                             {item.screenshots.map((src, idx) => (
                                 <motion.div 
@@ -99,7 +101,7 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, insta
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     <div className="md:col-span-2 space-y-8">
                          <section>
-                            <h2 className="text-xl font-bold text-white mb-4">Description</h2>
+                            <h2 className="text-xl font-bold text-white mb-4">{t(lang, 'description')}</h2>
                             <div className="text-gray-300 leading-relaxed text-base whitespace-pre-line">
                                 {item.description}
                             </div>
@@ -108,35 +110,35 @@ export const AppDetail = ({ item, onClose, isInstalled, onInstall, onOpen, insta
 
                     {/* Sidebar Info */}
                     <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-white mb-4">Information</h2>
+                        <h2 className="text-xl font-bold text-white mb-4">{t(lang, 'information')}</h2>
                         <div className="space-y-4 text-sm">
                             <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Provider</span>
+                                <span className="text-gray-500">{t(lang, 'provider')}</span>
                                 <span className="text-white font-medium">{item.author}</span>
                             </div>
                             <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Version</span>
+                                <span className="text-gray-500">{t(lang, 'version')}</span>
                                 <span className="text-white font-medium">{item.version}</span>
                             </div>
                             <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Category</span>
-                                <span className="text-white font-medium">{item.category}</span>
+                                <span className="text-gray-500">{t(lang, 'category')}</span>
+                                <span className="text-white font-medium">{t(lang, item.category.toLowerCase() as any) || item.category}</span>
                             </div>
                             <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Type</span>
+                                <span className="text-gray-500">{t(lang, 'type')}</span>
                                 <span className="text-white font-medium">
-                                    {['Clock', 'Weather', 'Utility', 'Widget'].includes(item.category) ? 'Widget' : 'App'}
+                                    {['Clock', 'Weather', 'Utility', 'Widget'].includes(item.category) ? t(lang, 'widget') : t(lang, 'app')}
                                 </span>
                             </div>
                             <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Display Mode</span>
+                                <span className="text-gray-500">{t(lang, 'displayMode')}</span>
                                 <span className="text-white font-medium">
-                                    {item.isWindowApp ? 'Window' : 'Fullscreen'}
+                                    {item.isWindowApp ? t(lang, 'window') : t(lang, 'fullscreen')}
                                 </span>
                             </div>
                              <div className="flex justify-between py-3 border-b border-white/5">
-                                <span className="text-gray-500">Compatibility</span>
-                                <span className="text-white font-medium">Web</span>
+                                <span className="text-gray-500">{t(lang, 'compatibility')}</span>
+                                <span className="text-white font-medium">{t(lang, 'web')}</span>
                             </div>
                         </div>
                     </div>

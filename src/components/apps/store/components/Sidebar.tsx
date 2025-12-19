@@ -5,6 +5,7 @@ import {
     Book, Film, MessageCircle, Map, Landmark
 } from 'lucide-react';
 import { ViewMode } from '../types';
+import { t, Language } from '../../../../i18n';
 
 interface SidebarProps {
     viewMode: ViewMode;
@@ -16,6 +17,7 @@ interface SidebarProps {
     appCategories: string[];
     widgetCategories: string[];
     categoryCounts: Record<string, number>;
+    lang: Language;
 }
 
 const SidebarItem = ({ 
@@ -94,7 +96,7 @@ export function Sidebar({
     activeCategory, setActiveCategory, 
     searchQuery, setSearchQuery,
     appCategories, widgetCategories,
-    categoryCounts 
+    categoryCounts, lang
 }: SidebarProps) {
     return (
         <div className="w-60 flex-shrink-0 flex flex-col h-full border-r border-white/5 bg-white/[0.02] backdrop-blur-xl relative z-20 overflow-hidden">
@@ -114,15 +116,15 @@ export function Sidebar({
                     <SidebarItem 
                         active={viewMode === 'discover' && !searchQuery} 
                         icon={Sparkles} 
-                        label="Discover" 
+                        label={t(lang, 'discover')} 
                         onClick={() => { setViewMode('discover'); setActiveCategory(null); setSearchQuery(''); }} 
                     />
                     
-                    <div className="pt-4 pb-2 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Apps</div>
+                    <div className="pt-4 pb-2 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{t(lang, 'apps')}</div>
                     <SidebarItem 
                         active={viewMode === 'apps' && activeCategory === null && !searchQuery} 
                         icon={Box} 
-                        label="All Apps" 
+                        label={t(lang, 'allApps')} 
                         count={categoryCounts['all_apps']}
                         onClick={() => { setViewMode('apps'); setActiveCategory(null); setSearchQuery(''); }} 
                     />
@@ -130,7 +132,7 @@ export function Sidebar({
                         <SidebarItem 
                             key={cat}
                             active={viewMode === 'apps' && activeCategory === cat && !searchQuery} 
-                            label={cat} 
+                            label={t(lang, cat.toLowerCase() as any) || cat} 
                             count={categoryCounts[cat]}
                             icon={getIconForCategory(cat)}
                             level={1}
@@ -138,11 +140,11 @@ export function Sidebar({
                         />
                     ))}
 
-                    <div className="pt-4 pb-2 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Widgets</div>
+                    <div className="pt-4 pb-2 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{t(lang, 'widgets')}</div>
                     <SidebarItem 
                         active={viewMode === 'widgets' && activeCategory === null && !searchQuery} 
                         icon={Layers} 
-                        label="All Widgets" 
+                        label={t(lang, 'allWidgets')} 
                         count={categoryCounts['all_widgets']}
                         onClick={() => { setViewMode('widgets'); setActiveCategory(null); setSearchQuery(''); }} 
                     />
@@ -150,7 +152,7 @@ export function Sidebar({
                         <SidebarItem 
                             key={cat}
                             active={viewMode === 'widgets' && activeCategory === cat && !searchQuery} 
-                            label={cat} 
+                            label={t(lang, cat.toLowerCase() as any) || cat} 
                             count={categoryCounts[cat]}
                             icon={getIconForCategory(cat)}
                             level={1}

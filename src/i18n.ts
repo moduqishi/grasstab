@@ -1,5 +1,6 @@
-export const translations = {
+    export const translations = {
     zh: {
+        // ... existing translations ...
         // Settings
         settings: '设置',
         interfaceLayout: '界面与布局',
@@ -65,10 +66,19 @@ export const translations = {
         pasteOrEnterHtml: '输入或粘贴 HTML 代码...',
         
         // Context Menu
+        desktopMenu: '桌面菜单',
+        editHomeScreen: '编辑主屏幕',
+        doneEditing: '完成编辑',
+        viewOptions: '视图',
+        changeWallpaper: '更换壁纸',
+        systemSettings: '系统设置',
+        rightClickHint: 'Right-click anywhere',
         addWidget: '添加小组件',
         addApp: '添加应用',
         edit: '编辑',
         delete: '删除',
+        open: '打开',
+        openNewTab: '在新标签页打开',
         
         // Confirm
         confirmDelete: '确定要删除',
@@ -90,9 +100,68 @@ export const translations = {
         setWidth: '设置宽度',
         setHeight: '设置高度',
         uploadCustomIcon: '上传自定义图标',
-        importConfigFile: '导入配置文件'
+        importConfigFile: '导入配置文件',
+
+        // App Store
+        discover: '发现',
+        apps: '应用',
+        widgets: '小组件',
+        allApps: '所有应用',
+        allWidgets: '所有小组件',
+        featuredApps: '精选应用',
+        mustHaveWidgets: '必备小组件',
+        seeAll: '查看全部',
+        searchResults: '搜索结果',
+        foundItems: '找到 {count} 个结果',
+        browse: '浏览',
+        noItems: '未找到匹配的项。',
+        items: '项',
+        loadingStore: '加载商店中...',
+        somethingWrong: '出错了',
+        retry: '重试',
+        
+        // App Detail
+        back: '返回',
+        get: '获取',
+        installing: '安装中...',
+        description: '描述',
+        information: '信息',
+        provider: '提供者',
+        version: '版本',
+        category: '分类',
+        type: '类型',
+        displayMode: '显示模式',
+        compatibility: '兼容性',
+        web: '网页',
+        window: '窗口',
+        fullscreen: '全屏',
+        app: '应用',
+        widget: '小组件',
+
+        // Categories
+        game: '游戏',
+        productivity: '生产力',
+        development: '开发',
+        design: '设计',
+        utility: '工具',
+        finance: '金融',
+        social: '社交',
+        news: '新闻',
+        shopping: '购物',
+        travel: '旅行',
+        video: '视频',
+        music: '音乐',
+        life: '生活',
+        education: '教育',
+        sports: '体育',
+        business: '商业',
+        entertainment: '娱乐',
+        photo: '摄影',
+        reference: '参考',
+        government: '政府'
     },
     en: {
+        // ... existing translations ...
         // Settings
         settings: 'Settings',
         interfaceLayout: 'Interface & Layout',
@@ -158,10 +227,19 @@ export const translations = {
         pasteOrEnterHtml: 'Enter or paste HTML code...',
         
         // Context Menu
+        desktopMenu: 'Desktop Menu',
+        editHomeScreen: 'Edit Home Screen',
+        doneEditing: 'Done Editing',
+        viewOptions: 'View Options',
+        changeWallpaper: 'Change Wallpaper',
+        systemSettings: 'System Settings',
+        rightClickHint: 'Right-click anywhere',
         addWidget: 'Add Widget',
         addApp: 'Add App',
         edit: 'Edit',
         delete: 'Delete',
+        open: 'Open',
+        openNewTab: 'Open in New Tab',
         
         // Confirm
         confirmDelete: 'Are you sure to delete',
@@ -183,7 +261,65 @@ export const translations = {
         setWidth: 'Set width',
         setHeight: 'Set height',
         uploadCustomIcon: 'Upload custom icon',
-        importConfigFile: 'Import configuration file'
+        importConfigFile: 'Import configuration file',
+
+        // App Store
+        discover: 'Discover',
+        apps: 'Apps',
+        widgets: 'Widgets',
+        allApps: 'All Apps',
+        allWidgets: 'All Widgets',
+        featuredApps: 'Featured Apps',
+        mustHaveWidgets: 'Must-Have Widgets',
+        seeAll: 'See All',
+        searchResults: 'Search Results',
+        foundItems: 'Found {count} items',
+        browse: 'Browse',
+        noItems: 'No items found matching your search.',
+        items: 'items',
+        loadingStore: 'Loading Store...',
+        somethingWrong: 'Something went wrong',
+        retry: 'Retry',
+
+        // App Detail
+        back: 'Back',
+        get: 'GET',
+        installing: 'INSTALLING...',
+        description: 'Description',
+        information: 'Information',
+        provider: 'Provider',
+        version: 'Version',
+        category: 'Category',
+        type: 'Type',
+        displayMode: 'Display Mode',
+        compatibility: 'Compatibility',
+        web: 'Web',
+        window: 'Window',
+        fullscreen: 'Fullscreen',
+        app: 'App',
+        widget: 'Widget',
+
+        // Categories
+        game: 'Game',
+        productivity: 'Productivity',
+        development: 'Development',
+        design: 'Design',
+        utility: 'Utility',
+        finance: 'Finance',
+        social: 'Social',
+        news: 'News',
+        shopping: 'Shopping',
+        travel: 'Travel',
+        video: 'Video',
+        music: 'Music',
+        life: 'Life',
+        education: 'Education',
+        sports: 'Sports',
+        business: 'Business',
+        entertainment: 'Entertainment',
+        photo: 'Photo & Video',
+        reference: 'Reference',
+        government: 'Government'
     }
 };
 

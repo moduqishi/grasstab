@@ -8,6 +8,8 @@ import { HeroSection } from './components/HeroSection';
 import { AppCard } from './components/AppCard';
 import { AppDetail } from './components/AppDetail';
 import { StoreApp, StoreWidget, ViewMode } from './types';
+import { useConfig } from '../../../config/ConfigContext';
+import { t, Language } from '../../../i18n';
 
 interface AppStoreProps {
     onInstall: (item: Shortcut) => void;
@@ -17,6 +19,8 @@ interface AppStoreProps {
 
 export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
     const { apps, widgets, homeData, loading, error } = useStoreData();
+    const { config } = useConfig();
+    const lang = config.preferences.general.language as Language;
     
     // View State
     const [viewMode, setViewMode] = useState<ViewMode>('discover');
@@ -147,7 +151,7 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-[#0d0d12]">
                 <RefreshCw className="animate-spin mb-4 text-blue-500" size={32} />
-                <p>Loading Store...</p>
+                <p>{t(lang, 'loadingStore')}</p>
             </div>
         );
     }
@@ -156,9 +160,9 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-[#0d0d12]">
                 <AlertCircle size={48} className="text-red-400 mb-4" />
-                <p className="text-lg font-medium text-white mb-2">Something went wrong</p>
+                <p className="text-lg font-medium text-white mb-2">{t(lang, 'somethingWrong')}</p>
                 <p className="mb-6">{error}</p>
-                <button onClick={() => window.location.reload()} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">Retry</button>
+                <button onClick={() => window.location.reload()} className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">{t(lang, 'retry')}</button>
             </div>
         );
     }
@@ -175,6 +179,7 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                         onInstall={handleInstall}
                         onOpen={handleOpen}
                         installing={installing === selectedItem.id.toString()}
+                        lang={lang}
                     />
                 )}
             </AnimatePresence>
@@ -189,6 +194,7 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                 appCategories={appCategories}
                 widgetCategories={widgetCategories}
                 categoryCounts={categoryCounts}
+                lang={lang}
             />
 
             {/* --- Main Content Area --- */}
@@ -204,12 +210,12 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                             {/* Featured Apps Section */}
                             <section>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-bold text-white tracking-tight">Featured Apps</h2>
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">{t(lang, 'featuredApps')}</h2>
                                     <button 
                                         onClick={() => setViewMode('apps')}
                                         className="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center transition-colors"
                                     >
-                                        See All <ChevronRight size={16} />
+                                        {t(lang, 'seeAll')} <ChevronRight size={16} />
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-x-4 gap-y-8">
@@ -232,12 +238,12 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                             {/* Featured Widgets Section */}
                             <section>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-bold text-white tracking-tight">Must-Have Widgets</h2>
+                                    <h2 className="text-2xl font-bold text-white tracking-tight">{t(lang, 'mustHaveWidgets')}</h2>
                                      <button 
                                         onClick={() => setViewMode('widgets')}
                                         className="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center transition-colors"
                                     >
-                                        See All <ChevronRight size={16} />
+                                        {t(lang, 'seeAll')} <ChevronRight size={16} />
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-x-4 gap-y-8">
@@ -265,14 +271,14 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                             <div className="mb-8">
                                 <h1 className="text-3xl font-bold text-white mb-2">
                                     {searchQuery 
-                                        ? 'Search Results' 
-                                        : (activeCategory || (viewMode === 'apps' ? 'All Apps' : 'All Widgets'))
+                                        ? t(lang, 'searchResults') 
+                                        : (activeCategory ? (t(lang, activeCategory.toLowerCase() as any) || activeCategory) : (viewMode === 'apps' ? t(lang, 'allApps') : t(lang, 'allWidgets')))
                                     }
                                 </h1>
                                 <p className="text-gray-400">
                                     {searchQuery 
-                                        ? `Found ${filteredItems.length} items for "${searchQuery}"` 
-                                        : `Browse ${activeCategory ? activeCategory.toLowerCase() : 'all'} items`
+                                        ? t(lang, 'foundItems').replace('{count}', filteredItems.length.toString()) + (lang === 'zh' ? ` 关于 "${searchQuery}"` : ` for "${searchQuery}"`)
+                                        : `${t(lang, 'browse')} ${activeCategory ? (t(lang, activeCategory.toLowerCase() as any) || activeCategory) : ''} ${t(lang, 'items') || ''}`
                                     }
                                 </p>
                             </div>
@@ -291,7 +297,11 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
                                 ))}
                                 {filteredItems.length === 0 && (
                                     <div className="col-span-full h-40 flex items-center justify-center text-gray-500">
-                                        No items found matching your search.
+                                {filteredItems.length === 0 && (
+                                    <div className="col-span-full h-40 flex items-center justify-center text-gray-500">
+                                        {t(lang, 'noItems')}
+                                    </div>
+                                )}
                                     </div>
                                 )}
                             </div>

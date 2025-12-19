@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Edit, Trash2, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { useConfig } from '../config/ConfigContext';
+import { t, Language } from '../i18n';
 
 interface AppContextMenuProps {
     x: number;
@@ -13,6 +15,8 @@ interface AppContextMenuProps {
 
 export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, onEdit, onDelete, onOpen, onOpenNewTab }) => {
     const menuRef = useRef<HTMLDivElement>(null);
+    const { config } = useConfig();
+    const lang = config.preferences.general.language as Language;
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -49,7 +53,7 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
                 className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"
             >
                 <ExternalLink size={16} className="text-white/70" />
-                <span className="font-medium">打开</span>
+                <span className="font-medium">{t(lang, 'open')}</span>
             </button>
 
             <button
@@ -57,7 +61,7 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
                 className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"
             >
                 <ArrowUpRight size={16} className="text-white/70" />
-                <span className="font-medium">在新标签页打开</span>
+                <span className="font-medium">{t(lang, 'openNewTab')}</span>
             </button>
 
             <div style={{ height: '0.5px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
@@ -66,7 +70,7 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
                 className="w-full px-4 py-2.5 text-left hover:bg-white/10 transition-colors flex items-center gap-3"
             >
                 <Edit size={16} className="text-white/70" />
-                <span className="font-medium">编辑</span>
+                <span className="font-medium">{t(lang, 'edit')}</span>
             </button>
 
             <div style={{ height: '0.5px', backgroundColor: 'rgba(255, 255, 255, 0.08)' }} />
@@ -76,7 +80,7 @@ export const AppContextMenu: React.FC<AppContextMenuProps> = ({ x, y, onClose, o
                 className="w-full px-4 py-2.5 text-left hover:bg-red-500/20 transition-colors flex items-center gap-3 text-red-400"
             >
                 <Trash2 size={16} />
-                <span className="font-medium">删除</span>
+                <span className="font-medium">{t(lang, 'delete')}</span>
             </button>
         </div>
     );

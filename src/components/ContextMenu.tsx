@@ -1,5 +1,7 @@
 import React from 'react';
 import { Check, Edit3, Wallpaper, RefreshCw, Settings, Info, Grid3x3, Monitor, Search, PanelBottom } from 'lucide-react';
+import { useConfig } from '../config/ConfigContext';
+import { t, Language } from '../i18n';
 
 interface ContextMenuProps {
     x: number;
@@ -27,6 +29,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const menuHeight = 450;
     const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
     const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
+    const { config } = useConfig();
+    const lang = config.preferences.general.language as Language;
 
     return (
         <div 
@@ -44,14 +48,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             {/* Header */}
             <div className="px-4 py-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255, 255, 255, 0.5)', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
                 <Grid3x3 size={12} />
-                Desktop Menu
+                {t(lang, 'desktopMenu')}
             </div>
 
             {/* Edit Section */}
             <div className="py-1">
                 <MenuItem 
                     icon={isEditing ? Check : Edit3}
-                    label={isEditing ? 'Done Editing' : 'Edit Home Screen'}
+                    label={isEditing ? t(lang, 'doneEditing') : t(lang, 'editHomeScreen')}
                     onClick={() => { onEdit(); onClose(); }}
                     variant={isEditing ? 'primary' : 'default'}
                 />
@@ -61,22 +65,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
             {/* View Options */}
             <div className="py-1">
-                <MenuLabel>View Options</MenuLabel>
+                <MenuLabel>{t(lang, 'viewOptions')}</MenuLabel>
                 <MenuItemToggle
                     icon={Search}
-                    label="Search Bar"
+                    label={t(lang, 'desktopSearchBar')}
                     checked={showSearchBar}
                     onClick={() => { onToggleSearchBar(); onClose(); }}
                 />
                 <MenuItemToggle
                     icon={Grid3x3}
-                    label="Page Indicators"
+                    label={t(lang, 'paginationDots')}
                     checked={showPagination}
                     onClick={() => { onTogglePagination(); onClose(); }}
                 />
                 <MenuItemToggle
                     icon={PanelBottom}
-                    label="Dock Bar"
+                    label={t(lang, 'showDockBar')}
                     checked={showDock}
                     onClick={() => { onToggleDock(); onClose(); }}
                 />
@@ -86,15 +90,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
             {/* Personalization */}
             <div className="py-1">
-                <MenuLabel>Personalization</MenuLabel>
+                <MenuLabel>{t(lang, 'personalization')}</MenuLabel>
                 <MenuItem 
                     icon={Wallpaper}
-                    label="Change Wallpaper"
+                    label={t(lang, 'changeWallpaper')}
                     onClick={() => { onChangeWallpaper(); onClose(); }}
                 />
                 <MenuItem 
                     icon={Settings}
-                    label="System Settings"
+                    label={t(lang, 'systemSettings')}
                     onClick={() => { onOpenSettings(); onClose(); }}
                 />
             </div>
@@ -104,7 +108,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             {/* Footer */}
             <div className="px-4 py-2.5 flex items-center gap-2 text-xs" style={{ color: 'rgba(255, 255, 255, 0.3)', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
                 <Info size={10} />
-                Right-click anywhere
+                {t(lang, 'rightClickHint')}
             </div>
         </div>
     );
