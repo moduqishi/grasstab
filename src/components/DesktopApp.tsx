@@ -102,6 +102,33 @@ export function DesktopApp() {
         gridWidth
     });
 
+    // --- Memoized Handlers ---
+
+    const handleRemoveShortcut = useCallback((id: string | number) => {
+        setAppLayout(prev => prev.map(item => item?.id === id ? null : item));
+    }, [setAppLayout]);
+
+    const handleToggleEdit = useCallback(() => {
+        setIsEditing(prev => !prev);
+    }, [setIsEditing]);
+
+    const handleToggleSearchBar = useCallback(() => {
+        setSysSettings(prev => ({ ...prev, showSearchBar: !prev.showSearchBar }));
+    }, [setSysSettings]);
+
+    const handleTogglePagination = useCallback(() => {
+        setSysSettings(prev => ({ ...prev, showPagination: !prev.showPagination }));
+    }, [setSysSettings]);
+
+    const handleToggleDock = useCallback(() => {
+        setSysSettings(prev => ({ ...prev, showDock: !prev.showDock }));
+    }, [setSysSettings]);
+
+    const handleSettingsOpen = useCallback(() => {
+        openWin('settings');
+    }, [openWin]);
+
+
     // --- Config Export/Import Handling ---
     
     const handleExportConfig = useCallback(async () => {
@@ -323,12 +350,12 @@ export function DesktopApp() {
                     x={contextMenu.x}
                     y={contextMenu.y}
                     onClose={() => setContextMenu(null)}
-                    onEdit={() => setIsEditing(!isEditing)}
-                    onChangeWallpaper={() => openWin('settings')}
-                    onOpenSettings={() => openWin('settings')}
-                    onToggleSearchBar={() => setSysSettings(prev => ({ ...prev, showSearchBar: !prev.showSearchBar }))}
-                    onTogglePagination={() => setSysSettings(prev => ({ ...prev, showPagination: !prev.showPagination }))}
-                    onToggleDock={() => setSysSettings(prev => ({ ...prev, showDock: !prev.showDock }))}
+                    onEdit={handleToggleEdit}
+                    onChangeWallpaper={handleSettingsOpen}
+                    onOpenSettings={handleSettingsOpen}
+                    onToggleSearchBar={handleToggleSearchBar}
+                    onTogglePagination={handleTogglePagination}
+                    onToggleDock={handleToggleDock}
                     isEditing={isEditing}
                     showSearchBar={sysSettings.showSearchBar}
                     showPagination={sysSettings.showPagination}
@@ -402,7 +429,7 @@ export function DesktopApp() {
                 handleResizeStart={handleResizeStart}
                 handleAppContextMenu={onAppContextMenu}
                 handleIconLoaded={handleIconLoaded}
-                onRemoveShortcut={(id) => setAppLayout(prev => prev.map(item => item?.id === id ? null : item))}
+                onRemoveShortcut={handleRemoveShortcut}
                 setAppLayout={setAppLayout}
                 openWin={openWin}
             />
@@ -425,8 +452,8 @@ export function DesktopApp() {
                 showDockEdit={sysSettings.showDockEdit}
                 dragState={dragState}
                 isEditing={isEditing}
-                onToggleEdit={() => setIsEditing(prev => !prev)}
-                onRemoveShortcut={(id) => setAppLayout(prev => prev.map(item => item?.id === id ? null : item))}
+                onToggleEdit={handleToggleEdit}
+                onRemoveShortcut={handleRemoveShortcut}
                 setAppLayout={setAppLayout}
                 handlePointerDown={handlePointerDown}
                 handleAppContextMenu={onAppContextMenu}

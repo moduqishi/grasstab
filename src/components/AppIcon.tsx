@@ -4,6 +4,7 @@ import { getDomain, getAllIconUrls } from '../utils';
 import { Shortcut } from '../types';
 import { CustomHTMLWidget, IFrameWidget } from './widgets/Widgets';
 import { AppContextMenu } from './AppContextMenu';
+import { useInView } from '../hooks/useInView';
 
 export const getDockIcon = (type: string, isEditing: boolean = false, color?: string) => {
     const iconSize = 48; // Increased size for transparent apps
@@ -44,9 +45,18 @@ export const AppIcon = React.memo((props: AppIconProps) => {
     const [currentIconIndex, setCurrentIconIndex] = useState(0);
     const [iconSources, setIconSources] = useState<Array<{source: string, url: string, name: string}>>([]);
     const [iconLoadNotified, setIconLoadNotified] = useState(false);
+    const [customIconError, setCustomIconError] = useState(false);
     
+    // Only fetch/process icons when in view
+    // Use a rootMargin of 200px to pre-load icons just before they scroll into view
+    const { ref, inView } = useInView({ 
+        triggerOnce: true, 
+        rootMargin: '200px' 
+    });
+
     useEffect(() => {
-        if (url) {
+        // Delay URL processing until visible to avoid massive initial requests
+        if (url && inView) {
             const sources = getAllIconUrls(url);
             setIconSources(sources);
             
@@ -60,7 +70,7 @@ export const AppIcon = React.memo((props: AppIconProps) => {
             }
             setIconLoadNotified(false);
         }
-    }, [url, iconType]);
+    }, [url, iconType, inView]);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -102,19 +112,23 @@ export const AppIcon = React.memo((props: AppIconProps) => {
     // --- APP ICON RENDERER ---
 
     // 0. Custom Icon (highest priority)
-    if (customIcon) {
+    // Even custom icons benefit from lazy loading via native loading="lazy", but we wrap in ref too.
+    // If custom icon fails, we fall through to next methods
+    if (customIcon && !customIconError) {
         return (
-            <div onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
-                <img 
-                    src={customIcon} 
-                    alt={title} 
-                    loading="lazy"
-                    className="w-full h-full object-cover select-none pointer-events-none" 
-                    onError={(e) => {
-                        // If custom icon fails to load, fall through to other methods
-                        (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                />
+            <div ref={ref as any} onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
+                {inView && (
+                    <img 
+                        src={customIcon} 
+                        alt={title} 
+                        loading="lazy"
+                        className="w-full h-full object-cover select-none pointer-events-none" 
+                        onError={(e) => {
+                            // If custom icon fails, trigger fallback to other methods
+                            setCustomIconError(true);
+                        }}
+                    />
+                )}
             </div>
         );
     }
@@ -168,32 +182,37 @@ export const AppIcon = React.memo((props: AppIconProps) => {
     };
 
     // 3. Web Icons - Full Cover Style with fallback priority
-    if (url && iconSources.length > 0 && currentIconIndex < iconSources.length) {
-        const currentSource = iconSources[currentIconIndex];
-        
-        const handleLoad = () => {
-            // 通知父组件图标加载成功，保存图标源
-            if (onIconLoaded && !iconLoadNotified) {
-                onIconLoaded(currentSource.source);
-                setIconLoadNotified(true);
-            }
-        };
-        
+    // Use `ref` on the container to detect visibility
+    // Only render image if `inView` is true to avoid fetch
+    if (url) {
         return (
-            <div onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
-                <img 
-                    src={currentSource.url} 
-                    alt={title} 
-                    loading="lazy"
-                    className="w-full h-full object-cover select-none pointer-events-none" 
-                    onLoad={handleLoad}
-                    onError={handleError} 
-                />
+            <div ref={ref as any} onContextMenu={handleContextMenu} className="w-full h-full" data-app-icon>
+                {inView && iconSources.length > 0 && currentIconIndex < iconSources.length ? (
+                    <img 
+                        src={iconSources[currentIconIndex].url} 
+                        alt={title} 
+                        loading="lazy"
+                        className="w-full h-full object-cover select-none pointer-events-none" 
+                        onLoad={() => {
+                            if (onIconLoaded && !iconLoadNotified) {
+                                onIconLoaded(iconSources[currentIconIndex].source);
+                                setIconLoadNotified(true);
+                            }
+                        }}
+                        onError={handleError} 
+                    />
+                ) : inView ? (
+                     // Fallback while loading sources or if all failed/not ready
+                     // Optionally show a placeholder or the text fallback below temporarily
+                     <div className="w-full h-full flex items-center justify-center text-white/50 bg-white/5">
+                        <span className="text-xl font-bold">{title ? title.substring(0, 1).toUpperCase() : ''}</span>
+                     </div>
+                ) : null}
             </div>
         );
     }
     
-    // 4. Fallback Text Icon
+    // 4. Fallback Text Icon (if no URL and no specific type)
     return renderVector(<span className="text-3xl font-bold truncate px-1 select-none">{title ? title.substring(0, 1).toUpperCase() : '?'}</span>);
 });
 
