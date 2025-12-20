@@ -25,7 +25,7 @@ export function useApps(dialog: any) {
     
     // Since we are bridging a flat "appLayout" back to separated structures (Dock vs Desktop),
     // we need a setter that understands how to split them back up.
-    const setAppLayout = (newLayoutOrFn: (Shortcut | null)[] | ((prev: (Shortcut | null)[]) => (Shortcut | null)[])) => {
+    const setAppLayout = useCallback((newLayoutOrFn: (Shortcut | null)[] | ((prev: (Shortcut | null)[]) => (Shortcut | null)[])) => {
         let newLayout: (Shortcut | null)[];
         if (typeof newLayoutOrFn === 'function') {
             newLayout = newLayoutOrFn(appLayout);
@@ -39,7 +39,7 @@ export function useApps(dialog: any) {
         // Optimistically update both
         if (JSON.stringify(newDock) !== JSON.stringify(dockApps)) updateDock(newDock);
         if (JSON.stringify(newDesktop) !== JSON.stringify(desktopApps)) updateShortcuts(newDesktop);
-    };
+    }, [appLayout, dockApps, desktopApps, updateDock, updateShortcuts]);
 
     const handleDeleteApp = useCallback(async (app: Shortcut) => {
         const appName = app.title || app.displayName || '此应用';

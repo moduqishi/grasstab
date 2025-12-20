@@ -278,6 +278,24 @@ export function DesktopApp() {
         touchStartY.current = null;
     };
 
+    // Helper to optimize wallpaper URL
+    const getOptimizedWallpaper = (url: string) => {
+        if (!url) return '';
+        // Optimize Unsplash URLs
+        if (url.includes('images.unsplash.com')) {
+            const hasQ = url.includes('?');
+            const separator = hasQ ? '&' : '?';
+            // Default load
+            return `${url}${separator}w=1920&q=80&auto=format`;
+        }
+        return url;
+    };
+
+    const wpSrc = getOptimizedWallpaper(wallpaper);
+    const wpSrcSet = wallpaper.includes('images.unsplash.com') 
+        ? `${getOptimizedWallpaper(wallpaper)}&w=1920 1920w, ${getOptimizedWallpaper(wallpaper)}&w=2560 2560w`
+        : undefined;
+
     return (
         <div
             className="relative w-full h-screen overflow-hidden font-sans select-none flex flex-col bg-black text-white cursor-default touch-none"
@@ -288,7 +306,15 @@ export function DesktopApp() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
         >
-            <div className="absolute inset-0 bg-cover bg-center transition-all duration-1000 transform scale-105" style={{ backgroundImage: `url(${wallpaper})` }} />
+            <img 
+                src={wpSrc}
+                srcSet={wpSrcSet}
+                sizes="100vw"
+                alt="wallpaper"
+                decoding="async"
+                loading="eager"
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-1000 transform scale-105"
+            />
             <div className="absolute inset-0 bg-black/20" />
 
             {/* Global Context Menus */}

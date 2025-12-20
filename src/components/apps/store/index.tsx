@@ -116,6 +116,8 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
             ...item.shortcut,
             id: Date.now(),
             title: item.shortcut.title || item.name,
+            // 修复：优先使用 store item 层级的 isWindowApp 定义
+            isApp: 'isWindowApp' in item ? item.isWindowApp : item.shortcut.isApp,
         };
 
         onInstall(shortcutToAdd);
@@ -133,7 +135,9 @@ export function AppStore({ onInstall, onOpen, installedApps }: AppStoreProps) {
              onOpen({
                  ...item.shortcut,
                  id: Date.now(), // Placeholder ID
-                 title: item.shortcut.title || item.name
+                 title: item.shortcut.title || item.name,
+                 // 修复：预览时也优先使用 correct flag
+                 isApp: 'isWindowApp' in item ? item.isWindowApp : item.shortcut.isApp
              });
          }
     }, [installedApps, onOpen]);
