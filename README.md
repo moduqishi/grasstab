@@ -7,8 +7,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Chrome Web Store](https://img.shields.io/badge/Chrome-Extension-blue?logo=googlechrome)](https://chrome.google.com/webstore)
 [![Edge Add-ons](https://img.shields.io/badge/Edge-Add--on-0078D7?logo=microsoftedge)](https://microsoftedge.microsoft.com/addons)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 
 **✨ 专为程序员和学生打造的美观新标签页扩展**
 
@@ -21,26 +22,25 @@
 ## ✨ 特性
 
 ### 🎨 **美观的设计**
-- 🌅 精美的背景壁纸支持
-- 🎭 流畅的动画效果和过渡
-- 🌓 优雅的视觉体验
-- 📱 **完美的响应式布局** - 支持桌面、平板、手机等各种设备
-- 🖐️ **触摸优化** - 针对触摸设备优化的交互体验
+- 🌅 **沉浸式壁纸** - 支持 Unsplash 精选壁纸和自定义图片
+- 🎭 **流畅动画** - 基于 Framer Motion 的优雅交互体验
+- 🌓 **视觉体验** - 精心调配的毛玻璃效果和色彩系统
+- 📱 **响应式布局** - 完美适配桌面、平板和移动设备
+- 🖐️ **触摸优化** - 针对触摸屏设备优化的手势操作
 
 ### 🚀 **强大的功能**
-- 📌 **自定义快捷方式** - 添加您最常用的网站，支持自定义图标
-- 🔍 **智能搜索栏** - 集成 Chrome 默认搜索，支持自定义任意搜索引擎（URL、建议 API），带实时建议
-- 🪟 **窗口化应用** - 内置计算器、笔记、AI 助手等实用工具
-- 📊 **自定义小部件** - 时钟、日历、天气等多种小组件
-- 🎯 **拖拽排序** - 自由调整图标位置和大小
-- 📄 **多页面支持** - 智能分页，容纳更多快捷方式
-- 📷 **多源图标系统** - 7层降级策略，确保每个网站都有最佳图标显示
+- 📌 **快捷方式** - 自由添加网站图标，支持拖拽排序和文件夹管理
+- 🔍 **智能搜索** - 集成 Google/Bing/Baidu，支持实时搜索建议
+- 🪟 **窗口化应用** - 内置计算器、笔记、VS Code (Web)、AI 助手等实用工具
+- 📊 **桌面小部件** - 时钟、日历、天气等实用桌面组件
+- 📄 **多屏分页** - 像手机一样管理你的应用图标
+- 📷 **智能图标** - 7层降级策略，确保每个网站都能自动获取最佳图标
 
 ### 🛠️ **高度可定制**
-- 🎨 自定义壁纸
-- 🌐 多语言支持（中文/English）
-- 💾 导入/导出配置
-- ⚙️ 丰富的设置选项（含搜索引擎配置）
+- 🎨 主题切换
+- 🌐 多语言支持（简体中文/English）
+- 💾 YAML 配置导入/导出
+- ⚡ 快捷键支持
 
 ---
 
@@ -63,58 +63,62 @@
 
 ## 🚀 快速开始
 
-### 安装扩展
+### 📥 安装扩展
 
-#### Chrome
-1. 访问 [Chrome Web Store](#)
-2. 点击"添加至 Chrome"
-3. 打开新标签页，享受 GrassTab！
+#### Chrome / Edge (手动安装)
+目前扩展正在商店审核中，您可以手动安装：
 
-#### Edge
-1. 访问 [Edge Add-ons](#)
-2. 点击"获取"
-3. 打开新标签页，开始使用！
+1. 下载最新发布的 `chrome-extension.zip` (见 Releases 页面) 并解压。
+2. 打开浏览器扩展管理页面：
+   - Chrome: `chrome://extensions/`
+   - Edge: `edge://extensions/`
+3. 开启右上角的 **"开发者模式"**。
+4. 点击 **"加载已解压的扩展程序"**。
+5. 选择解压后的文件夹。
 
-### 从源码安装
+### 💻 本地开发
+
+#### 环境要求
+- Node.js >= 18
+- npm 或 yarn
+
+#### 步骤
 
 ```bash
-# 克隆仓库
+# 1. 克隆仓库
 git clone https://github.com/moduqishi/grasstab-next.git
 cd grasstab-next
 
-# 安装依赖
+# 2. 安装依赖
 npm install
 
-# 开发模式
+# 3. 启动开发服务器 (网页预览模式)
 npm run dev
-
-# 构建生产版本
-npm run build
+# 访问 http://localhost:5173 进行预览
 ```
 
-### 加载到浏览器
+#### 构建扩展
 
-#### Chrome / Edge
-1. 运行构建脚本
-   ```bash
-   # Windows
-   .\tools\build-extension.bat
-   ```
-2. 打开浏览器访问 `chrome://extensions/` 或 `edge://extensions/`
-3. 启用"开发者模式"
-4. 点击"加载已解压的扩展程序"
-5. 选择 `chrome-extension` 文件夹
+```bash
+# 构建 Chrome 扩展格式
+npm run build:extension
+
+# 构建完成后，在 dist/chrome-extension 目录生成扩展文件
+```
 
 ---
 
 ## 🛠️ 技术栈
 
-- **框架**: React 19.2
-- **语言**: TypeScript 5.8
-- **构建工具**: Vite 6.2
-- **样式**: Tailwind CSS 3.4
-- **图标**: Lucide React
-- **配置**: YAML Support
+本项目使用最新的现代前端技术构建：
+
+- **核心框架**: [React 19.2](https://react.dev/) + [TypeScript 5.8](https://www.typescriptlang.org/)
+- **构建工具**: [Vite 6.2](https://vitejs.dev/)
+- **样式方案**: [Tailwind CSS 3.4](https://tailwindcss.com/) + PostCSS
+- **动画引擎**: [Framer Motion 12](https://www.framer.com/motion/)
+- **编辑器组件**: [Monaco Editor](https://microsoft.github.io/monaco-editor/) (用于笔记和代码编辑)
+- **图标库**: [Lucide React](https://lucide.dev/)
+- **配置解析**: [js-yaml](https://github.com/nodeca/js-yaml)
 
 ---
 
@@ -122,185 +126,58 @@ npm run build
 
 ```
 GrassTab/
-├── components/          # React 组件
-│   ├── apps/           # 内置应用
-│   └── widgets/        # 小部件
-├── hooks/              # 自定义 Hooks
-├── tools/              # 构建工具和脚本
-├── doc/                # 文档
-├── _locales/           # 多语言支持
-│   ├── zh/            # 简体中文
-│   └── en/            # 英文
-├── App.tsx             # 主应用组件
-├── constants.tsx       # 常量定义
-├── types.ts            # TypeScript 类型
-├── utils.ts            # 工具函数
-└── manifest.json       # 扩展清单
+├── components/          # React UI 组件
+│   ├── apps/           # 窗口化应用程序 (Calculator, Notes, etc.)
+│   ├── widgets/        # 桌面小部件 (Clock, Weather, etc.)
+│   └── ui/             # 基础 UI 组件
+├── hooks/              # 自定义 React Hooks
+├── tools/              # 构建和辅助脚本
+├── doc/                # 项目文档和资源
+├── _locales/           # Chrome 扩展多语言文件
+├── src/
+│   ├── App.tsx         # 根组件
+│   ├── main.tsx        # 入口文件
+│   └── index.css       # 全局样式 (Tailwind)
+├── public/             # 静态资源
+└── manifest.json       # 扩展清单文件 V3
 ```
 
 ---
 
-## ⚙️ 配置
+## ⚙️ 配置系统
 
-GrassTab 支持通过 YAML 配置文件导入/导出所有设置：
+GrassTab 的核心配置（布局、图标、壁纸）均可以通过 YAML 格式导出和导入，方便备份和迁移。
+
+**示例配置:**
 
 ```yaml
 version: '1.0'
 settings:
-  showSearchBar: true
-  showPagination: true
-  showDock: true
   language: zh
-wallpaper: 'https://example.com/wallpaper.jpg'
+  wallpaper: 'https://images.unsplash.com/photo-1...'
+  blurStrength: 'medium'
 shortcuts:
-  - id: github
-    title: GitHub
-    url: https://github.com
-    type: github
-    color: from-gray-900 to-black
+  - id: 'github'
+    title: 'GitHub'
+    url: 'https://github.com'
+    icon: 'github'
 ```
 
 ---
 
-## 🌟 核心功能详解
+## 🤝 贡献指南
 
-### 🔍 智能搜索
-- 支持 Google、Bing、Baidu 三大搜索引擎
-- 实时搜索建议
-- 快捷键支持（上下箭头选择，Enter 搜索）
-- 一键切换搜索引擎
+我们非常欢迎社区贡献！如果您发现 Bug 或有新功能的想法：
 
-### 📌 快捷方式管理
-- 支持 100+ 预设网站图标
-- 自动获取网站 Favicon
-- 自定义图标上传
-- 拖拽调整位置和大小
-- 智能分页算法
-
-### 🪟 内置应用
-- **计算器**: 科学计算器，支持键盘操作
-- **笔记**: 实时保存的记事本
-- **AI 助手**: AI 聊天界面（可接入 API）
-- **网页视图**: 在窗口中嵌入任意网页
-
-### 🎨 自定义主题
-- 精选壁纸库
-- 自定义壁纸 URL
-- 完整的颜色系统
-- 毛玻璃效果
-
----
-
-## 🤝 贡献
-
-欢迎提交 Pull Request！对于重大更改，请先开 Issue 讨论您想要改变的内容。
-
-### 开发流程
-
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
-
----
-
-## 📱 移动端支持
-
-GrassTab 已完全适配移动设备！
-
-### 功能特性
-- ✅ **响应式布局** - 自动适应不同屏幕尺寸
-- ✅ **触摸优化** - 所有交互针对触摸操作优化
-- ✅ **手势支持** - 支持拖拽、长按等手势操作
-- ✅ **全屏窗口** - 移动端应用自动全屏显示
-- ✅ **安全区域** - 完美适配刘海屏等特殊屏幕
-
-### 测试方法
-
-#### 本地调试
-```bash
-# 启动开发服务器
-npm run dev
-
-# 或使用移动端调试脚本（Windows）
-dev-mobile.bat
-```
-
-#### 设备测试
-1. 确保手机和电脑在同一 WiFi 网络
-2. 记录显示的局域网地址（如: `http://192.168.1.100:5173`）
-3. 在手机浏览器中访问该地址
-4. （推荐）添加到主屏幕获得最佳体验
-
-### 详细文档
-- 📖 [移动端适配说明](MOBILE-ADAPTATION.md)
-- ✅ [移动端测试清单](MOBILE-TEST-CHECKLIST.md)
-
----
-
-## 📷 多源图标系统
-
-GrassTab 采用智能的7层图标降级策略，确保每个网站都能显示最佳图标。
-
-### 图标优先级
-
-1. **icon.horse** ⭐⭐⭐⭐⭐ - 高质量、广泛覆盖
-2. **Clearbit** ⭐⭐⭐⭐⭐ - 商标级质量
-3. **unavatar.io** ⭐⭐⭐⭐ - 多源聚合
-4. **Google Favicon** ⭐⭐⭐ - 可靠但质量一般
-5. **DuckDuckGo** ⭐⭐⭐⭐ - 隐私友好
-6. **Favicon Kit** ⭐⭐⭐⭐ - API可定制
-7. **Direct** ⭐⭐ - 直接获取
-
-### 自动降级机制
-
-当一个图标源加载失败时，系统会自动切换到下一个优先级的源，最终降级到文字图标。这确保了：
-
-- ✅ 最佳图标质量
-- ✅ 高可用性（多个备选源）
-- ✅ 优雅降级（永不显示损坏图标）
-- ✅ 性能优化（浏览器缓存）
-
-### 详细文档
-- 📖 [图标系统完整说明](ICON-SYSTEM.md)
-
----
-
-## 📝 开发路线图
-
-- [x] 多源图标系统
-- [x] 移动端完美适配
-- [ ] 添加更多小部件（天气、RSS 订阅等）
-- [ ] 主题市场
-- [ ] 云端同步
-- [ ] Firefox 支持
-- [ ] 更多内置应用
-- [ ] 数据统计面板
-- [ ] 快捷键自定义
+1. 在 Issues 中提交反馈。
+2. Fork 本仓库并创建分支。
+3. 提交 PR，我们会尽快审核。
 
 ---
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
----
-
-## 🙏 致谢
-
-- [React](https://reactjs.org/) - UI 框架
-- [Vite](https://vitejs.dev/) - 构建工具
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
-- [Lucide](https://lucide.dev/) - 图标库
-- [Unsplash](https://unsplash.com/) - 精美壁纸
-
----
-
-## 📮 联系方式
-
-- GitHub: [@moduqishi](https://github.com/moduqishi)
-- Issues: [GitHub Issues](https://github.com/moduqishi/grasstab/issues)
+本项目基于 [MIT 许可证](LICENSE) 开源。
 
 ---
 
