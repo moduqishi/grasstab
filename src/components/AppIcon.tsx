@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Cpu, StickyNote, Calculator, Settings, Check, Edit3, AppWindow, Youtube, Github, Twitter, Sparkles, Mail, Code, LayoutGrid, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getDomain, getAllIconUrls } from '../utils';
 import { Shortcut } from '../types';
-import { CustomHTMLWidget, IFrameWidget } from './widgets/Widgets';
 import { AppContextMenu } from './AppContextMenu';
 import { useInView } from '../hooks/useInView';
 
@@ -79,35 +78,6 @@ export const AppIcon = React.memo((props: AppIconProps) => {
             onContextMenu(e, props);
         }
     };
-
-    // --- WIDGET RENDERER ---
-    if (type === 'widget') {
-        const w = size?.w || 1;
-        const h = size?.h || 1;
-
-        return (
-            <div 
-                className="w-full h-full bg-white text-black overflow-hidden relative pointer-events-auto"
-                onContextMenu={handleContextMenu}
-                data-app-icon
-            >
-                {/* Widget content with pointer-events-none for iframe to prevent capturing events */}
-                <div className={widgetType === 'iframe' ? 'pointer-events-none w-full h-full' : 'w-full h-full'}>
-                    {widgetType === 'custom' && <CustomHTMLWidget w={w} h={h} content={widgetContent} />}
-                    {widgetType === 'iframe' && <IFrameWidget w={w} h={h} content={widgetContent} />}
-                    {/* Fallback for unknown widget */}
-                    {!widgetType && <div className="w-full h-full flex items-center justify-center text-gray-400"><LayoutGrid /></div>}
-                </div>
-                {/* Invisible overlay to capture events for iframe widgets */}
-                {widgetType === 'iframe' && (
-                    <div 
-                        className="absolute inset-0 pointer-events-auto"
-                        onContextMenu={handleContextMenu}
-                    />
-                )}
-            </div>
-        );
-    }
 
     // --- APP ICON RENDERER ---
 

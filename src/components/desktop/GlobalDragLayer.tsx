@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { DragState } from '../../types';
 import { AppIcon } from '../AppIcon';
+import { CustomHTMLWidget, IFrameWidget } from '../widgets/Widgets';
 
 interface GlobalDragLayerProps {
     dragState: DragState;
@@ -53,7 +54,7 @@ export const GlobalDragLayer: React.FC<GlobalDragLayerProps> = ({ dragState }) =
             {/* iOS-style dragging icon - maintains aspect ratio */}
             <div className="flex flex-col items-center gap-2">
                 <div
-                    className={`relative overflow-hidden flex items-center justify-center text-white shadow-2xl ${dragState.item.customIcon ? 'bg-white/5' : `bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'}`} ring-2 ring-white/40 ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'}`}
+                    className={`relative overflow-hidden flex items-center justify-center text-white shadow-2xl ${dragState.item.customIcon ? 'bg-white/5' : dragState.item.type === 'widget' ? 'bg-white' : `bg-gradient-to-br ${dragState.item.color || 'from-gray-700 to-gray-600'}`} ring-2 ring-white/40 ${dragState.item.type === 'widget' ? 'rounded-[24px]' : 'rounded-[18px]'}`}
                     style={{
                         width: dragState.item.type === 'widget'
                             ? `${(dragState.item.size?.w || 1) * 88}px`
@@ -63,10 +64,31 @@ export const GlobalDragLayer: React.FC<GlobalDragLayerProps> = ({ dragState }) =
                             : '75px'
                     }}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none" style={{ display: dragState.item.customIcon ? 'none' : 'block' }}></div>
-                    <div className="w-full h-full flex items-center justify-center">
-                        <AppIcon {...dragState.item} />
-                    </div>
+                     {/* Widget Content Preview */}
+                    {dragState.item.type === 'widget' ? (
+                        <div className="w-full h-full text-black pointer-events-none p-[1px] overflow-hidden">
+                             {/* Re-use widget rendering with passed props */}
+                             {(() => {
+                                 const w = dragState.item.size?.w || 1;
+                                 const h = dragState.item.size?.h || 1;
+                                 
+                                 if (dragState.item.widgetType === 'custom') {
+                                     return <CustomHTMLWidget w={w} h={h} content={dragState.item.widgetContent} />;
+                                 } else if (dragState.item.widgetType === 'iframe') {
+                                     return <IFrameWidget w={w} h={h} content={dragState.item.widgetContent} />;
+                                 }
+                                 return null;
+                             })()}
+                        </div>
+                    ) : (
+                        // Normal App Icon
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none" style={{ display: dragState.item.customIcon ? 'none' : 'block' }}></div>
+                            <div className="w-full h-full flex items-center justify-center">
+                                <AppIcon {...dragState.item} />
+                            </div>
+                        </>
+                    )}
                 </div>
                 {dragState.item.type !== 'widget' && dragState.item.title && (
                     <span className="text-[13px] text-white font-medium drop-shadow-lg px-2 py-1 bg-black/30 backdrop-blur-sm rounded-lg">

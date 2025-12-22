@@ -1,6 +1,7 @@
 import React, { useRef, forwardRef } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
 import { AppIcon } from '../AppIcon';
+import { WidgetContainer } from '../widgets/WidgetContainer';
 import { DragState, Shortcut, PackedShortcut } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -27,6 +28,7 @@ interface DesktopGridProps {
     handlePointerDown: (e: React.PointerEvent, index: number, source: 'grid' | 'dock', item: any) => void;
     handleResizeStart: (e: React.PointerEvent, widget: Shortcut) => void;
     handleAppContextMenu: (e: React.MouseEvent, app: Shortcut) => void;
+    handleWidgetContextMenu: (e: React.MouseEvent, widget: Shortcut) => void;
     handleIconLoaded: (appId: string | number, iconSource: string) => void;
     onRemoveShortcut: (id: string | number) => void;
     setAppLayout: React.Dispatch<React.SetStateAction<(Shortcut | null)[]>>; // For delete action
@@ -84,6 +86,7 @@ export const DesktopGrid = React.memo(forwardRef<HTMLDivElement, DesktopGridProp
     handlePointerDown,
     handleResizeStart,
     handleAppContextMenu,
+    handleWidgetContextMenu,
     handleIconLoaded,
     onRemoveShortcut,
     setAppLayout,
@@ -220,47 +223,34 @@ export const DesktopGrid = React.memo(forwardRef<HTMLDivElement, DesktopGridProp
                                                                 <Minus size={16} strokeWidth={3} />
                                                             </div>
                                                         )}
-                                                        
-                                                        {/* Resize handle for widgets in edit mode */}
-                                                        {isEditing && isWidget && (
-                                                            <>
-                                                                {/* Corner arc indicator */}
-                                                                <svg className="absolute -bottom-0.5 -right-0.5 z-20 pointer-events-none" width="32" height="32" viewBox="0 0 32 32">
-                                                                    <path d="M 32 32 L 32 20 Q 32 12 24 12 L 12 12" stroke="white" strokeWidth="2" fill="none" opacity="0.3"/>
-                                                                </svg>
-                                                                
-                                                                {/* Resize handle */}
-                                                                <div
-                                                                    onPointerDown={(e) => handleResizeStart(e, s)}
-                                                                    className="absolute -bottom-1.5 -right-1.5 z-20 w-10 h-10 backdrop-blur-md bg-white/20 border border-white/40 rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] cursor-se-resize hover:bg-white/30 hover:scale-105 transition-all active:scale-95"
-                                                                    title="拖动调整大小"
-                                                                >
-                                                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                                                        <circle cx="10" cy="10" r="1.5" fill="white" opacity="0.9"/>
-                                                                        <circle cx="5" cy="10" r="1.5" fill="white" opacity="0.7"/>
-                                                                        <circle cx="10" cy="5" r="1.5" fill="white" opacity="0.7"/>
-                                                                    </svg>
-                                                                </div>
-                                                                
-                                                                {/* Size indicator when resizing */}
-                                                                {isBeingResized && resizingWidget && resizingWidget.newW && resizingWidget.newH && (
-                                                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-3 py-1.5 rounded-lg text-sm font-medium pointer-events-none">
-                                                                        {resizingWidget.newW} × {resizingWidget.newH}
-                                                                    </div>
-                                                                )}
-                                                            </>
-                                                        )}
 
-                                                        <div 
-                                                            className={`w-full h-full flex items-center justify-center text-white ${s.customIcon ? 'bg-white/5 shadow-lg' : s.color ? `bg-gradient-to-br ${s.color} shadow-lg` : ''} ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px]'} transition-all duration-300 ease-out ${s.color || s.customIcon ? 'ring-1 ring-white/10' : ''} relative overflow-hidden ${isWidget ? 'rounded-[24px]' : 'rounded-[22%]'}`}
-                                                        >
-                                                            {!isWidget && !s.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
-                                                            <AppIcon 
-                                                                {...s} 
-                                                                onContextMenu={handleAppContextMenu}
-                                                                onIconLoaded={(iconSource) => handleIconLoaded(s.id, iconSource)}
+                                                        {/* RESIZE HANDLES WERE HERE BUT REMOVED FOR WIDGETS. KEEP FOR APPS IF NEEDED (APPS DON'T RESIZE) */}
+                                                        {/* SO WE JUST RENDER CONTAINER OR APP ICON */}
+                                                        
+                                                        {isWidget ? (
+                                                            <WidgetContainer
+                                                                widget={s}
+                                                                isEditing={isEditing}
+                                                                resizingWidget={resizingWidget}
+                                                                cellWidth={cellWidth}
+                                                                cellHeight={cellHeight}
+                                                                onPointerDown={(e) => handlePointerDown(e, originalIndex, 'grid', s)}
+                                                                onContextMenu={(e) => handleWidgetContextMenu(e, s)}
+                                                                onResizeStart={(e) => handleResizeStart(e, s)}
+                                                                onRemove={() => onRemoveShortcut(s.id)}
                                                             />
-                                                        </div>
+                                                        ) : (
+                                                            <div 
+                                                                className={`w-full h-full flex items-center justify-center text-white ${s.customIcon ? 'bg-white/5 shadow-lg' : s.color ? `bg-gradient-to-br ${s.color} shadow-lg` : ''} ${!isEditing && !isWidget && 'group-hover:scale-105 group-hover:translate-y-[-4px]'} transition-all duration-300 ease-out ${s.color || s.customIcon ? 'ring-1 ring-white/10' : ''} relative overflow-hidden rounded-[22%]`}
+                                                            >
+                                                                {!s.customIcon && <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-50 pointer-events-none"></div>}
+                                                                <AppIcon 
+                                                                    {...s} 
+                                                                    onContextMenu={handleAppContextMenu}
+                                                                    onIconLoaded={(iconSource) => handleIconLoaded(s.id, iconSource)}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     {!isWidget && <span className="text-[13px] text-white/80 font-medium tracking-wide truncate w-full text-center px-1 drop-shadow-md group-hover:text-white transition-colors">{s.title}</span>}

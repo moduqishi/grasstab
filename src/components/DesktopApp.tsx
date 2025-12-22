@@ -13,6 +13,7 @@ import { useInteraction } from '../hooks/useInteraction';
 // Components
 import { ContextMenu } from './ContextMenu';
 import { AppContextMenu } from './AppContextMenu';
+import { WidgetContextMenu } from './widgets/WidgetContextMenu';
 import { ResponsiveWindow } from './Window';
 import { DesktopClock } from './desktop/DesktopClock';
 import { SearchBar } from './desktop/SearchBar';
@@ -231,6 +232,7 @@ export function DesktopApp() {
     // Context Menu Handlers
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
     const [appContextMenu, setAppContextMenu] = useState<{ x: number, y: number, app: Shortcut | DockItem } | null>(null);
+    const [widgetContextMenu, setWidgetContextMenu] = useState<{ x: number, y: number, widget: Shortcut } | null>(null);
 
     const handleGlobalContextMenu = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
@@ -250,11 +252,22 @@ export function DesktopApp() {
         e.stopPropagation();
         setContextMenu(null);
         setAppContextMenu({ x: e.clientX, y: e.clientY, app });
+        setWidgetContextMenu(null);
+    }, []);
+
+    const onWidgetContextMenu = useCallback((e: React.MouseEvent, widget: Shortcut) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu(null);
+        setAppContextMenu(null);
+        setWidgetContextMenu({ x: e.clientX, y: e.clientY, widget });
     }, []);
 
     const handleCloseContextMenu = useCallback(() => {
         setContextMenu(null);
+        setContextMenu(null);
         setAppContextMenu(null);
+        setWidgetContextMenu(null);
         if (isEditing) setIsEditing(false);
     }, [isEditing, setIsEditing]);
 
@@ -390,6 +403,23 @@ export function DesktopApp() {
                 />
             )}
 
+            {widgetContextMenu && (
+                <WidgetContextMenu
+                    x={widgetContextMenu.x}
+                    y={widgetContextMenu.y}
+                    widget={widgetContextMenu.widget}
+                    onClose={() => setWidgetContextMenu(null)}
+                    onToggleEdit={handleToggleEdit}
+                    onDelete={() => {
+                        handleDeleteApp(widgetContextMenu.widget);
+                        setWidgetContextMenu(null);
+                    }}
+                    onReload={() => {
+                        // Force update logic if needed
+                    }}
+                />
+            )}
+
             {/* Desktop UI */}
             <DesktopClock time={time} viewState={viewState} isAnyWindowMaximized={isAnyWindowMaximized} />
             
@@ -428,6 +458,7 @@ export function DesktopApp() {
                 handlePointerDown={handlePointerDown}
                 handleResizeStart={handleResizeStart}
                 handleAppContextMenu={onAppContextMenu}
+                handleWidgetContextMenu={onWidgetContextMenu}
                 handleIconLoaded={handleIconLoaded}
                 onRemoveShortcut={handleRemoveShortcut}
                 setAppLayout={setAppLayout}
